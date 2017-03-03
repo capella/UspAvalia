@@ -166,7 +166,7 @@ CREATE TABLE IF NOT EXISTS `votoscomentario` (
 --
 DROP TABLE IF EXISTS `ListaMedias`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`capeocom_uspava`@`201.93.%.%` SQL SECURITY DEFINER VIEW `ListaMedias` AS select `v`.`APid` AS `APid`,avg(`v`.`nota`) AS `AVG(nota)`,count(0) AS `COUNT(*)` from `votos` `v` where (`v`.`tipo` <> 5) group by `v`.`APid`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `ListaMedias` AS select `v`.`APid` AS `APid`,avg(`v`.`nota`) AS `AVG(nota)`,count(0) AS `COUNT(*)` from `votos` `v` where (`v`.`tipo` <> 5) group by `v`.`APid`;
 
 -- --------------------------------------------------------
 
@@ -175,7 +175,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`capeocom_uspava`@`201.93.%.%` SQL SECURITY D
 --
 DROP TABLE IF EXISTS `Melhores`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`capeocom_uspava`@`201.93.%.%` SQL SECURITY DEFINER VIEW `Melhores` AS select (`ListaMedias`.`AVG(nota)` * 2) AS `media`,`ListaMedias`.`COUNT(*)` AS `votos`,`disciplinas`.`nome` AS `materia`,`unidades`.`NOME` AS `unidade`,`disciplinas`.`codigo` AS `codigo`,`professores`.`nome` AS `professor`,`aulaprofessor`.`id` AS `id` from ((((`ListaMedias` join `aulaprofessor` on((`ListaMedias`.`APid` = `aulaprofessor`.`id`))) join `disciplinas` on((`aulaprofessor`.`idaula` = `disciplinas`.`id`))) join `unidades` on((`disciplinas`.`idunidade` = `unidades`.`id`))) join `professores` on((`aulaprofessor`.`idprofessor` = `professores`.`id`))) where (`ListaMedias`.`COUNT(*)` >= 15) order by `ListaMedias`.`AVG(nota)` desc,`ListaMedias`.`COUNT(*)` desc;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `Melhores` AS select (`ListaMedias`.`AVG(nota)` * 2) AS `media`,`ListaMedias`.`COUNT(*)` AS `votos`,`disciplinas`.`nome` AS `materia`,`unidades`.`NOME` AS `unidade`,`disciplinas`.`codigo` AS `codigo`,`professores`.`nome` AS `professor`,`aulaprofessor`.`id` AS `id` from ((((`ListaMedias` join `aulaprofessor` on((`ListaMedias`.`APid` = `aulaprofessor`.`id`))) join `disciplinas` on((`aulaprofessor`.`idaula` = `disciplinas`.`id`))) join `unidades` on((`disciplinas`.`idunidade` = `unidades`.`id`))) join `professores` on((`aulaprofessor`.`idprofessor` = `professores`.`id`))) where (`ListaMedias`.`COUNT(*)` >= 15) order by `ListaMedias`.`AVG(nota)` desc,`ListaMedias`.`COUNT(*)` desc;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
