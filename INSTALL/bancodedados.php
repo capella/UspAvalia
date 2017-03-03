@@ -171,7 +171,7 @@ do {
 	echo $row_Disciplnas['id']."-".$row_Disciplnas['codigo']."-";
 	print_r($a);
 	foreach ($a as &$value) {
-		if (!startsWith($value, "Aulas") && !startsWith($value, "Atividade"))
+		if (!startsWith($value, "Aulas") && !startsWith($value, "Atividade")){
 			$insertSQL1 = 	"INSERT INTO professores (nome, idunidade)
 							SELECT * FROM (SELECT ".GetSQLValueString($value,'text').", ".GetSQLValueString($row_Disciplnas['idunidade'],'int').") AS tmp
 							WHERE NOT EXISTS (
