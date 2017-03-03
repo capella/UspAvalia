@@ -28,7 +28,7 @@ file_put_contents("db_usp.txt", fopen("http://bcc.ime.usp.br/matrusp/db/db_usp.t
 
 // $string = file_get_contents("db_usp.txt");
 // $json=json_decode($string,true);
-// mysql_select_db($database_CapellaResumo, $CapellaResumo);
+// mysql_select_db($database_CapellaResumo, $CapelalaResumo);
 // //print_r($json);
 // foreach ($json['TODOS'] as $val) {
 // 	$insertSQL1 = 	"SELECT codigo FROM disciplinas WHERE codigo = '".$val[0]."';";
