@@ -63,7 +63,7 @@ foreach ($lines as $line){
 	    $templine = '';
 	}
 }
-echo "Construção do banco de dados (se já não foi feita): OK";
+echo "Construção do banco de dados (se já não foi feita): OK<br>";
 
 file_put_contents("db_usp.txt", fopen("http://bcc.ime.usp.br/matrusp/db/db_usp.txt", 'r'));
 
