@@ -17,7 +17,7 @@
     em “Adicionar Disciplina/Professor”. Sua contribuição é essencial. Se
     procurar uma matéria ou professor e não encontrar, ajude a comunidade o
     adicionando ao sistema. </p>
-    
+
     <h5><strong>Os gráficos</strong></h5>
     
     <p  style=" text-align:justify;"> Em toda página de
