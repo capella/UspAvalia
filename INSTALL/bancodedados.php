@@ -1,6 +1,6 @@
 <?php 
 require '../config.php';
-include('Connections/simple_html_dom.php');
+include('../Connections/simple_html_dom.php');
 
 $hostname_CapellaResumo = $hostname;
 $database_CapellaResumo = $database;
