@@ -1,0 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<info>
+	<infoitem key="UD_Melhores" value="name:media;datatype:real,name:votos;datatype:int,name:materia;datatype:string,name:unidade;datatype:string,name:codigo;datatype:string,name:professor;datatype:string" />
+</info>
