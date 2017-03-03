@@ -1,4 +1,13 @@
-<?php require_once('Connections/CapellaResumo.php'); 
+<?php 
+require '../config.php';
+$hostname_CapellaResumo = $hostname;
+$database_CapellaResumo = $database;
+$username_CapellaResumo = $username;
+$password_CapellaResumo = $password;
+$CapellaResumo = mysql_pconnect($hostname_CapellaResumo, $username_CapellaResumo, $password_CapellaResumo) or trigger_error(mysql_error(),E_USER_ERROR);
+mysql_set_charset('utf8',$CapellaResumo);
+
+mysql_select_db($database_CapellaResumo, $CapellaResumo);
 
  set_time_limit (1000000);
 
