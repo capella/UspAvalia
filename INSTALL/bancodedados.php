@@ -2,6 +2,13 @@
 require '../config.php';
 include('../Connections/simple_html_dom.php');
 
+function startsWith($haystack, $needle)
+{
+     $length = strlen($needle);
+     return (substr($haystack, 0, $length) === $needle);
+}
+
+
 $hostname_CapellaResumo = $hostname;
 $database_CapellaResumo = $database;
 $username_CapellaResumo = $username;
@@ -164,15 +171,17 @@ do {
 	echo $row_Disciplnas['id']."-".$row_Disciplnas['codigo']."-";
 	print_r($a);
 	foreach ($a as &$value) {
-		$insertSQL1 = 	"INSERT INTO professores (nome, idunidade)
-						SELECT * FROM (SELECT ".GetSQLValueString($value,'text').", ".GetSQLValueString($row_Disciplnas['idunidade'],'int').") AS tmp
-						WHERE NOT EXISTS (
-							SELECT nome FROM professores WHERE nome = ".GetSQLValueString($value,'text')."
-						) LIMIT 1;";
-		$insertSQL2 = "INSERT IGNORE INTO aulaprofessor (idprofessor, idaula) SELECT id as idprofessor, ".GetSQLValueString($row_Disciplnas['id'],'int')." as idaula from professores WHERE nome = ".GetSQLValueString($value,'text').";";
-  		$Result1 = mysql_query($insertSQL1, $CapellaResumo) or die(mysql_error());
-		$Result2 = mysql_query($insertSQL2, $CapellaResumo) or die(mysql_error());
-		//echo $insertSQL1;
+		if (!startsWith($value, "Aulas") && !startsWith($value, "Atividade"))
+			$insertSQL1 = 	"INSERT INTO professores (nome, idunidade)
+							SELECT * FROM (SELECT ".GetSQLValueString($value,'text').", ".GetSQLValueString($row_Disciplnas['idunidade'],'int').") AS tmp
+							WHERE NOT EXISTS (
+								SELECT nome FROM professores WHERE nome = ".GetSQLValueString($value,'text')."
+							) LIMIT 1;";
+			$insertSQL2 = "INSERT IGNORE INTO aulaprofessor (idprofessor, idaula) SELECT id as idprofessor, ".GetSQLValueString($row_Disciplnas['id'],'int')." as idaula from professores WHERE nome = ".GetSQLValueString($value,'text').";";
+	  		$Result1 = mysql_query($insertSQL1, $CapellaResumo) or die(mysql_error());
+			$Result2 = mysql_query($insertSQL2, $CapellaResumo) or die(mysql_error());
+			//echo $insertSQL1;
+		}
 	}
 	$insertSQL3 = "UPDATE  `capeocom_uspavalia`.`disciplinas` SET  `roubo` =  '1' WHERE  `disciplinas`.`id` =".GetSQLValueString($row_Disciplnas['id'],'int').";";
 	$Result3 = mysql_query($insertSQL3, $CapellaResumo) or die(mysql_error());
