@@ -162,7 +162,7 @@ do {
 	foreach($htmld->find('table[cellspacing=1] tr[class="txt_verdana_8pt_gray"] td font[face="Verdana, Arial, Helvetica, sans-serif"]') as $element){
 		$value =  str_replace('(R)','',trim(preg_replace("/\r|\n/", "", trim(preg_replace('!\s+!', ' ', $element->plaintext)))));
 		if(strlen($value)>7&&$value!='Hor&aacute;rio'&&$value!='Horário'){
-			if(!in_array($value, $a)){
+			if(!in_array($value, $a) && !startsWith($value, "Aulas") && !startsWith($value, "Atividade")){
 				$a[]=$value;
 			}
 		}
@@ -171,17 +171,15 @@ do {
 	echo $row_Disciplnas['id']."-".$row_Disciplnas['codigo']."-";
 	print_r($a);
 	foreach ($a as &$value) {
-		if (!startsWith($value, "Aulas") && !startsWith($value, "Atividade")){
-			$insertSQL1 = 	"INSERT INTO professores (nome, idunidade)
-							SELECT * FROM (SELECT ".GetSQLValueString($value,'text').", ".GetSQLValueString($row_Disciplnas['idunidade'],'int').") AS tmp
-							WHERE NOT EXISTS (
-								SELECT nome FROM professores WHERE nome = ".GetSQLValueString($value,'text')."
-							) LIMIT 1;";
-			$insertSQL2 = "INSERT IGNORE INTO aulaprofessor (idprofessor, idaula) SELECT id as idprofessor, ".GetSQLValueString($row_Disciplnas['id'],'int')." as idaula from professores WHERE nome = ".GetSQLValueString($value,'text').";";
-	  		$Result1 = mysql_query($insertSQL1, $CapellaResumo) or die(mysql_error());
-			$Result2 = mysql_query($insertSQL2, $CapellaResumo) or die(mysql_error());
-			//echo $insertSQL1;
-		}
+		$insertSQL1 = 	"INSERT INTO professores (nome, idunidade)
+						SELECT * FROM (SELECT ".GetSQLValueString($value,'text').", ".GetSQLValueString($row_Disciplnas['idunidade'],'int').") AS tmp
+						WHERE NOT EXISTS (
+							SELECT nome FROM professores WHERE nome = ".GetSQLValueString($value,'text')."
+						) LIMIT 1;";
+		$insertSQL2 = "INSERT IGNORE INTO aulaprofessor (idprofessor, idaula) SELECT id as idprofessor, ".GetSQLValueString($row_Disciplnas['id'],'int')." as idaula from professores WHERE nome = ".GetSQLValueString($value,'text').";";
+  		$Result1 = mysql_query($insertSQL1, $CapellaResumo) or die(mysql_error());
+		$Result2 = mysql_query($insertSQL2, $CapellaResumo) or die(mysql_error());
+		//echo $insertSQL1;
 	}
 	$insertSQL3 = "UPDATE  `capeocom_uspavalia`.`disciplinas` SET  `roubo` =  '1' WHERE  `disciplinas`.`id` =".GetSQLValueString($row_Disciplnas['id'],'int').";";
 	$Result3 = mysql_query($insertSQL3, $CapellaResumo) or die(mysql_error());
