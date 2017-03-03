@@ -8,6 +8,8 @@ $password_CapellaResumo = $password;
 $CapellaResumo = mysql_pconnect($hostname_CapellaResumo, $username_CapellaResumo, $password_CapellaResumo) or trigger_error(mysql_error(),E_USER_ERROR);
 mysql_set_charset('utf8',$CapellaResumo);
 
+mysql_select_db($database_CapellaResumo, $CapellaResumo);
+
 include('../Connections/simple_html_dom.php');
 set_time_limit (1000000);
 
