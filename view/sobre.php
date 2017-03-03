@@ -27,11 +27,15 @@
     <h5><strong>Privacidade</strong></h5>
     
     <p  style=" text-align:justify;">
-        Quando um usuário realiza um voto ou faz um comentário, o número dele passa por um algoritmo unidirecional (MD5), onde não é possível retornar ao número original.
+        Quando um usuário realiza um voto ou faz um comentário, o número dele passa por um algoritmo unidirecional (SHA256), onde não é possível retornar ao número original.
         Dessa maneira, impedimos que usúarios votem multiplas vezes e previnimos que seus dados fiquem retidos de maneira explícita no servidor.
         Além disso, não temos nenuma página que divulgue qualquer tipo de informação dos usuários ou informações provenientes deles.
     </p>
-    
+
+    <p  style=" text-align:justify;">
+        O código fonte do site pode ser visualizado em <a href="https://github.com/capellaresumo/UspAvalia">https://github.com/capellaresumo/UspAvalia</a>
+    </p>
+
     <h5><strong>Ajuda</strong></h5>
     
     <p  style=" text-align:justify;"> Provavelmente você
