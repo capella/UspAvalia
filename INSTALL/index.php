@@ -27,7 +27,7 @@ foreach ($lines as $line){
 	if (substr(trim($line), -1, 1) == ';')
 	{
 	    // Perform the query
-	    mysql_query($templine) or print('Error performing query \'<strong>' . $templine . '\': ' . mysql_error() . '<br /><br />');
+	    mysql_query($templine) or die('Error performing query \'<strong>' . $templine . '\': ' . mysql_error() . '<br /><br />');
 	    // Reset temp variable to empty
 	    $templine = '';
 	}
