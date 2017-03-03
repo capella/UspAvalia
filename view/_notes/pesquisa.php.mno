@@ -1,4 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<info>
-	<infoitem key="UD_Pesquisa" value="name:id;datatype:int,name:idaula;datatype:int,name:idprofessor;datatype:int" />
-</info>
