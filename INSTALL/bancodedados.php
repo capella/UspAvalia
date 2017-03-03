@@ -1,5 +1,7 @@
 <?php 
 require '../config.php';
+include('Connections/simple_html_dom.php');
+
 $hostname_CapellaResumo = $hostname;
 $database_CapellaResumo = $database;
 $username_CapellaResumo = $username;
@@ -92,8 +94,6 @@ $query_Disciplnas = "SELECT * FROM disciplinas WHERE roubo = 0 ORDER BY id ASC L
 $Disciplnas = mysql_query($query_Disciplnas, $CapellaResumo) or die(mysql_error());
 $row_Disciplnas = mysql_fetch_assoc($Disciplnas);
 $totalRows_Disciplnas = mysql_num_rows($Disciplnas);
-
-include('Connections/simple_html_dom.php');
 
 
 // Find all images 
