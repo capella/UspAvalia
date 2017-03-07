@@ -127,10 +127,15 @@ function pessoas(){
     <script type="application/ld+json">
         {
           "@context": "http://schema.org",
+          "@type": "Organization",
+          "url": "http://uspavalia.com/",
+          "logo": "http://uspavalia.com/assets/images/poster.jpg",
+        },
+        {
+          "@context": "http://schema.org",
           "@type": "WebSite",
           "name": "UspAvalia",
           "url": "http://uspavalia.com/",
-          "logo": "http://uspavalia.com/assets/images/poster.jpg",
           "potentialAction": {
             "@type": "SearchAction",
             "target": "http://uspavalia.com/?p=pesquisa&pesquisa={search_term_string}",
