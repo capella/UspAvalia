@@ -129,8 +129,9 @@ function pessoas(){
           "@context": "http://schema.org",
           "@type": "Organization",
           "url": "http://uspavalia.com/",
-          "logo": "http://uspavalia.com/assets/images/poster.jpg",
-        },
+          "logo": "http://uspavalia.com/assets/images/poster.jpg"
+        }
+    </script><script type="application/ld+json">
         {
           "@context": "http://schema.org",
           "@type": "WebSite",
