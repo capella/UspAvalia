@@ -4,7 +4,7 @@
 $pesquisa = '';
 
 if (isset($_GET['pesquisa'])) {
-  $pesquisa = GetSQLValueString($_GET['pesquisa']);
+  $pesquisa = GetSQLValueString($_GET['pesquisa'], "text2");
 }
 $startRow_Pesquisa = $pageNum_Pesquisa * $maxRows_Pesquisa;
 
