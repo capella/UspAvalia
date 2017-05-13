@@ -1,39 +1,47 @@
 <?php 
 require_once('Connections/CapellaResumo.php'); 
-require 'view/facebook.php';
 require 'config.php';
+$loader = require __DIR__ . '/vendor/autoload.php';
 date_default_timezone_set('America/Sao_Paulo');
 
 
 session_start();
 
-$facebook = new Facebook(array(
-	'appId' => $appId_facebook,
-	'secret' => $secret_facebook
-));
+$fb = new Facebook\Facebook([
+  'app_id' => $appId_facebook,
+  'app_secret' => $secret_facebook,
+  'default_graph_version' => 'v2.9',
+]);
 
-$user = $facebook->getUser();
+$user = null;
 
-if ($user) {
+if (isset($_SESSION['fb_access_token'])) {
   try {
     // Proceed knowing you have a logged in user who's authenticated.
-    $user_profile = $facebook->api('/me');
+    $response = $fb->get('/me?fields=id,name', $_SESSION['fb_access_token']);
+    $user_profile = $response->getGraphUser();
+    $user = $user_profile['id'];
   } catch (FacebookApiException $e) {
     error_log($e);
     $user = null;
   }
+} else {
+	$helper = $fb->getRedirectLoginHelper();
+	$permissions = ['email']; // Optional permissions
+	$loginUrl = $helper->getLoginUrl($url_full.'/?p=fb-callback&ant='.urlencode($_SERVER[REQUEST_URI]), $permissions);
 }
 
 $page = 'index';
 if(isset($_GET['p'])&&$_GET['p']!=''){
 		$page  = $_GET['p'];
 }
- include('view/template/header.php');    
+    $template = !in_array($page, array('logout', 'votar', 'comentar', 'votarcomentario', 'fb-callback'));
+    if ($template) include('view/template/header.php');  
 	  if(file_exists("view/" . $page . ".php")) {
 				include('view/' . $page . '.php');
 	  }
 	  else {
 				  include('view/404.php');
 	  }
-include('view/template/footer.php');
+    if ($template) include('view/template/footer.php');
 ?>

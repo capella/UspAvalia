@@ -1,7 +1,9 @@
 <title>Contato</title>
 <?php
- 
-if(isset($_POST['email'])) {
+
+
+
+if(isset($_POST['email']) && isset($_SESSION["k1"]) && isset($_SESSION["k1"]) && $_SESSION["k1"] + $_SESSION["k2"] == $_POST['soma']) {
  
      
  
@@ -142,6 +144,10 @@ $headers = 'From: '.$email_from."\r\n".
 <?php
  
 } else {
+
+$_SESSION["k1"] = rand(0,20);
+$_SESSION["k2"] = rand(0,20);
+
  
 ?>
 <form name="contactform" method="post" action="/email">
@@ -195,6 +201,22 @@ $headers = 'From: '.$email_from."\r\n".
  <td valign="top">
  
      <input  type="text" name="email" maxlength="80" size="30" class="form-control"><br>
+ 
+ </td>
+ 
+</tr> 
+
+<tr>
+ 
+ <td width="33%" valign="top">
+ 
+  <label for="first_name">Quanto é <?= $_SESSION["k1"] ?> + <?= $_SESSION["k2"] ?>?</label>
+ 
+ </td>
+ 
+ <td width="67%" valign="top">
+ 
+  <input  type="number" name="soma" maxlength="50" size="30" class="form-control"><br>
  
  </td>
  

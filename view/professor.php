@@ -22,7 +22,7 @@ body {
 
 </style>
 <body>
-<script src="//d3js.org/d3.v3.min.js"></script>
+<script src="<?= $url_full; ?>/assets/js/d3.v3.min.js"></script>
 <script>
 
 // Generate a Bates distribution of 10 random variables.

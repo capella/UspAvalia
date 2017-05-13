@@ -48,7 +48,7 @@
             <li><a href="/?p=add">Adicionar Disciplina/Professor</a></li>
             <li><a href="/logout">Logout</a></li>
             <? else: ?>
-            <li><a href="<?=$facebook->getLoginUrl();?>">Login</a></li>
+            <li><a href="<?=$loginUrl;?>">Login</a></li>
             <?php endif ?>
           </ul>
         </div><!--/.nav-collapse -->

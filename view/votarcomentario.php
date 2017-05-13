@@ -1,10 +1,7 @@
 <?
-if ($user) {
-  $logoutUrl = $facebook->getLogoutUrl();
-} else {
-  //$statusUrl = $facebook->getLoginStatusUrl();
-  $loginUrl = $facebook->getLoginUrl();
+if (!$user) {
   header('Location: '.$loginUrl);
+  exit;
 }
 
 if (isset($_GET["id"])&&isset($user_profile['id'])&&($_GET['voto']==1||$_GET['voto']==-1)) {

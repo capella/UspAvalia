@@ -1,11 +1,9 @@
 <?
-if ($user) {
-  $logoutUrl = $facebook->getLogoutUrl();
-} else {
-  //$statusUrl = $facebook->getLoginStatusUrl();
-  $loginUrl = $facebook->getLoginUrl();
+if (!$user) {
   header('Location: '.$loginUrl);
+  exit;
 }
+
 
 if ((isset($_GET["MM_insert"])) && ($_GET["MM_insert"] == "form")) {
 

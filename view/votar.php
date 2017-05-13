@@ -1,11 +1,8 @@
 <?php
 
-if ($user) {
-  $logoutUrl = $facebook->getLogoutUrl();
-} else {
-  //$statusUrl = $facebook->getLoginStatusUrl();
-  $loginUrl = $facebook->getLoginUrl();
+if (!$user) {
   header('Location: '.$loginUrl);
+  exit;
 }
 
 $arr = array('Avaliação Geral', 'Didática', 'Empenho/Dedicação', 'Relação com os alunos', 'Dificuldade');

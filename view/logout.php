@@ -1,8 +1,6 @@
 <?php
     session_start();
-    unset($_SESSION['id']);
-    unset($_SESSION['username']);
-    unset($_SESSION['oauth_provider']);
+    unset($_SESSION['fb_access_token']);
     session_destroy();
-    header("location: ".$url_full; ?."/");
+    header("location: /");
 ?>

@@ -36,7 +36,7 @@ shape-rendering: crispEdges;
 fill: none;
 }
 </style>
-<script src="<?= $url_full; ?>/assets/d3.v3.min.js"></script>
+<script src="<?= $url_full; ?>/assets/js/d3.v3.min.js"></script>
 <script>
 function bar(elemeto,max,min,maxfeito,minfeito,media){	  
   var margin = {top: 0, right: 10, bottom: 10, left: 15},

@@ -1,3 +1,4 @@
 config.php
 error_log
 info_bd/*.txt
+/vendor/

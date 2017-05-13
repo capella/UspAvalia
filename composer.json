@@ -1,0 +1,13 @@
+{
+    "name": "capella/uspavalia",
+    "type": "project",
+    "require": {
+        "facebook/graph-sdk": "^5.5"
+    },
+    "authors": [
+        {
+            "name": "capellaresumo",
+            "email": "capellaresumo@gmail.com"
+        }
+    ]
+}
