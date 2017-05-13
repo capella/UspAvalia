@@ -1,6 +1,6 @@
 # UspAvalia
 
-Para mais informações acesse [http://uspavalia.com/sobre](http://uspavalia.com/sobre).
+Para mais informações acesse [<?= $url_full; ?>/sobre](<?= $url_full; ?>/sobre).
 
 ### Instalação
 

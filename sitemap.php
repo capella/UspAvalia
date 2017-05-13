@@ -13,17 +13,17 @@ header("Content-type: text/xml");
   xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" 
   xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">'; ?>
               <url>
-                <loc> http://uspavalia.com/ </loc>
+                <loc> <?= $url_full; ?>/ </loc>
             </url> 
               <url>
-                <loc> http://uspavalia.com/?p=email </loc>
+                <loc> <?= $url_full; ?>/?p=email </loc>
             </url>
               <url>
-                <loc> http://uspavalia.com/?p=sobre </loc>
+                <loc> <?= $url_full; ?>/?p=sobre </loc>
             </url> 
 <?php do { ?>
             <url>
-                <loc> http://uspavalia.com/?p=ver&amp;id<?= $row_Paginas['id'];?> </loc>
+                <loc> <?= $url_full; ?>/?p=ver&amp;id<?= $row_Paginas['id'];?> </loc>
             </url>      
 <?php } while ($row_Paginas = mysql_fetch_assoc($Paginas)); ?>
 </urlset>

@@ -66,8 +66,8 @@
 
     </div>
     <div class="col-md-4 visible-lg visible-md" style="text-align:center">
-    	 <img src="http://uspavalia.com/assets/images/poster.jpg" class="img-responsive img-thumbnail" alt="" style="margin-top:100px">
-    	 <p>Ajude a divulgar o projeto imprimindo o poster e colocando em sua unidade: <a href="http://uspavalia.com/assets/images/poster.pdf" onclick="ga('send', 'event', 'Poster', 'click', 'sobre');">poster em PDF</a>.</p>
+    	 <img src="<?= $url_full; ?>/assets/images/poster.jpg" class="img-responsive img-thumbnail" alt="" style="margin-top:100px">
+    	 <p>Ajude a divulgar o projeto imprimindo o poster e colocando em sua unidade: <a href="<?= $url_full; ?>/assets/images/poster.pdf" onclick="ga('send', 'event', 'Poster', 'click', 'sobre');">poster em PDF</a>.</p>
     </div>
     </div>
 

@@ -32,7 +32,7 @@ function avaliacoes(){
 
 function pessoas(){
 	global $CapellaResumo;
-	$query_Media = "SELECT * FROM votos GROUP BY iduso;";	
+	$query_Media = "SELECT iduso FROM votos GROUP BY iduso;";	
 	$Media= mysql_query($query_Media, $CapellaResumo) or die(mysql_error());
 	$row_Media = mysql_fetch_assoc($Media);
 	return number_format(mysql_num_rows($Media), 0, ',', ' ');
@@ -119,7 +119,7 @@ function pessoas(){
                         </div><!-- ./col -->
                       
                     </div><!-- /.row -->
-    	 <p>Ajude a divulgar o USP Avalia em sua unidade com <a href="http://uspavalia.com/assets/images/poster.pdf" onclick="ga('send', 'event', 'Poster', 'click', 'pagina_inicial');">esse poster</a>.</p>
+    	 <p>Ajude a divulgar o USP Avalia em sua unidade com <a href="<?= $url_full; ?>/assets/images/poster.pdf" onclick="ga('send', 'event', 'Poster', 'click', 'pagina_inicial');">esse poster</a>.</p>
 
                      </div><!-- /.row -->
 
@@ -128,18 +128,18 @@ function pessoas(){
         {
           "@context": "http://schema.org",
           "@type": "Organization",
-          "url": "http://uspavalia.com/",
-          "logo": "http://uspavalia.com/assets/images/poster.jpg"
+          "url": "<?= $url_full; ?>/",
+          "logo": "<?= $url_full; ?>/assets/images/poster.jpg"
         }
     </script><script type="application/ld+json">
         {
           "@context": "http://schema.org",
           "@type": "WebSite",
           "name": "UspAvalia",
-          "url": "http://uspavalia.com/",
+          "url": "<?= $url_full; ?>/",
           "potentialAction": {
             "@type": "SearchAction",
-            "target": "http://uspavalia.com/?p=pesquisa&pesquisa={search_term_string}",
+            "target": "<?= $url_full; ?>/?p=pesquisa&pesquisa={search_term_string}",
             "query-input": "required name=search_term_string"
           }
         }

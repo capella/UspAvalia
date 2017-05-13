@@ -7,14 +7,14 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <!-- Bootstrap core CSS -->
-	<link rel="stylesheet" type="text/css" href="http://<?= $url; ?>/assets/css/meu.css">
+	<link rel="stylesheet" type="text/css" href="<?= $url_full; ?>/assets/css/meu.css">
     <!-- Custom styles for this template -->
-	<link rel="stylesheet" type="text/css" href="http://<?= $url; ?>/assets/css/cover.css">
+	<link rel="stylesheet" type="text/css" href="<?= $url_full; ?>/assets/css/cover.css">
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <script type="text/javascript" src="http://<?= $url; ?>/assets/js/jquery.barrating.min.js"></script>
+    <script type="text/javascript" src="<?= $url_full; ?>/assets/js/jquery.barrating.min.js"></script>
 	<script>
       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

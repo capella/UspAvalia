@@ -1,4 +1,5 @@
-<?php require_once('Connections/CapellaResumo.php'); 
+<?php 
+require_once('Connections/CapellaResumo.php'); 
 require 'view/facebook.php';
 require 'config.php';
 date_default_timezone_set('America/Sao_Paulo');
@@ -10,7 +11,6 @@ $facebook = new Facebook(array(
 	'appId' => $appId_facebook,
 	'secret' => $secret_facebook
 ));
-$url = "uspavalia.com";
 
 $user = $facebook->getUser();
 

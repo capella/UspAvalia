@@ -56,7 +56,7 @@ $totalRows_Melhores = mysql_num_rows($Melhores);
       <td><?php echo $row_Melhores['unidade']; ?></td>
       <td><?php echo $row_Melhores['professor']; ?></td>
       <td>
-        <div align="center"><a href="http://uspavalia.com/?p=ver&id=<?php echo $row_Melhores['id']; ?>" class="btn btn-success  btn-sm">
+        <div align="center"><a href="<?= $url_full; ?>/?p=ver&id=<?php echo $row_Melhores['id']; ?>" class="btn btn-success  btn-sm">
           Avaliar
           </a>
       </div></td>
@@ -110,7 +110,7 @@ $totalRows_Melhores = mysql_num_rows($Melhores);
       <td><?php echo $row_Melhores['nome']; ?></td>
       <td><?php echo $row_Melhores['unidade']; ?></td>
       <td>
-        <div align="center"><a href="http://uspavalia.com/?p=pesquisa2&id=<?php echo $row_Melhores['id']; ?>&t=2" class="btn btn-success  btn-sm">
+        <div align="center"><a href="<?= $url_full; ?>/?p=pesquisa2&id=<?php echo $row_Melhores['id']; ?>&t=2" class="btn btn-success  btn-sm">
           Avaliar
           </a>
       </div></td>
