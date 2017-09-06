@@ -8,3 +8,4 @@ Para executar o sistema localmente a primeira parte é renomear o arquivo `confi
 
 Posteriormente a isso é necessário ir no endereço `/INSTALL/index.php`. Para atualizar o banco de dados, também basta ir nesse endereço.
 
+AVISO: esse código foi escrito em 2014 e precisa de uma revisão urgente.Não foram usados bons padroes de projetos e nenhum framework.
