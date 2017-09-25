@@ -1,6 +1,6 @@
 <?php 
 if ($user){
-	mysql_select_db($database_CapellaResumo, $CapellaResumo);
+	mysql_select_db($database_connection, $connection);
 	if(
 	isset($_POST['v'])&&$_POST['v']=='verificador'&&
 	((isset($_POST['sigla'])&&$_POST['sigla']!='')||
@@ -8,9 +8,9 @@ if ($user){
 	isset($_POST['nprofessor'])&&$_POST['nprofessor']!=''){
 		
 		function novolaco($idpro,$iddis){
-			global $CapellaResumo, $user_profile;
+			global $connection, $user_profile;
 			$query_AP = "SELECT * FROM `aulaprofessor` WHERE `idaula` =".$iddis." AND `idprofessor` =".$idpro;
-			$AP = mysql_query($query_AP, $CapellaResumo) or die(mysql_error());
+			$AP = mysql_query($query_AP, $connection) or die(mysql_error());
 			$row_AP = mysql_fetch_assoc($AP);
 			$totalRows_AP = mysql_num_rows($AP);
 			if($totalRows_AP>0){
@@ -22,18 +22,18 @@ if ($user){
 						 GetSQLValueString(time(), "int"),
 						 GetSQLValueString(hash($hash , $secret_key.$user_profile['id']), "text"));
 				
-				$Result1 = mysql_query($insertSQL, $CapellaResumo) or die(mysql_error());
+				$Result1 = mysql_query($insertSQL, $connection) or die(mysql_error());
 				header('Location: ?p=ver&id='.mysql_insert_id());
 			}
 		}
 		$query_dis = "SELECT * FROM `disciplinas` WHERE `nome` LIKE '%".$_POST['ndisciplina']."%' OR `codigo` LIKE '%".$_POST['sigla']."%'";// AND idunidade = ".$_POST['unidade'];
 		$query_pro = "SELECT * FROM `professores` WHERE `nome` LIKE '%".$_POST['nprofessor']."%'";// AND idunidade = ".$_POST['unidade'];
 				
-		$DIS = mysql_query($query_dis, $CapellaResumo) or die(mysql_error());
+		$DIS = mysql_query($query_dis, $connection) or die(mysql_error());
 		$row_DIS = mysql_fetch_assoc($DIS);
 		$totalRows_DIS = mysql_num_rows($DIS);
 		
-		$PRO = mysql_query($query_pro, $CapellaResumo) or die(mysql_error());
+		$PRO = mysql_query($query_pro, $connection) or die(mysql_error());
 		$row_PRO = mysql_fetch_assoc($PRO);
 		$totalRows_PRO = mysql_num_rows($PRO);
 		
@@ -50,7 +50,7 @@ if ($user){
 					 GetSQLValueString(time(), "int"),
 					 GetSQLValueString(hash($hash , $secret_key.$user_profile['id']), "text"));
 			
-			$Result1 = mysql_query($insertSQL, $CapellaResumo) or die(mysql_error());
+			$Result1 = mysql_query($insertSQL, $connection) or die(mysql_error());
 			$busca_proid = mysql_insert_id();
 		}
 		if($totalRows_DIS == 0){
@@ -61,7 +61,7 @@ if ($user){
 					 GetSQLValueString(time(), "int"),
 					 GetSQLValueString(hash($hash , $secret_key.$user_profile['id']), "text"));
 			
-			$Result1 = mysql_query($insertSQL, $CapellaResumo) or die(mysql_error());
+			$Result1 = mysql_query($insertSQL, $connection) or die(mysql_error());
 			$busca_disid = mysql_insert_id();
 		}
 		novolaco($busca_proid,$busca_disid);
@@ -75,7 +75,7 @@ if ($user){
 	$query_Pesquisa = "SELECT * FROM (SELECT AP.id, AP.idaula, AP.idprofessor, DIS.nome as 'Dnome', PRO.nome as 'Pnome', codigo FROM aulaprofessor AP INNER JOIN disciplinas DIS ON AP.idaula = DIS.id INNER JOIN professores PRO ON AP.idprofessor = PRO.id) S WHERE idprofessor =".$_GET['id'];
 	
 	
-$Pesquisa = mysql_query($query_Pesquisa, $CapellaResumo) or die(mysql_error());
+$Pesquisa = mysql_query($query_Pesquisa, $connection) or die(mysql_error());
 $row_Pesquisa = mysql_fetch_assoc($Pesquisa);
 ?>
 <h2>Adionar Disciplina</h2>

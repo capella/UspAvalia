@@ -1,40 +1,10 @@
 <?php
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
-
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return $theValue;
-}
-}
 
 $colname_Comentarios = "-1";
 if (isset($_GET['id'])) {
   $colname_Comentarios = $_GET['id'];
 }
-mysql_select_db($database_CapellaResumo, $CapellaResumo);
+mysql_select_db($database_connection, $connection);
 $query_Comentarios = sprintf("
 SELECT cometario.*, IFNULL(k.negativos, 0) as negativos, IFNULL(p.positivos, 0) as positivos 
 	FROM cometario 
@@ -45,7 +15,7 @@ SELECT cometario.*, IFNULL(k.negativos, 0) as negativos, IFNULL(p.positivos, 0) 
 	WHERE aulaprofessorid = %s 
 		AND (IFNULL(p.positivos, 0)-IFNULL(k.negativos, 0))>=-3 
 	ORDER BY `time` DESC", GetSQLValueString($colname_Comentarios, "int"));
-$Comentarios = mysql_query($query_Comentarios, $CapellaResumo) or die(mysql_error());
+$Comentarios = mysql_query($query_Comentarios, $connection) or die(mysql_error());
 $row_Comentarios = mysql_fetch_assoc($Comentarios);
 $totalRows_Comentarios = mysql_num_rows($Comentarios);
 ?>
@@ -107,5 +77,3 @@ $totalRows_Comentarios = mysql_num_rows($Comentarios);
 <?php
 mysql_free_result($Comentarios);
 ?>
-
-<!--<? print_r($user); ?>-->

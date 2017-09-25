@@ -1,8 +1,8 @@
-<?php require_once('Connections/CapellaResumo.php');
+<?php require_once('helpers/connection.php');
 header("Content-type: text/xml");
-mysql_select_db($database_CapellaResumo, $CapellaResumo);
+mysql_select_db($database_connection, $connection);
 $query_Paginas = "SELECT id FROM aulaprofessor";
-$Paginas = mysql_query($query_Paginas, $CapellaResumo) or die(mysql_error());
+$Paginas = mysql_query($query_Paginas, $connection) or die(mysql_error());
 $row_Paginas = mysql_fetch_assoc($Paginas);
 $totalRows_Paginas = mysql_num_rows($Paginas);
 

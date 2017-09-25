@@ -1,18 +1,6 @@
 <?php
-# FileName="Connection_php_mysql.htm"
-# Type="MYSQL"
-# HTTP="true"
-require 'config.php';
-$hostname_CapellaResumo = $hostname;
-$database_CapellaResumo = $database;
-$username_CapellaResumo = $username;
-$password_CapellaResumo = $password;
-$CapellaResumo = mysql_pconnect($hostname_CapellaResumo, $username_CapellaResumo, $password_CapellaResumo) or trigger_error(mysql_error(),E_USER_ERROR);
-mysql_set_charset('utf8',$CapellaResumo);
 
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
+function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "")  {
   if (PHP_VERSION < 6) {
     $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
   }
@@ -21,10 +9,20 @@ function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDe
 
   switch ($theType) {
     case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
+      if ($theValue != "") {
+        $theValue = strip_tags($theValue, '<br>');
+        $theValue = "'" . $theValue . "'";
+      } else {
+        $theValue = "NULL";
+      }
       break; 
     case "text2":
-      $theValue = ($theValue != "") ?  $theValue : "NULL";
+      if ($theValue != "") {
+        $theValue = strip_tags($theValue, '<br>');
+        $theValue = $theValue;
+      } else {
+        $theValue = "NULL";
+      }
       break;    
     case "long":
     case "int":
@@ -41,7 +39,6 @@ function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDe
       break;
   }
   return trim(preg_replace("/\r|\n/", "", trim(preg_replace('!\s+!', ' ', $theValue))));
-}
 }
 
 ?>

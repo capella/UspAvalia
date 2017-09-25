@@ -2,7 +2,7 @@ version: '3'
 
 services:
   db:
-    container_name: GDBUspAvalia
+    container_name: DDBUspAvalia
     image: mysql:5.7
     volumes:
       - mysql:/var/lib/mysql

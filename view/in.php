@@ -1,10 +1,10 @@
 <?
-mysql_select_db($database_CapellaResumo, $CapellaResumo);
+mysql_select_db($database_connection, $connection);
 
 function media(){
-	global $CapellaResumo;
+	global $connection;
 	$query_Media = "SELECT AVG(nota) as m FROM votos WHERE tipo <> 5;";	
-	$Media= mysql_query($query_Media, $CapellaResumo) or die(mysql_error());
+	$Media= mysql_query($query_Media, $connection) or die(mysql_error());
 	$row_Media = mysql_fetch_assoc($Media);
 	if(mysql_num_rows($Media)==1)
 		return number_format($row_Media['m']*2, 2, ',', ' ');
@@ -13,9 +13,9 @@ function media(){
 }
 
 function avaliacoes(){
-	global $CapellaResumo;
+	global $connection;
 	$query_Media = "SELECT COUNT(*) as m FROM votos;";	
-	$Media= mysql_query($query_Media, $CapellaResumo) or die(mysql_error());
+	$Media= mysql_query($query_Media, $connection) or die(mysql_error());
 	$row_Media = mysql_fetch_assoc($Media);
 	if(mysql_num_rows($Media)==1)
 		return number_format($row_Media['m'], 0, ',', ' ');
@@ -24,9 +24,9 @@ function avaliacoes(){
 }
 
 function pessoas(){
-	global $CapellaResumo;
+	global $connection;
 	$query_Media = "SELECT * FROM votos GROUP BY iduso;";	
-	$Media= mysql_query($query_Media, $CapellaResumo) or die(mysql_error());
+	$Media= mysql_query($query_Media, $connection) or die(mysql_error());
 	$row_Media = mysql_fetch_assoc($Media);
 	return number_format(mysql_num_rows($Media), 0, ',', ' ');
 }

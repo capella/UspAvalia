@@ -2,12 +2,13 @@
     "name": "capella/uspavalia",
     "type": "project",
     "require": {
-        "facebook/graph-sdk": "^5.5"
+        "facebook/graph-sdk": "^5.5",
+        "sunra/php-simple-html-dom-parser": "^1.5.2"
     },
     "authors": [
         {
-            "name": "capellaresumo",
-            "email": "capellaresumo@gmail.com"
+            "name": "Gabriel Capella",
+            "email": "gabriel@capella.pro"
         }
     ]
 }

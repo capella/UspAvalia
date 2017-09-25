@@ -21,3 +21,4 @@ RUN php /usr/local/bin/composer install  --no-dev
 WORKDIR /
 
 ADD . /var/www/html/
+RUN chmod 777 /var/www/html/INSTALL/db_usp.txt

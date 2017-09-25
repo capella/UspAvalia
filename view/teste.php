@@ -8,11 +8,11 @@ if (isset($_GET['pesquisa'])) {
 }
 $startRow_Pesquisa = $pageNum_Pesquisa * $maxRows_Pesquisa;
 
-mysql_select_db($database_CapellaResumo, $CapellaResumo);
+mysql_select_db($database_connection, $connection);
 $query_Pesquisa;
     $query_Pesquisa = "SELECT * FROM (SELECT AP.id, AP.idaula, AP.idprofessor, DIS.nome as 'Dnome', PRO.nome as 'Pnome', codigo FROM aulaprofessor AP INNER JOIN disciplinas DIS ON AP.idaula = DIS.id INNER JOIN professores PRO ON AP.idprofessor = PRO.id) S WHERE id = ".$_GET['id'];
     
-$Pesquisa = mysql_query($query_Pesquisa, $CapellaResumo) or die(mysql_error());
+$Pesquisa = mysql_query($query_Pesquisa, $connection) or die(mysql_error());
 $row_Pesquisa = mysql_fetch_assoc($Pesquisa);
 
 if (isset($_GET['totalRows_Pesquisa'])) {
@@ -24,9 +24,9 @@ if (isset($_GET['totalRows_Pesquisa'])) {
 
 function mediap($PAid, $tipo)
 {
-    global $CapellaResumo;
+    global $connection;
     $query_Media = "SELECT AVG(nota) as m, COUNT(*) as j, STDDEV_POP(nota) as dp FROM votos WHERE APid = ".$PAid." AND tipo = ".$tipo." GROUP BY APid;";    
-    $Media= mysql_query($query_Media, $CapellaResumo) or die(mysql_error());
+    $Media= mysql_query($query_Media, $connection) or die(mysql_error());
     $row_Media = mysql_fetch_assoc($Media);
     $data;
     if(mysql_num_rows($Media)==1) {
@@ -43,9 +43,9 @@ function mediap($PAid, $tipo)
 
 function desvio($tipo)
 {
-    global $CapellaResumo;
+    global $connection;
     $query_Media = "SELECT STDDEV_POP(nota) g FROM votos WHERE tipo = ".$tipo;    
-    $Media= mysql_query($query_Media, $CapellaResumo) or die(mysql_error());
+    $Media= mysql_query($query_Media, $connection) or die(mysql_error());
     $row_Media = mysql_fetch_assoc($Media);
     if(mysql_num_rows($Media)==1) {
         return $row_Media['g']*2; 
@@ -57,9 +57,9 @@ function desvio($tipo)
 
 function media($tipo)
 {
-    global $CapellaResumo;
+    global $connection;
     $query_Media = "SELECT AVG(nota) as m  FROM votos WHERE tipo = ".$tipo.";";    
-    $Media= mysql_query($query_Media, $CapellaResumo) or die(mysql_error());
+    $Media= mysql_query($query_Media, $connection) or die(mysql_error());
     $row_Media = mysql_fetch_assoc($Media);
     if(mysql_num_rows($Media)==1) {
         return $row_Media['m']*2; 
@@ -71,9 +71,9 @@ function media($tipo)
 
 function mediageral($PAid)
 {
-    global $CapellaResumo;
+    global $connection;
     $query_Media = "SELECT AVG(nota) as m FROM votos WHERE APid = ".$PAid." AND tipo <> 5 GROUP BY APid;";    
-    $Media= mysql_query($query_Media, $CapellaResumo) or die(mysql_error());
+    $Media= mysql_query($query_Media, $connection) or die(mysql_error());
     $row_Media = mysql_fetch_assoc($Media);
     if(mysql_num_rows($Media)==1) {
         return number_format($row_Media['m']*2, 1, '.', ''); 

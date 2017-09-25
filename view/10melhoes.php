@@ -1,38 +1,8 @@
 <?php
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
 
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return $theValue;
-}
-}
-
-mysql_select_db($database_CapellaResumo, $CapellaResumo);
+mysql_select_db($database_connection, $connection);
 $query_Melhores = "SELECT * FROM Melhores LIMIT 10";
-$Melhores = mysql_query($query_Melhores, $CapellaResumo) or die(mysql_error());
+$Melhores = mysql_query($query_Melhores, $connection) or die(mysql_error());
 $row_Melhores = mysql_fetch_assoc($Melhores);
 $totalRows_Melhores = mysql_num_rows($Melhores);
 ?>
@@ -66,7 +36,7 @@ $totalRows_Melhores = mysql_num_rows($Melhores);
 <?
 mysql_free_result($Melhores);
 
-mysql_select_db($database_CapellaResumo, $CapellaResumo);
+mysql_select_db($database_connection, $connection);
 $query_Melhores = "SELECT
   professores.nome,
   SubQuery.expr1 * 2 AS nota,
@@ -90,7 +60,7 @@ FROM (SELECT
 WHERE SubQuery.expr2 >= 15
 ORDER BY SubQuery.expr1 DESC, SubQuery.expr2 DESC
 LIMIT 10";
-$Melhores = mysql_query($query_Melhores, $CapellaResumo) or die(mysql_error());
+$Melhores = mysql_query($query_Melhores, $connection) or die(mysql_error());
 $row_Melhores = mysql_fetch_assoc($Melhores);
 $totalRows_Melhores = mysql_num_rows($Melhores);
 ?>

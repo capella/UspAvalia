@@ -8,7 +8,7 @@ if (isset($_GET['pesquisa'])) {
 }
 $startRow_Pesquisa = $pageNum_Pesquisa * $maxRows_Pesquisa;
 
-mysql_select_db($database_CapellaResumo, $CapellaResumo);
+mysql_select_db($database_connection, $connection);
 $query_Pesquisa;
 if($_GET['t']==1)
 	$query_Pesquisa = "SELECT * FROM (SELECT AP.id, AP.idaula, AP.idprofessor, DIS.nome as 'Dnome', PRO.nome as 'Pnome', codigo FROM aulaprofessor AP INNER JOIN disciplinas DIS ON AP.idaula = DIS.id INNER JOIN professores PRO ON AP.idprofessor = PRO.id) S WHERE idaula =".GetSQLValueString($_GET['id'], "text2");
@@ -16,7 +16,7 @@ else
 	$query_Pesquisa = "SELECT * FROM (SELECT AP.id, AP.idaula, AP.idprofessor, DIS.nome as 'Dnome', PRO.nome as 'Pnome', codigo FROM aulaprofessor AP INNER JOIN disciplinas DIS ON AP.idaula = DIS.id INNER JOIN professores PRO ON AP.idprofessor = PRO.id) S WHERE idprofessor =".GetSQLValueString($_GET['id'], "text2");
 	
 	
-$Pesquisa = mysql_query($query_Pesquisa, $CapellaResumo) or die(mysql_error());
+$Pesquisa = mysql_query($query_Pesquisa, $connection) or die(mysql_error());
 $row_Pesquisa = mysql_fetch_assoc($Pesquisa);
 
 if (isset($_GET['totalRows_Pesquisa'])) {
@@ -27,9 +27,9 @@ if (isset($_GET['totalRows_Pesquisa'])) {
 }
 
 function media($PAid){
-	global $CapellaResumo;
+	global $connection;
 	$query_Media = "SELECT AVG(nota) as m FROM votos WHERE APid = ".$PAid." AND tipo <> 5 GROUP BY APid;";	
-	$Media= mysql_query($query_Media, $CapellaResumo) or die(mysql_error());
+	$Media= mysql_query($query_Media, $connection) or die(mysql_error());
 	$row_Media = mysql_fetch_assoc($Media);
 	if(mysql_num_rows($Media)==1)
 		return number_format($row_Media['m']*2, 2, ',', ' ');

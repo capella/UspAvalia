@@ -8,7 +8,7 @@ if (isset($_GET['pesquisa'])) {
 }
 $startRow_Pesquisa = $pageNum_Pesquisa * $maxRows_Pesquisa;
 
-mysql_select_db($database_CapellaResumo, $CapellaResumo);
+mysql_select_db($database_connection, $connection);
 $query_Pesquisa = "
 (
 SELECT id, idunidade, nome, codigo,  '1' AS  'tipo'
@@ -22,7 +22,7 @@ FROM professores
 WHERE  `nome` LIKE  '%".$pesquisa."%'
 )
 ORDER BY `nome` ASC LIMIT 0, 100;";
-$Pesquisa = mysql_query($query_Pesquisa, $CapellaResumo) or die(mysql_error());
+$Pesquisa = mysql_query($query_Pesquisa, $connection) or die(mysql_error());
 $row_Pesquisa = mysql_fetch_assoc($Pesquisa);
 $totalRows_Pesquisa = mysql_num_rows($Pesquisa);
 

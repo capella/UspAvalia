@@ -1,7 +1,8 @@
 <?php 
-require_once('Connections/CapellaResumo.php'); 
-require 'config.php';
 $loader = require __DIR__ . '/vendor/autoload.php';
+require_once('helpers/connection.php'); 
+require_once('helpers/sanitizer.php'); 
+require 'config.php';
 date_default_timezone_set('America/Sao_Paulo');
 
 

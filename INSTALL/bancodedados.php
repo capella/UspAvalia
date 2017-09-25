@@ -1,6 +1,8 @@
 <?php 
-require '../config.php';
-include('../Connections/simple_html_dom.php');
+require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../helpers/connection.php';
+require __DIR__ . '/../helpers/sanitizer.php';
+use Sunra\PhpSimple\HtmlDomParser;
 
 function startsWith($haystack, $needle)
 {
@@ -9,78 +11,18 @@ function startsWith($haystack, $needle)
 }
 
 
-$hostname_CapellaResumo = $hostname;
-$database_CapellaResumo = $database;
-$username_CapellaResumo = $username;
-$password_CapellaResumo = $password;
-$CapellaResumo = mysql_pconnect($hostname_CapellaResumo, $username_CapellaResumo, $password_CapellaResumo) or trigger_error(mysql_error(),E_USER_ERROR);
-mysql_set_charset('utf8',$CapellaResumo);
+$hostname_connection = $hostname;
+$database_connection = $database;
+$username_connection = $username;
+$password_connection = $password;
+$connection = mysql_pconnect($hostname_connection, $username_connection, $password_connection) or trigger_error(mysql_error(),E_USER_ERROR);
+mysql_set_charset('utf8',$connection);
 
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
 
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return trim(preg_replace("/\r|\n/", "", trim(preg_replace('!\s+!', ' ', $theValue))));
-}
-}
-
-mysql_select_db($database_CapellaResumo, $CapellaResumo);
+mysql_select_db($database_connection, $connection);
 
  set_time_limit (1000000);
 
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
-
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return trim(preg_replace("/\r|\n/", "", trim(preg_replace('!\s+!', ' ', $theValue))));
-}
-}
 
 $editFormAction = $_SERVER['PHP_SELF'];
 if (isset($_SERVER['QUERY_STRING'])) {
@@ -92,13 +34,13 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
                        GetSQLValueString($_POST['id'], "int"),
                        GetSQLValueString($_POST['NOME'], "text"));
 
-  mysql_select_db($database_CapellaResumo, $CapellaResumo);
-  $Result1 = mysql_query($insertSQL, $CapellaResumo) or die(mysql_error());
+  mysql_select_db($database_connection, $connection);
+  $Result1 = mysql_query($insertSQL, $connection) or die(mysql_error());
 }
 
-mysql_select_db($database_CapellaResumo, $CapellaResumo);
+mysql_select_db($database_connection, $connection);
 $query_Disciplnas = "SELECT * FROM disciplinas WHERE roubo = 0 ORDER BY id ASC LIMIT 0 , 10";
-$Disciplnas = mysql_query($query_Disciplnas, $CapellaResumo) or die(mysql_error());
+$Disciplnas = mysql_query($query_Disciplnas, $connection) or die(mysql_error());
 $row_Disciplnas = mysql_fetch_assoc($Disciplnas);
 $totalRows_Disciplnas = mysql_num_rows($Disciplnas);
 
@@ -114,9 +56,9 @@ foreach($html->find('select[name=colegiado]  option') as $element){
                        GetSQLValueString($element->value, "int"),
                        GetSQLValueString($element->plaintext, "text"));
 
-  mysql_select_db($database_CapellaResumo, $CapellaResumo);
+  mysql_select_db($database_connection, $connection);
   
-  $Result1 = mysql_query($insertSQL, $CapellaResumo) or die(mysql_error());
+  $Result1 = mysql_query($insertSQL, $connection) or die(mysql_error());
 	   }
 }
 ---------------------------
@@ -138,9 +80,9 @@ foreach($html->find('TABLE[align="center"] TR') as $element){
 					    GetSQLValueString($element1->value, "int"));
 						echo $insertSQL.'<br>';
 
-  mysql_select_db($database_CapellaResumo, $CapellaResumo);
+  mysql_select_db($database_connection, $connection);
   
-  $Result1 = mysql_query($insertSQL, $CapellaResumo) or die(mysql_error());
+  $Result1 = mysql_query($insertSQL, $connection) or die(mysql_error());
 	}
 
 }
@@ -151,12 +93,12 @@ foreach($html->find('TABLE[align="center"] TR') as $element){
 if($totalRows_Disciplnas>0){
 do { 
 	$a=array();
-	$htmld = file_get_html('https://uspdigital.usp.br/jupiterweb/obterTurma?sgldis='.$row_Disciplnas['codigo']);
+	$htmld = HtmlDomParser::file_get_html('https://uspdigital.usp.br/jupiterweb/obterTurma?sgldis='.$row_Disciplnas['codigo']);
 	//echo 'https://uspdigital.usp.br/jupiterweb/obterTurma?sgldis='.$row_Disciplnas['codigo'];
 	if ($htmld == "") {
 		echo "Erro:".$row_Disciplnas['id']."<br>";
-		$insertSQL3 = "UPDATE  `capeocom_uspavalia`.`disciplinas` SET  `roubo` =  '-1' WHERE  `disciplinas`.`id` =".GetSQLValueString($row_Disciplnas['id'],'int').";";
-		$Result3 = mysql_query($insertSQL3, $CapellaResumo) or die(mysql_error());
+		$insertSQL3 = "UPDATE  `disciplinas` SET  `roubo` =  '-1' WHERE  `disciplinas`.`id` =".GetSQLValueString($row_Disciplnas['id'],'int').";";
+		$Result3 = mysql_query($insertSQL3, $connection) or die(mysql_error());
 		continue;
 	}
 	foreach($htmld->find('table[cellspacing=1] tr[class="txt_verdana_8pt_gray"] td font[face="Verdana, Arial, Helvetica, sans-serif"]') as $element){
@@ -177,12 +119,12 @@ do {
 							SELECT nome FROM professores WHERE nome = ".GetSQLValueString($value,'text')."
 						) LIMIT 1;";
 		$insertSQL2 = "INSERT IGNORE INTO aulaprofessor (idprofessor, idaula) SELECT id as idprofessor, ".GetSQLValueString($row_Disciplnas['id'],'int')." as idaula from professores WHERE nome = ".GetSQLValueString($value,'text').";";
-  		$Result1 = mysql_query($insertSQL1, $CapellaResumo) or die(mysql_error());
-		$Result2 = mysql_query($insertSQL2, $CapellaResumo) or die(mysql_error());
+  		$Result1 = mysql_query($insertSQL1, $connection) or die(mysql_error());
+		$Result2 = mysql_query($insertSQL2, $connection) or die(mysql_error());
 		//echo $insertSQL1;
 	}
-	$insertSQL3 = "UPDATE  `capeocom_uspavalia`.`disciplinas` SET  `roubo` =  '1' WHERE  `disciplinas`.`id` =".GetSQLValueString($row_Disciplnas['id'],'int').";";
-	$Result3 = mysql_query($insertSQL3, $CapellaResumo) or die(mysql_error());
+	$insertSQL3 = "UPDATE  `disciplinas` SET  `roubo` =  '1' WHERE  `disciplinas`.`id` =".GetSQLValueString($row_Disciplnas['id'],'int').";";
+	$Result3 = mysql_query($insertSQL3, $connection) or die(mysql_error());
 	echo '<br><br>';
 	
 	$htmld->clear(); 

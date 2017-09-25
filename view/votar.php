@@ -19,8 +19,8 @@ while (list($key, $value) = each($arr)) {
 						   GetSQLValueString(time(), "int"),
 						   GetSQLValueString($_GET['nota'.$chave], "int"));
 	
-	  mysql_select_db($database_CapellaResumo, $CapellaResumo);
-	  $Result1 = mysql_query($insertSQL, $CapellaResumo) or die(mysql_error());
+	  mysql_select_db($database_connection, $connection);
+	  $Result1 = mysql_query($insertSQL, $connection) or die(mysql_error());
 	
 	}
 }
