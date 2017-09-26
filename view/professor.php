@@ -1,84 +1,77 @@
+<?php 
 
-<style>
-
-body {
-  font: 10px sans-serif;
+if (isset($_GET['id'])) {
+   $data = GetSQLValueString($_GET['id'], "int");
+   $sql = "
+      SELECT AP.id, DIS.nome as 'Dnome', PRO.nome as 'Pnome', codigo, media
+      FROM aulaprofessor AP
+      INNER JOIN disciplinas DIS ON AP.idaula = DIS.id
+      INNER JOIN professores PRO ON AP.idprofessor = PRO.id
+      INNER JOIN (
+          SELECT APid, AVG(nota) as media FROM votos WHERE tipo <> 5 GROUP BY APid
+      ) MED ON MED.APid = AP.id
+      WHERE PRO.id =".$data;
+   $result = $connection->query($sql);
 }
 
-.bar rect {
-  fill: steelblue;
-  shape-rendering: crispEdges;
-}
+?>
+<h2>Pesquisa</h2>
+<form  method="get" action="/">
+  <div class="input-group">
+    <input type="text" class="form-control typeahead"  name="pesquisa" autocomplete="off">
+    <span class="input-group-btn">
+      <input type="hidden" name="p" value="pesquisa" />  
+      <button class="btn btn-default" type="submit">Pesquisar!</button>
+    </span>
+  </div><!-- /input-group -->
+</form>
 
-.bar text {
-  fill: #fff;
-}
+<br>
+<hr>
 
-.axis path, .axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
+<?php if ($result) { ?>
+<div class="table-responsive">
+   <table class="table table-striped">
+      <thead>
+         <tr>
+            <th>Nome Professor</th>
+            <th>Aula</th>
+            <th>Nota (0-10)</th>
+            <th>#</th>
+            <th>#</th>
+         </tr>
+      </thead>
+      <?php while ($row = $result->fetch_assoc()) { ?>
+      <?php $nome = $row['Pnome']; ?>
+      <tr>
+         <td><a href="?p=ver&id=<?= $row['id'];?>"><?=$row['Pnome'];?></a></td>
+         <td><a href="?p=ver&id=<?= $row['id'];?>"><?=$row['Dnome'];?> - <?=$row['codigo'];?></a></td>
+         <td><?= number_format($row['media']*2, 2, ',', ' ');?></td>
+         <td>
+            <button class="btn btn-success" data-toggle="modal" data-target="#modal<?=$row['id'];?>">
+               Avaliar
+            </button>
+            <!-- Modal -->
+            <div class="modal fade" id="modal<?=$row['id'];?>" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+               <div class="modal-dialog">
+                  <div class="modal-content">
+                     <? include('view/modal.php'); ?>
+                  </div>
+               </div>
+            </div>
+         </td>
+         <td><a href="?p=ver3&id=<?= $row['id'];?>" class="btn btn-info">Comentar</a></td>
+      </tr>
+      <?php } ?>
+   </table>
+</div>
+<hr />
+<?php } else { ?>
+<p>Não encontramos nenhuma disciplina ministrada por esse professor.</p>
+<?php } ?>
 
-</style>
-<body>
-<script src="<?= $url_full; ?>/assets/js/d3.v3.min.js"></script>
-<script>
+<div class="label label-info"> Não encontrou a disciplina com esse professor? <?=$pesquisa;?>. <a href="?p=add&prf=<?=$nome;?>"> Clique aqui para adicionar. </a></div>
 
-// Generate a Bates distribution of 10 random variables.
-var values = d3.range(1000).map(d3.random.bates(10));
+<p><small>Foram encontrados <?php echo $result->num_rows ?> registros.</small></p>
 
-// A formatter for counts.
-var formatCount = d3.format(",.0f");
-
-var margin = {top: 10, right: 30, bottom: 30, left: 30},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
-
-var x = d3.scale.linear()
-    .domain([0, 1])
-    .range([0, width]);
-
-// Generate a histogram using twenty uniformly-spaced bins.
-var data = d3.layout.histogram()
-    .bins(x.ticks(20))
-    (values);
-
-var y = d3.scale.linear()
-    .domain([0, d3.max(data, function(d) { return d.y; })])
-    .range([height, 0]);
-
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom");
-
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-var bar = svg.selectAll(".bar")
-    .data(data)
-  .enter().append("g")
-    .attr("class", "bar")
-    .attr("transform", function(d) { return "translate(" + x(d.x) + "," + y(d.y) + ")"; });
-
-bar.append("rect")
-    .attr("x", 1)
-    .attr("width", x(data[0].dx) - 1)
-    .attr("height", function(d) { return height - y(d.y); });
-
-bar.append("text")
-    .attr("dy", ".75em")
-    .attr("y", 6)
-    .attr("x", x(data[0].dx) / 2)
-    .attr("text-anchor", "middle")
-    .text(function(d) { return formatCount(d.y); });
-
-svg.append("g")
-    .attr("class", "x axis")
-    .attr("transform", "translate(0," + height + ")")
-    .call(xAxis);
-
-</script>
+<?php if ($result) $result->close(); ?>

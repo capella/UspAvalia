@@ -3,7 +3,8 @@
     "type": "project",
     "require": {
         "facebook/graph-sdk": "^5.5",
-        "sunra/php-simple-html-dom-parser": "^1.5.2"
+        "sunra/php-simple-html-dom-parser": "^1.5.2",
+        "twig/twig": "^2.0"
     },
     "authors": [
         {

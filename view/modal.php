@@ -1,10 +1,10 @@
-<form id="form<?=$row_Pesquisa['id'];?>" action="" method="get">  
+<form id="form<?=$row['id'];?>" action="vote" method="POST">  
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h4 class="modal-title"> <?=$row_Pesquisa['Pnome'];?> - <?=$row_Pesquisa['codigo'];?></h4>
+    <h4 class="modal-title"> <?=$row['Pnome'];?> - <?=$row['codigo'];?></h4>
   </div>
   <div class="modal-body">
-   Escolha uma nota entre 0 e 5 para avaliar <?=$row_Pesquisa['Pnome'];?>, na disciplina <?=$row_Pesquisa['Dnome'];?> - <?=$row_Pesquisa['codigo'];?> nos seguintes quesitos. Em duficuldade, notas maiores significam maior dificuldade. O voto é secreto.  <br><br>
+   Escolha uma nota entre 0 e 5 para avaliar <?=$row['Pnome'];?>, na disciplina <?=$row['Dnome'];?> - <?=$row['codigo'];?> nos seguintes quesitos. Em duficuldade, notas maiores significam maior dificuldade. O voto é secreto.  <br><br>
   <?
   $arr = array('Avaliação Geral', 'Didática', 'Empenho/Dedicação', 'Relação com os alunos', 'Dificuldade');
   reset($arr);
@@ -15,7 +15,7 @@
     <b><?=$value;?></b>
     <div style=" text-align:center;">
       <div class="input select rating-c" style="margin: auto; width:260px;">
-          <select id="select<?=$chave;?><?=$row_Pesquisa['id'];?>" name="nota<?=$chave;?>">
+          <select id="select<?=$chave;?><?=$row['id'];?>" name="nota<?=$chave;?>">
               <option value=""></option>
               <option value="0">0</option>
               <option value="1">1</option>
@@ -25,7 +25,7 @@
               <option value="5">5</option>
           </select>
         <script type="text/javascript">
-        $('#select<?=$chave;?><?=$row_Pesquisa['id'];?>').barrating('show', {
+        $('#select<?=$chave;?><?=$row['id'];?>').barrating('show', {
             showValues:true,
             showSelectedRating:false
         });
@@ -33,10 +33,7 @@
       </div>
     </div>
 	<? } ?>
-    <input type="hidden" name="id" value="<?=$row_Pesquisa['id'];?>" />
-    <input type="hidden" name="Rid" value="<?=$_GET['id'];?>" />
-    <input type="hidden" name="Rt" value="<?=$_GET['t'];?>" />
-    <input type="hidden" name="p" value="votar" />
+    <input type="hidden" name="id" value="<?=$row['id'];?>" />
   </div><!--modal body-->
   <div class="modal-footer">
   

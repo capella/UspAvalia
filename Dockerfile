@@ -1,4 +1,4 @@
-FROM php:5.6-apache
+FROM php:7.0-apache
 
 LABEL maintainer="gabriel@capella.pro"
 
@@ -6,7 +6,7 @@ LABEL maintainer="gabriel@capella.pro"
 RUN apt-get update && \
 	DEBIAN_FRONTEND=noninteractive apt-get install -y curl zlib1g-dev git
 
-RUN docker-php-ext-install mysql
+RUN docker-php-ext-install mysqli
 RUN cp /etc/apache2/mods-available/rewrite.load /etc/apache2/mods-enabled/rewrite.load
 
 # Setup the Composer installer
