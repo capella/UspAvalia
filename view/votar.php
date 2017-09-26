@@ -19,8 +19,7 @@ while (list($key, $value) = each($arr)) {
          GetSQLValueString(time(), "int"),
          GetSQLValueString($_GET['nota'.$chave], "int"));
    
-      $result = $connection->query($insertSQL, $connection);
-      if ($result) $result->close();
+      $result = $connection->query($insertSQL);
    }
 }
 

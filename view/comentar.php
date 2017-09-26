@@ -12,10 +12,9 @@ if ((isset($_GET["MM_insert"])) && ($_GET["MM_insert"] == "form")) {
 					   GetSQLValueString($_GET['id'], "int"),
 					   GetSQLValueString(time(), "int"));
 
-      $result = $connection->query($insertSQL, $connection);
-      if ($result) $result->close();
+      $result = $connection->query($insertSQL);
 }
 
-$insertGoTo = "?p=ver3&id=".$_GET['id'];
+$insertGoTo = "?p=ver&id=".$_GET['id'];
 header(sprintf("Location: %s", $insertGoTo));
 ?>

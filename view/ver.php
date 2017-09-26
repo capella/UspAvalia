@@ -78,10 +78,19 @@ if (isset($_GET['id'])) {
       </div>
       <?php } ?>
 
+      <?php $row = $info; ?>
       <div class="col-md-4" style="text-align: center;">
-         <a class="btn btn-success btn-block btn-lg" style="margin-top: 20%;">
+         <button class="btn btn-success btn-block btn-lg" data-toggle="modal" data-target="#modal<?=$row['id'];?>" style="margin-top: 20%;">
             AVALIAR
-         </a>
+         </button>
+      </div>
+      <!-- Modal -->
+      <div class="modal fade" id="modal<?=$row['id'];?>" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+         <div class="modal-dialog">
+            <div class="modal-content">
+               <? include('view/modal.php'); ?>
+            </div>
+         </div>
       </div>
 
    </div>

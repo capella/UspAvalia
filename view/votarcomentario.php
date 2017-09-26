@@ -12,10 +12,9 @@ if (isset($_GET["id"])&&isset($user_profile['id'])&&($_GET['voto']==1||$_GET['vo
 					   GetSQLValueString($_GET['voto'], "int"),
 					   GetSQLValueString(time(), "int"));
 
-    $result = $connection->query($insertSQL, $connection);
-    if ($result) $result->close();
+    $result = $connection->query($insertSQL);
 }
 
-$insertGoTo = "?p=ver3&id=".$_GET['id'];
+$insertGoTo = "?p=ver&id=".$_GET['id'];
 header(sprintf("Location: %s", $insertGoTo));
 ?>
