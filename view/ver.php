@@ -1,186 +1,147 @@
 <?php 
+$arr = array('Avaliação Geral', 'Didática', 'Empenho/Dedicação', 'Relação com os alunos', 'Dificuldade');
 
-$pesquisa = '';
+if (isset($_GET['id'])) {
+   $id = GetSQLValueString($_GET['id'], "int");
+   $sql = "
+      SELECT AP.id, DIS.nome as 'Dnome', PRO.nome as 'Pnome', codigo, media
+      FROM aulaprofessor AP
+      INNER JOIN disciplinas DIS ON AP.idaula = DIS.id
+      INNER JOIN professores PRO ON AP.idprofessor = PRO.id
+      LEFT JOIN (
+          SELECT APid, AVG(nota) as media FROM votos WHERE tipo <> 5 GROUP BY APid
+      ) MED ON MED.APid = AP.id
+      WHERE AP.id =".$id;
+   $info_result = $connection->query($sql);
+   $info = $info_result->fetch_assoc();
 
-if (isset($_GET['pesquisa'])) {
-    $pesquisa = $_GET['pesquisa'];
-}
-$startRow_Pesquisa = $pageNum_Pesquisa * $maxRows_Pesquisa;
+   $sql = "
+      SELECT tipo, COUNT(*) as count, STDDEV_POP(nota)*2 as std, AVG(nota)*2 as avg
+      FROM votos
+      WHERE APid =".$id."
+      GROUP BY APid, tipo";
+   $medias_result = $connection->query($sql);
 
-mysql_select_db($database_connection, $connection);
-$query_Pesquisa;
-    $query_Pesquisa = "SELECT * FROM (SELECT AP.id, AP.idaula, AP.idprofessor, DIS.nome as 'Dnome', PRO.nome as 'Pnome', codigo FROM aulaprofessor AP INNER JOIN disciplinas DIS ON AP.idaula = DIS.id INNER JOIN professores PRO ON AP.idprofessor = PRO.id) S WHERE id = ".$_GET['id'];
-    
-$Pesquisa = mysql_query($query_Pesquisa, $connection) or die(mysql_error());
-$row_Pesquisa = mysql_fetch_assoc($Pesquisa);
-
-if (isset($_GET['totalRows_Pesquisa'])) {
-    $totalRows_Pesquisa = $_GET['totalRows_Pesquisa'];
-} else {
-    $all_Pesquisa = mysql_query($query_Pesquisa);
-    $totalRows_Pesquisa = mysql_num_rows($all_Pesquisa);
-}
-
-function mediap($PAid, $tipo)
-{
-    global $connection;
-    $query_Media = "SELECT AVG(nota) as m, COUNT(*) as j, STDDEV_POP(nota) as dp FROM votos WHERE APid = ".$PAid." AND tipo = ".$tipo." GROUP BY APid;";    
-    $Media= mysql_query($query_Media, $connection) or die(mysql_error());
-    $row_Media = mysql_fetch_assoc($Media);
-    $data;
-    if(mysql_num_rows($Media)==1) {
-        $data[0] = number_format($row_Media['m']*2, 3, ',', ' ');
-        $data[1] = $row_Media['m']*2;
-        $data[2] = $row_Media['j'];
-        $data[3] = $row_Media['dp']*2;
-    }else{
-        $data[0] = 'XX';
-        $data[1] = 'XX';
-    }
-    return $data;
-}
-
-function desvio($tipo)
-{
-    global $connection;
-    $query_Media = "SELECT STDDEV_POP(nota) g FROM votos WHERE tipo = ".$tipo;    
-    $Media= mysql_query($query_Media, $connection) or die(mysql_error());
-    $row_Media = mysql_fetch_assoc($Media);
-    if(mysql_num_rows($Media)==1) {
-        return $row_Media['g']*2; 
-    }
-    else {
-        return '0'; 
-    }
-}
-
-function media($tipo)
-{
-    global $connection;
-    $query_Media = "SELECT AVG(nota) as m  FROM votos WHERE tipo = ".$tipo.";";    
-    $Media= mysql_query($query_Media, $connection) or die(mysql_error());
-    $row_Media = mysql_fetch_assoc($Media);
-    if(mysql_num_rows($Media)==1) {
-        return $row_Media['m']*2; 
-    }
-    else {
-        return 'XX'; 
-    }
-}
-
-function mediageral($PAid)
-{
-    global $connection;
-    $query_Media = "SELECT AVG(nota) as m FROM votos WHERE APid = ".$PAid." AND tipo <> 5 GROUP BY APid;";    
-    $Media= mysql_query($query_Media, $connection) or die(mysql_error());
-    $row_Media = mysql_fetch_assoc($Media);
-    if(mysql_num_rows($Media)==1) {
-        return number_format($row_Media['m']*2, 1, '.', ''); 
-    }
-    else {
-        return ''; 
-    }
+   $sql = "
+      SELECT cometario.*, IFNULL(k.negativos, 0) as negativos, IFNULL(p.positivos, 0) as positivos 
+      FROM cometario 
+      LEFT OUTER JOIN (
+         SELECT `idcomentario`, SUM(voto)*-1 as negativos
+         FROM `votoscomentario` WHERE `voto`=-1
+         GROUP BY `idcomentario`) k 
+      ON cometario.id=k.`idcomentario` 
+      LEFT JOIN (
+         SELECT `idcomentario`, SUM(voto) as positivos
+         FROM `votoscomentario` WHERE `voto`=1
+         GROUP BY `idcomentario`) p 
+      ON cometario.id=p.`idcomentario`
+      WHERE aulaprofessorid = ".$id." 
+      AND (IFNULL(p.positivos, 0)-IFNULL(k.negativos, 0))>=-3 
+      ORDER BY `time` DESC";
+   $comentarios_result = $connection->query($sql);
 }
 ?>
-  <? require 'view/gdata.php'?>
-    <h2><span itemprop="title"><?=$row_Pesquisa['Pnome'];?> </span><small>  <span itemprop="affiliation"><?=$row_Pesquisa['Dnome'];?> - <?=$row_Pesquisa['codigo'];?></span></small></h2>
-    <title>
-      <?=$row_Pesquisa['Pnome'];?> -
-        <?=$row_Pesquisa['codigo'];?>
-    </title>
-    <ul id="myTab" class="nav nav-tabs">
-      <li role="presentation" class="active"><a href="?p=ver&id=<?=$_GET['id']?>" role="tab">Avaliações/Notas</a></li>
-      <li role="presentation" class=""><a href="?p=ver3&id=<?=$_GET['id']?>" role="tab">Comentários</a></li>
-    </ul>
-    <p>
-      <div class="row">
-        <?
-    $arr = array('Avaliação Geral', 'Didática', 'Empenho/Dedicação');
-    reset($arr);
-    while (list($key, $value) = each($arr)) {
-        $chave = $key+1;
-        $mp = mediap($row_Pesquisa['id'], $chave);
-        $m = $mp[1];
-        $d = $mp[3];
-    ?>
-          <div class="col-sm-6 col-md-4">
-            <div class="thumbnail">
-              <div class="caption">
-                <h4><?=$value;?></h4>
-                <? if($mp[0]!='XX') :?>
+<title>
+<?=$info['Pnome'];?> -
+<?=$info['codigo'];?>
+</title>
+
+<h2>
+   <span itemprop="title"><?=$info['Pnome'];?> </span>
+   <small> 
+      <span itemprop="affiliation"><?=$info['Dnome'];?> - <?=$info['codigo'];?></span>
+   </small>
+</h2>
+
+<!-- Avaliacoes -->
+<hr>
+<div class="row">
+   <div class="thumbnails">
+      <?php while ($row = $medias_result->fetch_assoc()) { ?>
+      <div class="col-md-4">
+         <div class="thumbnail">
+            <div class="caption">
+               <h4><?= $arr[$row['tipo']-1]; ?></h4>
+               <? if($row['count'] != 0) :?>
+                  <h3 style="text-align:center"><?= number_format($row['avg'], 3, ',', ' '); ?></h3>
+                  <p class="graph" avg="<?= $row['avg']; ?>" std="<?= $row['std']; ?>"></p>
+                  <p><small>Quesito avaliado <?= $row['count']; ?> vezes.</small></p>
+               <? else: ?>
                   <p>
-                    <h3 style="text-align:center"><?=$mp[0];?></h3></p>
-                  <p id="bar<?=$chave;?>">
-                    <script>
-                      bar('#bar<?=$chave;?>', 10, 0, <?=$d+$m;?>, <?=-$d+$m;?>, <?=$mp[1];?>);
-                    </script>
-                  </p>
-                  <p><small>Quesito avaliado <?=$mp[2];?> vezes.</small></p>
-                  <? else: ?>
-                    <p>
-                      <br>
-                      <h4 style="text-align:center">Sem avaliações</h4>
-                      <br>
-                      <br> </p>
-                    <? endif ?>
-              </div>
+                  <br>
+                  <h4 style="text-align:center">Sem avaliações</h4>
+                  <br>
+                  <br> </p>
+               <? endif ?>
             </div>
-          </div>
-          <?php } ?>
+         </div>
       </div>
-      <div class="row">
-        <?
-    $arr2 = array('Relação com os alunos', 'Dificuldade');
-    reset($arr2);
-    while (list($key, $value) = each($arr2)) {
-        $chave = $key+4;
-        $mp = mediap($row_Pesquisa['id'], $chave);
-        $m = $mp[1];
-        $d = $mp[3];
-?>
-          <div class="col-sm-6 col-md-4">
-            <div class="thumbnail">
-              <div class="caption">
-                <h4><?=$value;?></h4>
-                <? if($mp[0]!='XX') :?>
-                  <p>
-                    <h3 style="text-align:center"><?= $mp[0]; ?></h3></p>
-                  <p id="bar<?=$chave;?>">
-                    <script>
-                      bar('#bar<?=$chave;?>', 10, 0, <?=$d+$m;?>, <?=-$d+$m;?>, <?=$mp[1];?>);
-                    </script>
-                  </p>
-                  <p><small>Quesito avaliado <?=$mp[2];?> vezes.</small></p>
-                  <? else: ?>
-                    <p>
-                      <br>
-                      <h4 style="text-align:center">Sem avaliações</h4>
-                      <br>
-                      <br> </p>
-                    <? endif ?>
-              </div>
-            </div>
-          </div>
-          <?php } ?>
-            <div class="col-sm-6 col-md-4">
-              <?php do { ?>
-                <p align="center">
-                  <br>
-                  <br>
-                  <br>
-                  <button class="btn btn-success btn-block btn-lg" data-toggle="modal" data-target="#modal<?=$row_Pesquisa['id'];?>"> Avaliar </button>
-                  <!-- Modal -->
-                  <div class="modal fade" id="modal<?=$row_Pesquisa['id'];?>" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                      <div class="modal-content">
-                        <? include 'view/modal.php'; ?>
-                      </div>
-                    </div>
+      <?php } ?>
+   </div>
+</div>
+<hr>
+
+<!-- Comentarios -->
+<div class="row">
+   <div class="col-md-8">
+      <h3>Comentários</h3>
+      <p style="text-align: justify;">
+      Área destina a comentários referente a disciplina <?=$row['Dnome'];?> - <?=$row['codigo'];?>
+      com o professor <?=$row['Pnome'];?>. Os comentários devem ser feitos com o objetivo de auxiliar
+      o docente a melhorar a qualidade das aulas. Elogios também são aceitos. Comentários com muitas
+      qualificações negativas serão automaticamente retirados. Os comentários também são anônimos.<br>
+      Se você ler um comentário verídico e relevante, aperte "Positivo", caso contrário, "Negativo".
+      </p>
+      <hr>
+        
+      <? if($comentarios_result->num_rows > 0): ?>
+         <ul class="media-list">
+            <?php while ($row = $comentarios_result->fetch_assoc()) { ?>
+            <li class="media">
+               <div class="media-body">
+                  <h4 class="media-heading"><?php echo date('d/m/Y - H:i:s',$row['time']); ?></h4>
+                  <div class="row">
+                     <div class="col-md-8" style=" text-align:justify">
+                        <?= $row['comantario']; ?>
+                     </div>
+                     <div class="col-md-4">
+                        <a class="btn btn-success btn-block" href="?p=votarcomentario&idcomantario=<?= $row['id']; ?>&id=<?= $id; ?>&voto=1">
+                           <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span> 
+                           Positivo&nbsp;&nbsp;&nbsp;
+                           <span class="badge"><?= $row['positivos']; ?></span>
+                        </a>
+                        <a class="btn btn-danger btn-block" href="?p=votarcomentario&idcomantario=<?= $row['id']; ?>&id=<?= $id; ?>&voto=-1">
+                           <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span> 
+                           Negativo&nbsp;&nbsp;&nbsp;
+                           <span class="badge"><?= $row['negativos']; ?></span>
+                        </a>
+                     </div>
                   </div>
-                </p>
-                <?php } while ($row_Pesquisa = mysql_fetch_assoc($Pesquisa)); ?>
+               </div>
+            </li>
+            <?php } ?>
+         </ul>
+      <? else: ?>
+         <div class="alert alert-warning" style="opacity: 0.5;">Sem comentátios</div>
+      <? endif; ?>
+      <hr>
+   </div>
+   <div class="col-md-4">
+      <div class="well">
+        <form name="form" role="form" method="GET" action=""> 
+            <div class="form-group">
+               <label for="exampleInputPassword1">Novo Comentário:</label>
+               <textarea class="form-control" name="comentario" rows="6"></textarea>
             </div>
-      </div>
-    </p>
-    <hr />
-    <?php mysql_free_result($Pesquisa); ?>
+            <button type="submit" class="btn btn-default btn-block">Salvar</button>
+            <input type="hidden" name="MM_insert" value="form">
+            <input type="hidden" name="p" value="comentar">
+            <input type="hidden" name="id" value="<?= $id; ?>">
+         </form>
+        </div>
+   </div>
+</div>
+
+<?php if ($info_result) $info_result->close(); ?>
+<?php if ($medias_result) $medias_result->close(); ?>
+<? require 'view/gdata.php' ?>

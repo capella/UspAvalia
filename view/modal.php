@@ -1,4 +1,4 @@
-<form id="form<?=$row['id'];?>" action="votar" method="POST">  
+<form id="form<?=$row['id'];?>" action="" method="GET">  
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
     <h4 class="modal-title"> <?=$row['Pnome'];?> - <?=$row['codigo'];?></h4>
@@ -39,6 +39,7 @@
     </div>
 	<? } ?>
     <input type="hidden" name="id" value="<?=$row['id'];?>" />
+    <input type="hidden" name="p" value="votar" />
   </div><!--modal body-->
   <div class="modal-footer">
   

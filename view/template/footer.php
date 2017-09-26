@@ -3,7 +3,7 @@
     <script>
     $('input.typeahead').typeahead({
         fitToElement: true,
-        minLength: 5,
+        minLength: 4,
         source:  function (query, process) {
             return $.post('/search', { query: query }, function (data) {
                 data = $.parseJSON(data);
