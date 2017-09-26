@@ -1,63 +1,105 @@
-<?php
-require __DIR__ . '/../vendor/autoload.php';
-require __DIR__ . '/../helpers/connection.php';
-require __DIR__ . '/../helpers/sanitizer.php';
-use Sunra\PhpSimple\HtmlDomParser;
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="">
+      <meta name="author" content="">
+      <!-- Bootstrap core CSS -->
+      <link rel="stylesheet" type="text/css" href="<?= $url_full; ?>/assets/css/meu.css">
+      <!-- Custom styles for this template -->
+      <link rel="stylesheet" type="text/css" href="<?= $url_full; ?>/assets/css/cover.css">
+      <!-- Bootstrap core JavaScript
+      ================================================== -->
+      <!-- Placed at the end of the document so the pages load faster -->
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+      <title>USP Avalia</title>
+   </head>
+   <body>
+        <div class="container">
+            <h1>Instalação</h1>
+            <hr>
+            <table class="table table-hover table-bordered">
+                <tr>
+                    <td id="create_db" style="text-align: center;">
+                       <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                    </td>
+                    <td>Criando DB</td>
+                </tr>
+                <tr>
+                    <td id="copy_data" style="text-align: center;">
+                       <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                    </td>
+                    <td>Copiando Arquivo de Matérias</td>
+                </tr>
+                <tr>
+                    <td id="add_new" style="text-align: center;">
+                       <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                    </td>
+                    <td>Verificando Matérias Novas</td>
+                </tr>
+                <tr>
+                    <td id="add_teacher" style="text-align: center;">
+                       <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                    </td>
+                    <td>Buscando Professores</td>
+                </tr>
+            </table>
+         </div><!-- /.container -->
+      <script src="<?= $url_full; ?>/assets/js/bootstrap.min.js"></script>
+      <script>
+         function mark_done (d) {
+            d.html('<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>');
+         }
+         function mark_doing (d) {
+            d.html('<div class="progress"> <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 45%"> <span class="sr-only">45% Complete</span> </div> </div>');            
+         }
+         function mark_error (d) {
+            d.html('<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>');            
+         }
+         function create_db () {
+            mark_doing ($("#create_db"));
+            $.get( "create_db.php", function( data ) {
+               if (data == "ok") {
+                  mark_done ($("#create_db"));
+                  copy_data ();
+               } else {
+                  mark_error ($("#create_db"));
+               }
+            }, "json").fail(function() {
+               mark_error ($("#create_db"));
+            });
+         }
 
-set_time_limit (1000000);
+         function copy_data () {
+            mark_doing ($("#copy_data"));
+            $.get( "copy_data.php", function( data ) {
+               if (data == "ok") {
+                  mark_done ($("#copy_data"));
+                  add_new();
+               } else {
+                  mark_error ($("#copy_data"));
+               }
+            }, "json").fail(function() {
+               mark_error ($("#copy_data"));
+            });
+         }
 
-// Configuracoes
-$url_disciplina = 'https://uspdigital.usp.br/jupiterweb/obterTurma?sgldis=';
+         function add_new () {
+            mark_doing ($("#add_new"));
+            $.get( "add_new.php", function( data ) {
+               if (data == "ok") {
+                  mark_done ($("#add_new"));
+               } else {
+                  mark_error ($("#add_new"));
+               }
+            }, "json").fail(function() {
+               mark_error ($("#add_new"));
+            });
+         }
 
-
-$connection = mysql_pconnect($hostname, $username, $password) or trigger_error(mysql_error(),E_USER_ERROR);
-mysql_set_charset('utf8',$connection);
-mysql_select_db($database, $connection);
-
-$templine = '';
-
-// Read in entire file
-$lines = file("struct.sql");
-
-// Loop through each line
-foreach ($lines as $line){
-	// Skip it if it's a comment
-	if (substr($line, 0, 2) == '--' || $line == '')
-	    continue;
-	// Add this line to the current segment
-	$templine .= $line;
-	// If it has a semicolon at the end, it's the end of the query
-	if (substr(trim($line), -1, 1) == ';') {
-	    // Perform the query
-	    mysql_query($templine) or die('Error performing query \'<strong>' . $templine . '\': ' . mysql_error() . '<br /><br />');
-	    // Reset temp variable to empty
-	    $templine = '';
-	}
-}
-
-echo "Construção do banco de dados (se já não foi feita): OK<br>";
-
-$data = fopen("http://bcc.ime.usp.br/matrusp/db/db_usp.txt", 'r');
-file_put_contents("db_usp.txt", $data);
-$string = file_get_contents("db_usp.txt");
-$json = json_decode($string,true);
-
-foreach ($json['TODOS'] as $val) {
-	$insertSQL1 = 	"SELECT codigo FROM disciplinas WHERE codigo = '".$val[0]."';";
-	$Result1 = mysql_query($insertSQL1, $connection) or die(mysql_error());
-	$t =  mysql_num_rows ($Result1);
-	$h ="";
-	if($t==0){
-		echo $val[0];
-		$html = HtmlDomParser::file_get_html($url_disciplina.$val[0]);
-		$disciplina = $html->find('td b font[face="Verdana, Arial, Helvetica, sans-serif"] span[class="txt_arial_10pt_black"]');
-		echo $disciplina[0]->plaintext;
-		$insertSQL2 = 'INSERT INTO capeocom_uspavalia.disciplinas (nome, codigo, idunidade) VALUES ("'.$val[1].'","'.$val[0].'", (SELECT id FROM unidades WHERE NOME = "'.trim(GetSQLValueString($disciplina[0]->plaintext, "text2")).'" LIMIT 1));';
-		echo $insertSQL2;
-		echo "<br>";
-		mysql_query($insertSQL2, $connection);
-	}
-}
-
-?>
-<script> window.onload = function () { window.location = "/INSTALL/bancodedados.php"; } </script>
+         create_db ();
+      </script>
+   </body>
+</html>

@@ -10,18 +10,7 @@ function startsWith($haystack, $needle)
      return (substr($haystack, 0, $length) === $needle);
 }
 
-
-$hostname_connection = $hostname;
-$database_connection = $database;
-$username_connection = $username;
-$password_connection = $password;
-$connection = mysql_pconnect($hostname_connection, $username_connection, $password_connection) or trigger_error(mysql_error(),E_USER_ERROR);
-mysql_set_charset('utf8',$connection);
-
-
-mysql_select_db($database_connection, $connection);
-
- set_time_limit (1000000);
+set_time_limit (1000000);
 
 
 $editFormAction = $_SERVER['PHP_SELF'];
@@ -34,11 +23,9 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
                        GetSQLValueString($_POST['id'], "int"),
                        GetSQLValueString($_POST['NOME'], "text"));
 
-  mysql_select_db($database_connection, $connection);
   $Result1 = mysql_query($insertSQL, $connection) or die(mysql_error());
 }
 
-mysql_select_db($database_connection, $connection);
 $query_Disciplnas = "SELECT * FROM disciplinas WHERE roubo = 0 ORDER BY id ASC LIMIT 0 , 10";
 $Disciplnas = mysql_query($query_Disciplnas, $connection) or die(mysql_error());
 $row_Disciplnas = mysql_fetch_assoc($Disciplnas);
@@ -56,7 +43,6 @@ foreach($html->find('select[name=colegiado]  option') as $element){
                        GetSQLValueString($element->value, "int"),
                        GetSQLValueString($element->plaintext, "text"));
 
-  mysql_select_db($database_connection, $connection);
   
   $Result1 = mysql_query($insertSQL, $connection) or die(mysql_error());
 	   }
@@ -80,7 +66,6 @@ foreach($html->find('TABLE[align="center"] TR') as $element){
 					    GetSQLValueString($element1->value, "int"));
 						echo $insertSQL.'<br>';
 
-  mysql_select_db($database_connection, $connection);
   
   $Result1 = mysql_query($insertSQL, $connection) or die(mysql_error());
 	}

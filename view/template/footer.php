@@ -1,3 +1,4 @@
+    </div><!-- /.container -->
     <script src="<?= $url_full; ?>/assets/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-3-typeahead/4.0.2/bootstrap3-typeahead.min.js"></script>
     <script>
@@ -22,7 +23,6 @@
         }
     });
     </script>
-    </div><!-- /.container -->
     <title>USP Avalia</title>
   </body>
 </html>
