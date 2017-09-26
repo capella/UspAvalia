@@ -1,10 +1,34 @@
 <?php
 
-mysql_select_db($database_connection, $connection);
-$query_Melhores = "SELECT * FROM Melhores LIMIT 10";
-$Melhores = mysql_query($query_Melhores, $connection) or die(mysql_error());
-$row_Melhores = mysql_fetch_assoc($Melhores);
-$totalRows_Melhores = mysql_num_rows($Melhores);
+$sql = "SELECT * FROM Melhores LIMIT 10";
+$melhores_disciplnas_result = $connection->query($sql);
+
+$sql = "
+  SELECT
+    professores.nome,
+    SubQuery.expr1 * 2 AS nota,
+    SubQuery.expr2 AS votos,
+    unidades.NOME AS unidade,
+    professores.id as id
+  FROM (
+    SELECT
+      aulaprofessor.idprofessor,
+      AVG(votos.nota) AS expr1,
+      COUNT(*) AS expr2
+    FROM votos
+    INNER JOIN aulaprofessor
+    ON votos.APid = aulaprofessor.id
+    WHERE votos.tipo <> 5
+    GROUP BY aulaprofessor.idprofessor) SubQuery
+  INNER JOIN professores
+  ON SubQuery.idprofessor = professores.id
+  INNER JOIN unidades
+  ON professores.idunidade = unidades.id
+  WHERE SubQuery.expr2 >= 15
+  ORDER BY SubQuery.expr1 DESC, SubQuery.expr2 DESC
+  LIMIT 10";
+$melhores_professores_result = $connection->query($sql);
+
 ?>
 <title>Destaques</title>
 <h2>10 Melhores</h2>
@@ -19,51 +43,23 @@ $totalRows_Melhores = mysql_num_rows($Melhores);
     <td><div align="left"><strong>Professor</strong></div></td>
     <td><div align="left"></div></td>
   </tr>
-  <?php do { ?>
+  <?php  while ($row = $melhores_disciplnas_result->fetch_assoc()) { ?>
     <tr>
-      <td><div align="center"><?php echo number_format($row_Melhores['media'], 2, ',', ' '); ?></div></td>
-      <td><div align="center"><?php echo $row_Melhores['votos']; ?></div></td>
-      <td><?php echo $row_Melhores['codigo']; ?>-<?php echo $row_Melhores['materia']; ?></td>
-      <td><?php echo $row_Melhores['unidade']; ?></td>
-      <td><?php echo $row_Melhores['professor']; ?></td>
+      <td><div align="center"><?php echo number_format($row['media'], 2, ',', ' '); ?></div></td>
+      <td><div align="center"><?php echo $row['votos']; ?></div></td>
+      <td><?php echo $row['codigo']; ?>-<?php echo $row['materia']; ?></td>
+      <td><?php echo $row['unidade']; ?></td>
+      <td><?php echo $row['professor']; ?></td>
       <td>
-        <div align="center"><a href="<?= $url_full; ?>/?p=ver&id=<?php echo $row_Melhores['id']; ?>" class="btn btn-success  btn-sm">
+        <div align="center"><a href="<?= $url_full; ?>/?p=ver&id=<?php echo $row['id']; ?>" class="btn btn-success  btn-sm">
           Avaliar
           </a>
       </div></td>
     </tr>
-    <?php } while ($row_Melhores = mysql_fetch_assoc($Melhores)); ?>
+    <?php } ?>
 </table>
-<?
-mysql_free_result($Melhores);
 
-mysql_select_db($database_connection, $connection);
-$query_Melhores = "SELECT
-  professores.nome,
-  SubQuery.expr1 * 2 AS nota,
-  SubQuery.expr2 AS votos,
-  unidades.NOME AS unidade,
-  professores.id as id
-FROM (SELECT
-    aulaprofessor.idprofessor,
-    AVG(votos.nota) AS expr1,
-    COUNT(*) AS expr2
-  FROM votos
-    INNER JOIN aulaprofessor
-      ON votos.APid = aulaprofessor.id
-  WHERE votos.tipo <> 5
-  GROUP BY aulaprofessor.idprofessor) SubQuery
-  INNER JOIN professores
-    ON SubQuery.idprofessor = professores.id
-  INNER JOIN unidades
-    ON professores.idunidade = unidades.id
-WHERE SubQuery.expr2 >= 15
-ORDER BY SubQuery.expr1 DESC, SubQuery.expr2 DESC
-LIMIT 10";
-$Melhores = mysql_query($query_Melhores, $connection) or die(mysql_error());
-$row_Melhores = mysql_fetch_assoc($Melhores);
-$totalRows_Melhores = mysql_num_rows($Melhores);
-?>
+
 <h4>Professores Avaliados</h4>
 <table class="table table-bordered">
   <tr>
@@ -73,22 +69,21 @@ $totalRows_Melhores = mysql_num_rows($Melhores);
     <td><div align="left"><strong>Unidade</strong></div></td>
     <td><div align="left"></div></td>
   </tr>
-  <?php do { ?>
+  <?php  while ($row = $melhores_professores_result->fetch_assoc()) { ?>
     <tr>
-      <td><div align="center"><?php echo number_format($row_Melhores['nota'], 2, ',', ' '); ?></div></td>
-      <td><div align="center"><?php echo $row_Melhores['votos']; ?></div></td>
-      <td><?php echo $row_Melhores['nome']; ?></td>
-      <td><?php echo $row_Melhores['unidade']; ?></td>
+      <td><div align="center"><?php echo number_format($row['nota'], 2, ',', ' '); ?></div></td>
+      <td><div align="center"><?php echo $row['votos']; ?></div></td>
+      <td><?php echo $row['nome']; ?></td>
+      <td><?php echo $row['unidade']; ?></td>
       <td>
-        <div align="center"><a href="<?= $url_full; ?>/?p=pesquisa2&id=<?php echo $row_Melhores['id']; ?>&t=2" class="btn btn-success  btn-sm">
+        <div align="center"><a href="<?= $url_full; ?>/?p=pesquisa2&id=<?php echo $row['id']; ?>&t=2" class="btn btn-success  btn-sm">
           Avaliar
           </a>
       </div></td>
     </tr>
-    <?php } while ($row_Melhores = mysql_fetch_assoc($Melhores)); ?>
+    <?php } ?>
 </table>
 <small>Só foram avaliados professores com 15 ou mais votos.</small> 
-<br /><br />
-<?
-mysql_free_result($Melhores);
-?>
+
+<?php if ($melhores_disciplnas_result) $melhores_disciplnas_result->close(); ?>
+<?php if ($melhores_professores_result) $melhores_professores_result->close(); ?>

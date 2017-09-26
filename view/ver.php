@@ -77,6 +77,13 @@ if (isset($_GET['id'])) {
          </div>
       </div>
       <?php } ?>
+
+      <div class="col-md-4" style="text-align: center;">
+         <a class="btn btn-success btn-block btn-lg" style="margin-top: 20%;">
+            AVALIAR
+         </a>
+      </div>
+
    </div>
 </div>
 <hr>
@@ -93,7 +100,6 @@ if (isset($_GET['id'])) {
       Se você ler um comentário verídico e relevante, aperte "Positivo", caso contrário, "Negativo".
       </p>
       <hr>
-        
       <? if($comentarios_result->num_rows > 0): ?>
          <ul class="media-list">
             <?php while ($row = $comentarios_result->fetch_assoc()) { ?>
@@ -104,7 +110,7 @@ if (isset($_GET['id'])) {
                      <div class="col-md-8" style=" text-align:justify">
                         <?= $row['comantario']; ?>
                      </div>
-                     <div class="col-md-4">
+                     <div class="col-md-4" style="opacity: 0.75;">
                         <a class="btn btn-success btn-block" href="?p=votarcomentario&idcomantario=<?= $row['id']; ?>&id=<?= $id; ?>&voto=1">
                            <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span> 
                            Positivo&nbsp;&nbsp;&nbsp;
@@ -141,7 +147,6 @@ if (isset($_GET['id'])) {
         </div>
    </div>
 </div>
-
 <?php if ($info_result) $info_result->close(); ?>
 <?php if ($medias_result) $medias_result->close(); ?>
 <? require 'view/gdata.php' ?>
