@@ -6,7 +6,6 @@
         minLength: 5,
         source:  function (query, process) {
             return $.post('/search', { query: query }, function (data) {
-                console.log(data);
                 data = $.parseJSON(data);
                 return process(data);
             });

@@ -1,10 +1,15 @@
-<form id="form<?=$row['id'];?>" action="vote" method="POST">  
+<form id="form<?=$row['id'];?>" action="votar" method="POST">  
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
     <h4 class="modal-title"> <?=$row['Pnome'];?> - <?=$row['codigo'];?></h4>
   </div>
   <div class="modal-body">
-   Escolha uma nota entre 0 e 5 para avaliar <?=$row['Pnome'];?>, na disciplina <?=$row['Dnome'];?> - <?=$row['codigo'];?> nos seguintes quesitos. Em duficuldade, notas maiores significam maior dificuldade. O voto é secreto.  <br><br>
+   <p style="text-align: justify;">
+    Escolha uma nota entre 0 e 5 para avaliar <?=$row['Pnome'];?>,
+    na disciplina <?=$row['Dnome'];?> - <?=$row['codigo'];?> nos
+    seguintes quesitos. Em dificuldade, notas maiores significam maior
+    dificuldade. O voto é secreto.
+  </p>
   <?
   $arr = array('Avaliação Geral', 'Didática', 'Empenho/Dedicação', 'Relação com os alunos', 'Dificuldade');
   reset($arr);
@@ -37,7 +42,9 @@
   </div><!--modal body-->
   <div class="modal-footer">
   
-    <div class="inline" style="float: left; text-align: center; margin-top: -8px;width: 220px;"><small>Será solicitado validação no Facebook para autenticação do usuário.</small></div>
+    <div class="inline" style="float: left; text-align: center; margin-top: -8px;width: 220px;">
+      <small>Será solicitado validação no Facebook para autenticação do usuário.</small>
+    </div>
     <br class="visible-xs">
     <button type="submit" class="btn btn-primary">Salvar</button>
   </div>

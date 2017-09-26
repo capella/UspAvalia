@@ -7,10 +7,10 @@ if (isset($_GET['id'])) {
       FROM aulaprofessor AP
       INNER JOIN disciplinas DIS ON AP.idaula = DIS.id
       INNER JOIN professores PRO ON AP.idprofessor = PRO.id
-      INNER JOIN (
+      LEFT JOIN (
           SELECT APid, AVG(nota) as media FROM votos WHERE tipo <> 5 GROUP BY APid
       ) MED ON MED.APid = AP.id
-      WHERE PRO.id =".$data;
+      WHERE PRO.id =".$data." ORDER by media DESC, DIS.nome ASC";
    $result = $connection->query($sql);
 }
 
@@ -29,7 +29,7 @@ if (isset($_GET['id'])) {
 <br>
 <hr>
 
-<?php if ($result) { ?>
+<?php if ($result && $result->num_rows > 0) { ?>
 <div class="table-responsive">
    <table class="table table-striped">
       <thead>
@@ -46,7 +46,7 @@ if (isset($_GET['id'])) {
       <tr>
          <td><a href="?p=ver&id=<?= $row['id'];?>"><?=$row['Pnome'];?></a></td>
          <td><a href="?p=ver&id=<?= $row['id'];?>"><?=$row['Dnome'];?> - <?=$row['codigo'];?></a></td>
-         <td><?= number_format($row['media']*2, 2, ',', ' ');?></td>
+         <td><?= $row['media']?number_format($row['media']*2, 2, ',', ' '):"Sem avaliações";?></td>
          <td>
             <button class="btn btn-success" data-toggle="modal" data-target="#modal<?=$row['id'];?>">
                Avaliar
@@ -65,10 +65,10 @@ if (isset($_GET['id'])) {
       <?php } ?>
    </table>
 </div>
-<hr />
 <?php } else { ?>
 <p>Não encontramos nenhuma disciplina ministrada por esse professor.</p>
 <?php } ?>
+<hr />
 
 <div class="label label-info"> Não encontrou a disciplina com esse professor? <?=$pesquisa;?>. <a href="?p=add&prf=<?=$nome;?>"> Clique aqui para adicionar. </a></div>
 

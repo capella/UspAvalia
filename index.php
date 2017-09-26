@@ -54,7 +54,7 @@ if ($template) include($header);
 if(file_exists("view/" . $page . ".php")) {
   include('view/' . $page . '.php');
 } else {
-    include('view/404.php');
+    include('view/error.php');
 }
 if ($template) include($footer);
 
