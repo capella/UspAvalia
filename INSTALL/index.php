@@ -43,7 +43,7 @@
                     <td id="add_teacher" style="text-align: center;">
                        <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                     </td>
-                    <td>Buscando Professores</td>
+                    <td>Buscando Professores <span id="por"></span></td>
                 </tr>
             </table>
          </div><!-- /.container -->
@@ -53,11 +53,15 @@
             d.html('<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>');
          }
          function mark_doing (d) {
-            d.html('<div class="progress"> <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 45%"> <span class="sr-only">45% Complete</span> </div> </div>');            
+            d.html('<div class="progress"> <div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 45%"> <span class="sr-only">45% Complete</span> </div> </div>');            
          }
          function mark_error (d) {
             d.html('<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>');            
          }
+         function mark_progress (d, done, max) {
+            d.html('<div class="progress"> <div class="progress-bar progress-bar-striped active" role="progressbar"  style="width: '+(done/max)+'%"> <span class="sr-only">'+done+'/'+max+'</span> </div> </div>');            
+         }
+
          function create_db () {
             mark_doing ($("#create_db"));
             $.get( "create_db.php", function( data ) {
@@ -91,6 +95,7 @@
             $.get( "add_new.php", function( data ) {
                if (data == "ok") {
                   mark_done ($("#add_new"));
+                  add_teacher ();
                } else {
                   mark_error ($("#add_new"));
                }
@@ -98,8 +103,35 @@
                mark_error ($("#add_new"));
             });
          }
+         function add_teacher () {
+            mark_doing ($("#add_teacher"));
+            $.get( "list.php", function( data ) {
+               request_one(data, 0);
+            }, "json").fail(function() {
+               mark_error ($("#add_teacher"));
+            });
+         }
 
-         create_db ();
+         function request_one (array, id) {
+            if (id >= array.length) {
+               mark_done ($("#add_teacher"));
+            } else {
+               $.get( "request.php?id="+array[id], function( data ) {
+                  if (data == "ok") {
+                     mark_progress ($("#add_teacher"), id+1, array.length);
+                     $("#por").text((id+1)+'/'+array.length);
+                     request_one(array, id+1);
+                  } else {
+                     mark_error ($("#add_teacher"));
+                  }
+               }, "json").fail(function() {
+                  mark_error ($("#add_teacher"));
+               });
+            }
+         }
+
+         //create_db ();
+         add_teacher ();
       </script>
    </body>
 </html>
