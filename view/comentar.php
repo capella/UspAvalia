@@ -4,7 +4,6 @@ if (!$user) {
   exit;
 }
 
-
 if ((isset($_GET["MM_insert"])) && ($_GET["MM_insert"] == "form")) {
 
   $insertSQL = sprintf("INSERT INTO cometario (comantario, iduso, aulaprofessorid, time) VALUES (%s,%s,%s,%s)",
@@ -13,8 +12,8 @@ if ((isset($_GET["MM_insert"])) && ($_GET["MM_insert"] == "form")) {
 					   GetSQLValueString($_GET['id'], "int"),
 					   GetSQLValueString(time(), "int"));
 
-  mysql_select_db($database_connection, $connection);
-  $Result1 = mysql_query($insertSQL, $connection) or die(mysql_error());
+      $result = $connection->query($insertSQL, $connection);
+      if ($result) $result->close();
 }
 
 $insertGoTo = "?p=ver3&id=".$_GET['id'];

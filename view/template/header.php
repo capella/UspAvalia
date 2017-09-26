@@ -44,7 +44,7 @@
                   <li><a href="/destaques">Destaques</a></li>
                   <li><a href="/sobre">Sobre</a></li>
                   <?php if ($user): ?>
-                  <li><a href="/?p=add">Adicionar Disciplina/Professor</a></li>
+                  <!-- <li><a href="/?p=add">Adicionar Disciplina/Professor</a></li> -->
                   <li><a href="/logout">Logout</a></li>
                   <? else: ?>
                   <li><a href="<?=$loginUrl;?>">Login</a></li>

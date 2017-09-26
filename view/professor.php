@@ -70,7 +70,7 @@ if (isset($_GET['id'])) {
 <?php } ?>
 <hr />
 
-<div class="label label-info"> Não encontrou a disciplina com esse professor? <?=$pesquisa;?>. <a href="?p=add&prf=<?=$nome;?>"> Clique aqui para adicionar. </a></div>
+<!-- <div class="label label-info"> Não encontrou a disciplina com esse professor? <?=$pesquisa;?>. <a href="?p=add&prf=<?=$nome;?>"> Clique aqui para adicionar. </a></div> -->
 
 <p><small>Foram encontrados <?php echo $result->num_rows ?> registros.</small></p>
 

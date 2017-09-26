@@ -12,8 +12,8 @@ if (isset($_GET["id"])&&isset($user_profile['id'])&&($_GET['voto']==1||$_GET['vo
 					   GetSQLValueString($_GET['voto'], "int"),
 					   GetSQLValueString(time(), "int"));
 
-  mysql_select_db($database_connection, $connection);
-  $Result1 = mysql_query($insertSQL, $connection) or die(mysql_error());
+    $result = $connection->query($insertSQL, $connection);
+    if ($result) $result->close();
 }
 
 $insertGoTo = "?p=ver3&id=".$_GET['id'];
