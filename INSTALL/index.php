@@ -59,7 +59,7 @@
             d.html('<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>');            
          }
          function mark_progress (d, done, max) {
-            d.html('<div class="progress"> <div class="progress-bar progress-bar-striped active" role="progressbar"  style="width: '+(done/max)+'%"> <span class="sr-only">'+done+'/'+max+'</span> </div> </div>');            
+            d.html('<div class="progress"> <div class="progress-bar progress-bar-striped active" role="progressbar"  style="width: '+(done/max*100)+'%"> <span class="sr-only">'+done+'/'+max+'</span> </div> </div>');            
          }
 
          function create_db () {
@@ -82,6 +82,7 @@
                if (data == "ok") {
                   mark_done ($("#copy_data"));
                   add_new();
+                  add_teacher ();
                } else {
                   mark_error ($("#copy_data"));
                }
@@ -95,7 +96,6 @@
             $.get( "add_new.php", function( data ) {
                if (data == "ok") {
                   mark_done ($("#add_new"));
-                  add_teacher ();
                } else {
                   mark_error ($("#add_new"));
                }
@@ -130,8 +130,7 @@
             }
          }
 
-         //create_db ();
-         add_teacher ();
+         create_db ();
       </script>
    </body>
 </html>

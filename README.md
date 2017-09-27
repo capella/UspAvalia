@@ -8,4 +8,20 @@ Para executar o sistema localmente a primeira parte é renomear o arquivo `confi
 
 Posteriormente a isso é necessário ir no endereço `/INSTALL/index.php`. Para atualizar o banco de dados, também basta ir nesse endereço.
 
-AVISO: esse código foi escrito em 2014 e precisa de uma revisão urgente. Não foram usados bons padrões de projeto e nenhum framework. É importante resaltar que isso nã prejudica a integridade do sistema e de seus usuários.
+### Para Finalizar
+
+Abaixo lista de partes do sistema que necessita reparo:
+
+- Email: formulário de contato não está enviando todos os emails.
+
+- Adicionar Disciplina: adicionar disciplna de maneira manual precisa ser feito.
+
+### Nota
+
+Esse sistema foi feito sem nenhum framework. Por isso apresenta uma estrutura não convencional. Existem uma pasta chamada view, onde estão todas as páginas. As páginas são envocadas pelo index.php.
+
+### Atualizações
+
+Esse código foi escrito da noite para o dia em 2014, apresentando vários erros. Em Setembro de 2017 arrumei algumas coisas, no entanto falta arrumar outras.
+
+

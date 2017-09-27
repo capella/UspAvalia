@@ -41,6 +41,8 @@ foreach ($json_input['TODOS'] as $val) {
         //     $json = array('error' => $connection->error.$val[0]);
         //     break;
         // }
+        $html->clear(); 
+        unset($html);
     }
     if ($result) {
         $result->close();
