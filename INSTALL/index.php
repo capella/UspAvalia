@@ -82,8 +82,8 @@
                if (data == "ok") {
                   mark_done ($("#copy_data"));
                   add_new();
-                  add_teacher ();
                } else {
+                  console.log(data);
                   mark_error ($("#copy_data"));
                }
             }, "json").fail(function() {
@@ -92,10 +92,13 @@
          }
 
          function add_new () {
-            mark_doing ($("#add_new"));
             $.get( "add_new.php", function( data ) {
                if (data == "ok") {
                   mark_done ($("#add_new"));
+                  add_teacher ();
+               } else if ('continue' in data) {
+                  mark_progress ($("#add_new"), data['continue'], 1);
+                  add_new();
                } else {
                   mark_error ($("#add_new"));
                }

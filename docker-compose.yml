@@ -12,7 +12,7 @@ services:
 
   admin:
     container_name: PhpMyAdmin
-    image: phpmyadmin/phpmyadmin:4.6
+    image: phpmyadmin/phpmyadmin:latest
     depends_on:
       - db
     ports:

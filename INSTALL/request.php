@@ -9,6 +9,13 @@ function startsWith($haystack, $needle){
      return (substr($haystack, 0, $length) === $needle);
 }
 
+$options = array(
+    "ssl" => array(
+        "verify_peer" => false,
+        "verify_peer_name" => false,
+    ),
+);
+
 $url_disciplina = 'https://uspdigital.usp.br/jupiterweb/obterTurma?sgldis=';
 $json = ["ok"];
 
@@ -21,7 +28,9 @@ if (isset($_GET['id'])) {
     $disciplna = $disciplna_result->fetch_assoc();
 
     $a = array();
-    $htmld = HtmlDomParser::file_get_html($url_disciplina.$disciplna['codigo']);
+
+    $data = file_get_contents($url_disciplina.$disciplna['codigo'], false, stream_context_create($options));
+    $htmld = HtmlDomParser::str_get_html($data);
 
     if ($htmld == "") {
         echo "Erro:".$disciplna['id']."<br>";
