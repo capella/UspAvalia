@@ -28,7 +28,7 @@ if (isset($_SESSION['fb_access_token'])) {
 } else {
    $helper = $fb->getRedirectLoginHelper();
    $permissions = ['email'];
-   $loginUrl = $helper->getLoginUrl($url_full.'/?p=fb-callback&ant='.urlencode($_SERVER[REQUEST_URI]), $permissions);
+   $loginUrl = $helper->getLoginUrl($url_full.'/?p=fb-callback&ant='.urlencode($_SERVER['REQUEST_URI']), $permissions);
 }
 
 $page = 'index';
