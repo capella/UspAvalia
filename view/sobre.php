@@ -33,7 +33,7 @@
     </p>
 
     <p  style=" text-align:justify;">
-        O código fonte do site pode ser visualizado em <a href="https://github.com/capellaresumo/UspAvalia">https://github.com/capellaresumo/UspAvalia</a>
+        O código fonte do site pode ser visualizado em <a href="https://github.com/capella/UspAvalia">https://github.com/capella/UspAvalia</a>
     </p>
 
     <h5><strong>Ajuda</strong></h5>
