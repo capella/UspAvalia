@@ -70,12 +70,12 @@ if(isset($_POST['email']) && isset($_SESSION["k1"]) &&
   $mail->Host       = $smtp_host;
   $mail->SMTPDebug  = 0;                     // enables SMTP debug information (for testing)
   $mail->SMTPAuth   = true;                  // enable SMTP authentication
-  $mail->Port       = 25;                    // set the SMTP port for the GMAIL server
-  $mail->Username   = $smtp_username; // SMTP account username example
+  $mail->Port       = 465;                   // set the SMTP port for the GMAIL server
+  $mail->Username   = $smtp_username;         // SMTP account username example
   $mail->Password   = $smtp_password;        // SMTP account password example
 
   // Content
-  $mail->isHTML(true);                                  // Set email format to HTML
+  $mail->isHTML(false);
   $mail->Subject = 'USPAVALIA - Contato';
   $mail->Body    = $email_message;
 
