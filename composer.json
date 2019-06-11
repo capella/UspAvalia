@@ -4,7 +4,8 @@
     "require": {
         "facebook/graph-sdk": "^5.5",
         "voku/simple_html_dom": "^4.1.1",
-        "twig/twig": "^2.0"
+        "twig/twig": "^2.0",
+        "phpmailer/phpmailer": "~6.0"
     },
     "authors": [
         {
