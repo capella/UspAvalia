@@ -2,7 +2,7 @@
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../helpers/connection.php';
 require __DIR__ . '/../helpers/sanitizer.php';
-use Sunra\PhpSimple\HtmlDomParser;
+use voku\helper\HtmlDomParser;
 
 set_time_limit (1000000);
 
