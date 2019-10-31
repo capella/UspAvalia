@@ -60,7 +60,7 @@ if (isset($_GET['id'])) {
                </div>
             </div>
          </td>
-         <td><a href="?p=ver3&id=<?= $row['id'];?>" class="btn btn-info">Comentar</a></td>
+         <td><a href="?p=ver&id=<?= $row['id'];?>" class="btn btn-info">Comentar</a></td>
       </tr>
       <?php } ?>
    </table>

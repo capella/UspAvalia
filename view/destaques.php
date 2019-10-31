@@ -1,7 +1,7 @@
 <?php
 
 $sql = "SELECT * FROM Melhores LIMIT 10";
-$melhores_disciplnas_result = $connection->query($sql);
+$melhores_disciplnas_result = $connection->query($sql) or die($connection->error);
 
 $sql = "
   SELECT
@@ -27,7 +27,7 @@ $sql = "
   WHERE SubQuery.expr2 >= 15
   ORDER BY SubQuery.expr1 DESC, SubQuery.expr2 DESC
   LIMIT 10";
-$melhores_professores_result = $connection->query($sql);
+$melhores_professores_result = $connection->query($sql) or die($connection->error);
 
 ?>
 <title>Destaques</title>
