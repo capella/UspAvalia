@@ -10,7 +10,7 @@ session_start();
 $fb = new Facebook\Facebook([
    'app_id' => $appId_facebook,
    'app_secret' => $secret_facebook,
-   'default_graph_version' => 'v2.9',
+   'default_graph_version' => 'v3.2',
 ]);
 
 $user = null;

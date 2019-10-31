@@ -65,7 +65,9 @@
                   <!-- <li><a href="/?p=add">Adicionar Disciplina/Professor</a></li> -->
                   <li><a href="/logout">Logout</a></li>
                   <? else: ?>
-                  <li><a href="<?=$loginUrl;?>">Login</a></li>
+                  <li><a href="<?=$loginUrl;?>">
+                     <img src="/assets/images/facebook.png" style="height: 20px;">
+                  </a></li>
                   <?php endif ?>
                </ul>
             </div><!--/.nav-collapse -->

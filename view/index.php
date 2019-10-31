@@ -1,25 +1,31 @@
 <?php
 
-function getNumber($conn, $query, $field) {
-   $result = $conn->query($query);
-   $number = 0;
-   if($result) {
-      $result_row = $result->fetch_assoc();
-      $number = $result_row[$field];
-      $result->close();
+function getNumber($conn, $query, $field, $cachename) {
+   if (!is_file($cachename) || filemtime($cachename) < time()-1*300) {
+      $result = $conn->query($query);
+      $number = 0;
+      if($result) {
+         $result_row = $result->fetch_assoc();
+         $number = $result_row[$field];
+         $result->close();
+      }
+      file_put_contents($cachename, serialize($number));
+      return $number;
+   } else {
+     return unserialize(file_get_contents($cachename));
    }
-   return $number;
 }
+
 
 function media ($conn) {
    $query = "SELECT AVG(nota) as m FROM votos WHERE tipo <> 5;";
-   $n = getNumber($conn, $query, 'm');
+   $n = getNumber($conn, $query, 'm', 'media.cache');
    return number_format($n*2, 2, ',', ' ');
 }
 
 function avaliacoes ($conn) {
    $query = "SELECT COUNT(*) as m FROM votos;";
-   $n = getNumber($conn, $query, 'm');
+   $n = getNumber($conn, $query, 'm', 'avaliacoes.cache');
    return number_format($n, 0, ',', ' ');
 }
 
@@ -27,7 +33,7 @@ function pessoas ($conn) {
    $query = "SELECT count(*) as m FROM (
                SELECT iduso FROM votos GROUP BY iduso
             ) as S;";
-   $n = getNumber($conn, $query, 'm');
+   $n = getNumber($conn, $query, 'm', 'pessoas.cache');
    return number_format($n, 0, ',', ' ');
 }
 

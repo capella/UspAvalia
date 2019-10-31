@@ -73,11 +73,14 @@ if(isset($_POST['email']) && isset($_SESSION["k1"]) &&
   $mail->Port       = 465;                   // set the SMTP port for the GMAIL server
   $mail->Username   = $smtp_username;         // SMTP account username example
   $mail->Password   = $smtp_password;        // SMTP account password example
+  $mail->addAddress($smtp_destination, 'UspAvalia');     // Add a recipient
+
 
   // Content
   $mail->isHTML(false);
   $mail->Subject = 'USPAVALIA - Contato';
   $mail->Body    = $email_message;
+  $mail->send();
 
 ?>
 
@@ -96,7 +99,7 @@ $_SESSION["k2"] = rand(0,20);
 <form name="contactform" method="post" action="/email">
   <h3>Contato</h3>
   <hr>
-  <p> Aqui você pode solicitar que sua avaliação ou nome seja retirado. Este também é o espaço para dar sugestões ou expressar sua opinião. </p>
+  <p> Aqui você pode solicitar que sua avaliação ou nome seja retirado. Este também é o espaço para dar sugestões ou expressar sua opinião. Se não quiser usar o formulário `contato arroba uspavalia.com` </p>
   <br />
   <table style="width:100%">
     <tr>
