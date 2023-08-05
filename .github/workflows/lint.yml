@@ -25,7 +25,8 @@ jobs:
         run: composer install
 
       - name: Fix style
-        run: ./vendor/bin/php-cs-fixer fix --allow-risky=yes --using-cache=no
+        uses: shivammathur/setup-php@v2
+        run: php-cs-fixer fix --allow-risky=yes --using-cache=no
 
       - name: Commit style fixes
         uses: stefanzweifel/git-auto-commit-action@v4
