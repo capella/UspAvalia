@@ -61,6 +61,7 @@
                   <li><a href="/email">Contato</a></li>
                   <li><a href="/destaques">Destaques</a></li>
                   <li><a href="/sobre">Sobre</a></li>
+                  <li><a href="/matrusp">Matrusp</a></li>
                   <?php if ($user): ?>
                   <!-- <li><a href="/?p=add">Adicionar Disciplina/Professor</a></li> -->
                   <li><a href="/logout">Logout</a></li>

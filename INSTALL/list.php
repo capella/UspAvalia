@@ -4,7 +4,7 @@ require __DIR__ . '/../helpers/connection.php';
 require __DIR__ . '/../helpers/sanitizer.php';
 
 $json = [];
-$sql = "SELECT * FROM disciplinas WHERE roubo = 0"; 
+$sql = "SELECT * FROM disciplinas"; 
 
 $result = $connection->query($sql);
 

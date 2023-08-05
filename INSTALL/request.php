@@ -18,7 +18,11 @@ if (isset($_GET['id'])) {
         $disciplina = mysqli_fetch_assoc($result);
     }
 
-    $data = file_get_contents("../matrusp/db/".$disciplina['codigo'].".json");
+    $data = @file_get_contents("../matrusp/db/".$disciplina['codigo'].".json");
+    if (!$data) {
+        echo json_encode($json, JSON_UNESCAPED_UNICODE);
+        return;
+    }
     $json_input = json_decode($data, true);
 
     $professores = [];

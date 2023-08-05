@@ -99,55 +99,7 @@ $_SESSION["k2"] = rand(0,20);
 <form name="contactform" method="post" action="/email">
   <h3>Contato</h3>
   <hr>
-  <p> Aqui você pode solicitar que sua avaliação ou nome seja retirado. Este também é o espaço para dar sugestões ou expressar sua opinião. Se não quiser usar o formulário `contato arroba uspavalia.com` </p>
-  <br />
-  <table style="width:100%">
-    <tr>
-      <td width="33%" valign="top">
-        <label for="first_name">Nome *</label>
-      </td>
-      <td width="67%" valign="top">
-        <input type="text" name="first_name" maxlength="50" size="30" class="form-control">
-        <br> </td>
-    </tr>
-    <tr>
-      <td valign="top">
-        <label for="last_name">Sobrenome *</label>
-      </td>
-      <td valign="top">
-        <input type="text" name="last_name" maxlength="50" size="30" class="form-control">
-        <br> </td>
-    </tr>
-    <tr>
-      <td valign="top">
-        <label for="email">Endereço de Email*</label>
-      </td>
-      <td valign="top">
-        <input type="text" name="email" maxlength="80" size="30" class="form-control">
-        <br> </td>
-    </tr>
-    <tr>
-      <td width="33%" valign="top">
-        <label for="first_name">Quanto é <?= $_SESSION["k1"] ?> + <?= $_SESSION["k2"] ?>?</label>
-      </td>
-      <td width="67%" valign="top">
-        <input type="number" name="soma" maxlength="50" size="30" class="form-control">
-        <br> </td>
-    </tr>
-    <tr>
-      <td valign="top">
-        <label for="comments">Mensagem *</label>
-      </td>
-      <td valign="top">
-        <textarea name="comments" maxlength="1000" cols="25" rows="6" class="form-control btn-lg"></textarea>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2" style="text-align:center">
-        <br>
-        <input type="submit" class="btn btn-default" value="Enviar"> </td>
-    </tr>
-  </table>
+  <p> Suggestões? use o nosso https://github.com/capella/UspAvalia or mande um email para `gabriel arroba capella . pro` </p>
 </form>
 <?
 }
