@@ -1,0 +1,45 @@
+name: Build and Deploy to GCP registry
+
+on:
+  push:
+      branches: [ main ]
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  DOCKER_IMAGE_NAME: uspavalia
+  DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+  DEPLOY_URL: ${{ secrets.DEPLOY_URL }}
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        credentials_json: '${{ secrets.SERVICE_ACCOUNT_KEY }}'
+        project_id: ${{ secrets.GCLOUD_PROJECT }}
+
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v1'
+      with:
+        project_id: ${{ secrets.GCLOUD_PROJECT }}
+
+    - run: gcloud auth configure-docker
+    - run: cat $GOOGLE_GHA_CREDS_PATH | docker login -u _json_key --password-stdin https://gcr.io
+
+    - name: Build
+      run: |-
+        docker build . --tag "gcr.io/$PROJECT_ID/$DOCKER_IMAGE_NAME:$GITHUB_SHA"
+
+    - name: Publish
+      run: |-
+        docker push "gcr.io/$PROJECT_ID/$DOCKER_IMAGE_NAME:$GITHUB_SHA"
+
+    - name: Trigger Deploy
+      run: curl -X POST --fail -F token="$DEPLOY_TOKEN" -F ref=master $DEPLOY_URL
