@@ -1,3 +1,5 @@
 error_log
 info_bd/*.txt
 /vendor/
+**/*.swp
+matrusp/db/
