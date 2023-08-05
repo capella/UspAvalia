@@ -1,7 +1,8 @@
-<?php 
+<?php
+
 require __DIR__ . '/vendor/autoload.php';
-require __DIR__ . '/helpers/connection.php'; 
-require __DIR__ . '/helpers/sanitizer.php'; 
+require __DIR__ . '/helpers/connection.php';
+require __DIR__ . '/helpers/sanitizer.php';
 require __DIR__ . '/config.php';
 
 date_default_timezone_set('America/Sao_Paulo');
@@ -16,31 +17,31 @@ $fb = new Facebook\Facebook([
 $user = null;
 
 if (isset($_SESSION['fb_access_token'])) {
-   try {
-   // Proceed knowing you have a logged in user who's authenticated.
-      $response = $fb->get('/me?fields=id,name', $_SESSION['fb_access_token']);
-      $user_profile = $response->getGraphUser();
-      $user = $user_profile['id'];
-   } catch (FacebookApiException $e) {
-      error_log($e);
-      $user = null;
-   }
+    try {
+        // Proceed knowing you have a logged in user who's authenticated.
+        $response = $fb->get('/me?fields=id,name', $_SESSION['fb_access_token']);
+        $user_profile = $response->getGraphUser();
+        $user = $user_profile['id'];
+    } catch (FacebookApiException $e) {
+        error_log($e);
+        $user = null;
+    }
 } else {
-   $helper = $fb->getRedirectLoginHelper();
-   $permissions = ['email'];
-   $loginUrl = $helper->getLoginUrl($url_full.'/?p=fb-callback&ant='.urlencode($_SERVER['REQUEST_URI']), $permissions);
+    $helper = $fb->getRedirectLoginHelper();
+    $permissions = ['email'];
+    $loginUrl = $helper->getLoginUrl($url_full.'/?p=fb-callback&ant='.urlencode($_SERVER['REQUEST_URI']), $permissions);
 }
 
 $page = 'index';
-if(isset($_GET['p'])&&$_GET['p']!=''){
-   $page  = $_GET['p'];
+if(isset($_GET['p'])&&$_GET['p']!='') {
+    $page  = $_GET['p'];
 }
 
 // Configuracoes templates
 $no_template_pages = array(
-   'logout', 
-   'votar', 
-   'comentar', 
+   'logout',
+   'votar',
+   'comentar',
    'votarcomentario',
    'fb-callback',
    'search',
@@ -50,13 +51,18 @@ $header = 'view/template/header.php';
 $footer = 'view/template/footer.php';
 
 $template = !in_array($page, $no_template_pages);
-if ($template) include($header);  
+if ($template) {
+    include($header);
+}
 if(file_exists("view/" . $page . ".php")) {
-  include('view/' . $page . '.php');
+    include('view/' . $page . '.php');
 } else {
     include('view/error.php');
 }
-if ($template) include($footer);
+if ($template) {
+    include($footer);
+}
 
-if ($connection) $connection->close();
-?>
+if ($connection) {
+    $connection->close();
+}

@@ -33,7 +33,7 @@ $totalRows_Melhores = mysql_num_rows($Melhores);
     </tr>
     <?php } while ($row_Melhores = mysql_fetch_assoc($Melhores)); ?>
 </table>
-<?
+<?php
 mysql_free_result($Melhores);
 
 mysql_select_db($database_connection, $connection);
@@ -89,6 +89,6 @@ $totalRows_Melhores = mysql_num_rows($Melhores);
 </table>
 <small>Só foram avaliados professores com 15 ou mais votos.</small> 
 <br /><br />
-<?
+<?php
 mysql_free_result($Melhores);
 ?>

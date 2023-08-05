@@ -20,13 +20,13 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 7.4
+          tools: php-cs-fixer
 
       - name: Install dependencies
         run: composer install
 
       - name: Fix style
-        uses: shivammathur/setup-php@v2
-        run: php-cs-fixer fix --allow-risky=yes --using-cache=no
+        run: php-cs-fixer fix --allow-risky=yes --using-cache=no .
 
       - name: Commit style fixes
         uses: stefanzweifel/git-auto-commit-action@v4

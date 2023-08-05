@@ -1,8 +1,8 @@
-<?php 
+<?php
 
 if (isset($_GET['id'])) {
-   $data = GetSQLValueString($_GET['id'], "int");
-   $sql = "
+    $data = GetSQLValueString($_GET['id'], "int");
+    $sql = "
       SELECT AP.id, DIS.nome as 'Dnome', PRO.nome as 'Pnome', codigo, media
       FROM aulaprofessor AP
       INNER JOIN disciplinas DIS ON AP.idaula = DIS.id
@@ -11,7 +11,7 @@ if (isset($_GET['id'])) {
           SELECT APid, AVG(nota) as media FROM votos WHERE tipo <> 5 GROUP BY APid
       ) MED ON MED.APid = AP.id
       WHERE DIS.id =".$data." ORDER by media DESC, PRO.nome ASC";
-   $result = $connection->query($sql);
+    $result = $connection->query($sql);
 }
 
 ?>
@@ -46,7 +46,7 @@ if (isset($_GET['id'])) {
       <tr>
          <td><a href="?p=ver&id=<?= $row['id'];?>"><?=$row['Pnome'];?></a></td>
          <td><a href="?p=ver&id=<?= $row['id'];?>"><?=$row['Dnome'];?> - <?=$row['codigo'];?></a></td>
-         <td><?= $row['media']?number_format($row['media']*2, 2, ',', ' '):"Sem avaliações";?></td>
+         <td><?= $row['media'] ? number_format($row['media']*2, 2, ',', ' ') : "Sem avaliações";?></td>
          <td>
             <button class="btn btn-success" data-toggle="modal" data-target="#modal<?=$row['id'];?>">
                Avaliar
@@ -55,7 +55,7 @@ if (isset($_GET['id'])) {
             <div class="modal fade" id="modal<?=$row['id'];?>" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                <div class="modal-dialog">
                   <div class="modal-content">
-                     <? include('view/modal.php'); ?>
+                     <?php include('view/modal.php'); ?>
                   </div>
                </div>
             </div>
@@ -72,4 +72,6 @@ if (isset($_GET['id'])) {
 
 <p><small>Foram encontrados <?php echo $result->num_rows ?> registros.</small></p>
 
-<?php if ($result) $result->close(); ?>
+<?php if ($result) {
+    $result->close();
+} ?>

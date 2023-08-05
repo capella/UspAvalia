@@ -1,8 +1,8 @@
-<?php 
+<?php
 
 if (isset($_GET['pesquisa'])) {
-  $data = GetSQLValueString($_GET['pesquisa'], "text2");
-  $sql = "
+    $data = GetSQLValueString($_GET['pesquisa'], "text2");
+    $sql = "
   SELECT * FROM (
      (SELECT id, CONCAT(codigo, ' - ', nome) as nome, 1 as type from disciplinas
      WHERE MATCH(nome, codigo) AGAINST('*".$data."*' IN BOOLEAN MODE)
@@ -14,9 +14,9 @@ if (isset($_GET['pesquisa'])) {
      ORDER BY MATCH(nome) AGAINST('*".$data."*' IN BOOLEAN MODE) DESC
      LIMIT 40)
   ) NAMES
-  LIMIT 80"; 
+  LIMIT 80";
 
-  $result = $connection->query($sql);
+    $result = $connection->query($sql);
 }
 
 ?>
@@ -32,24 +32,26 @@ if (isset($_GET['pesquisa'])) {
 </form>
 
 <p>
-  <? if($result && $result->num_rows > 0): ?>
+  <?php if($result && $result->num_rows > 0): ?>
   <table class="table table-striped">
     <thead><tr><th>Nome</th><th>Tipo</th></tr></thead>
     <?php while ($row = $result->fetch_assoc()) { ?>
-      <?
-        if($row['type']==1)
-            echo '<tr><td><a href="?p=disciplina&id='.$row['id'].'">'.$row['nome'].'<a/></td><td>Disciplina</td></tr>';  
-        else {
-            echo '<tr><td><a href="?p=professor&id='.$row['id'].'">'.$row['nome'].'<a/></td><td>Professor(a)</td></tr>';   
+      <?php
+        if($row['type']==1) {
+            echo '<tr><td><a href="?p=disciplina&id='.$row['id'].'">'.$row['nome'].'<a/></td><td>Disciplina</td></tr>';
+        } else {
+            echo '<tr><td><a href="?p=professor&id='.$row['id'].'">'.$row['nome'].'<a/></td><td>Professor(a)</td></tr>';
         }
-      ?>
+        ?>
     <?php } ?>
   </table>
-  <? else: ?>
+  <?php else: ?>
   	<div class="alert alert-danger">Não encontramos nada com <?=$pesquisa;?>. <a href="?p=add"> Deseja criar adicionar nova disciplina ou professor? Clique aqui. </a></div>
-  <? endif; ?>
+  <?php endif; ?>
 </p>
 <hr />
 <small>Foram encontrados <?= $result->num_rows ?> registros.</small>
 
-<?php if ($result) $result->close(); ?>
+<?php if ($result) {
+    $result->close();
+} ?>

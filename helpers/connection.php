@@ -20,5 +20,3 @@ if (!$connection->set_charset("utf8")) {
 }
 
 $connection->select_db($database_connection);
-
-?>

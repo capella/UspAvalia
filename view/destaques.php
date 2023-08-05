@@ -85,5 +85,9 @@ $melhores_professores_result = $connection->query($sql) or die($connection->erro
 </table>
 <small>Só foram avaliados professores com 15 ou mais votos.</small> 
 
-<?php if ($melhores_disciplnas_result) $melhores_disciplnas_result->close(); ?>
-<?php if ($melhores_professores_result) $melhores_professores_result->close(); ?>
+<?php if ($melhores_disciplnas_result) {
+    $melhores_disciplnas_result->close();
+} ?>
+<?php if ($melhores_professores_result) {
+    $melhores_professores_result->close();
+} ?>
