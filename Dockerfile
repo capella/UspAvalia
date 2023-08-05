@@ -28,7 +28,7 @@ WORKDIR /var/www/html/
 RUN php /usr/local/bin/composer install  --no-dev
 WORKDIR /
 
-COPY --from=db db matrusp/db
+COPY --from=db db /var/www/html/matrusp/db
 
 ADD . /var/www/html/
 RUN chmod 777 /var/www/html/INSTALL/db_usp.txt

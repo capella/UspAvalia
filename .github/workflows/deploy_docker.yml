@@ -35,11 +35,11 @@ jobs:
 
     - name: Build
       run: |-
-        docker build . --tag "gcr.io/$PROJECT_ID/$DOCKER_IMAGE_NAME:$GITHUB_SHA"
+        docker build . --tag "gcr.io/$PROJECT_ID/$DOCKER_IMAGE_NAME:latest"
 
     - name: Publish
       run: |-
-        docker push "gcr.io/$PROJECT_ID/$DOCKER_IMAGE_NAME:$GITHUB_SHA"
+        docker push "gcr.io/$PROJECT_ID/$DOCKER_IMAGE_NAME:latest"
 
     - name: Trigger Deploy
       run: curl -X POST --fail -F token="$DEPLOY_TOKEN" -F ref=master $DEPLOY_URL
