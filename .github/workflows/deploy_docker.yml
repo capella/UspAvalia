@@ -2,7 +2,7 @@ name: Build and Deploy to GCP registry
 
 on:
   push:
-      branches: [ main ]
+      branches: [ master ]
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
