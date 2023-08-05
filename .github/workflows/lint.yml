@@ -1,18 +1,33 @@
-name: PHP-CS-Fixer
+name: fix-style
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
-  run:
+  cs-fix:
     runs-on: ubuntu-latest
 
-    name: PER
-
     steps:
-      - uses: actions/checkout@v3
-      - uses: shivammathur/setup-php@v2
+      - name: Get branch names
+        id: branch-name
+        uses: tj-actions/branch-names@v5.1
+
+      - name: Checkout code
+        uses: actions/checkout@v2
         with:
-          php-version: 8.2
-          coverage: xdebug
-          tools: php-cs-fixer, cs2pr
-      - run: php-cs-fixer fix . --dry-run --rules=@PER --format=checkstyle | cs2pr
+          ref: ${{ github.head_ref }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.1
+
+      - name: Install dependencies
+        run: composer install
+
+      - name: Fix style
+        run: ./vendor/bin/php-cs-fixer fix --allow-risky=yes --using-cache=no
+
+      - name: Commit style fixes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Apply php-cs-fixer changes
