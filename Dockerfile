@@ -1,3 +1,11 @@
+FROM python:3 as db
+COPY ./matrusp/py/ .
+
+RUN pip install --no-cache-dir html5lib aiohttp python-dateutil beautifulsoup4 aiodns multi-key-dict
+RUN mkdir db/
+RUN python3 parse_cursos_usp.py db/
+RUN python3 parse_usp.py db/
+
 FROM php:7-apache
 
 LABEL maintainer="gabriel@capella.pro"
@@ -20,5 +28,8 @@ WORKDIR /var/www/html/
 RUN php /usr/local/bin/composer install  --no-dev
 WORKDIR /
 
+COPY --from=db db matrusp/db
+
 ADD . /var/www/html/
 RUN chmod 777 /var/www/html/INSTALL/db_usp.txt
+
