@@ -65,7 +65,7 @@
                   <?php if ($user): ?>
                   <!-- <li><a href="/?p=add">Adicionar Disciplina/Professor</a></li> -->
                   <li><a href="/logout">Logout</a></li>
-                  <? else: ?>
+                  <?php else: ?>
                   <li><a href="<?=$loginUrl;?>">
                      <img src="/assets/images/facebook.png" style="height: 20px;">
                   </a></li>

@@ -10,12 +10,12 @@
     seguintes quesitos. Em dificuldade, notas maiores significam maior
     dificuldade. O voto é secreto.
   </p>
-  <?
+  <?php
   $arr = array('Avaliação Geral', 'Didática', 'Empenho/Dedicação', 'Relação com os alunos', 'Dificuldade');
-  reset($arr);
-  while (list($key, $value) = each($arr)) {
-	  $chave = $key+1;
-  ?>
+reset($arr);
+while (list($key, $value) = each($arr)) {
+    $chave = $key+1;
+    ?>
     <hr style="margin-bottom: 6px; margin-top:0;">
     <b><?=$value;?></b>
     <div style=" text-align:center;">
@@ -37,7 +37,7 @@
         </script>
       </div>
     </div>
-	<? } ?>
+	<?php } ?>
     <input type="hidden" name="id" value="<?=$row['id'];?>" />
     <input type="hidden" name="p" value="votar" />
   </div><!--modal body-->

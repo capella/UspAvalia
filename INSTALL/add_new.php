@@ -1,10 +1,11 @@
 <?php
+
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../helpers/connection.php';
 require __DIR__ . '/../helpers/sanitizer.php';
 use voku\helper\HtmlDomParser;
 
-set_time_limit (1000000);
+set_time_limit(1000000);
 
 $json = ["ok"];
 
@@ -20,16 +21,18 @@ foreach ($json_input as $val) {
     $sql =   "SELECT codigo FROM disciplinas WHERE codigo = ".$codigo;
 
     $result = $connection->query($sql);
-    if($result && $result->num_rows == 0){
+    if($result && $result->num_rows == 0) {
         $unidade = $val['unidade'];
-        if (!isset($unidade) || $unidade == "") continue;
-        $unidade = html_entity_decode ($unidade);
+        if (!isset($unidade) || $unidade == "") {
+            continue;
+        }
+        $unidade = html_entity_decode($unidade);
         $unidade = GetSQLValueString(trim($unidade), "text");
 
         // check for unidade
         $sql =   "SELECT id FROM unidades WHERE NOME = ".$unidade;
         $result = $connection->query($sql);
-        $unidadeID = NULL;
+        $unidadeID = null;
         if($result && $result->num_rows == 0) {
             $sql =   "INSERT INTO unidades (NOME) VALUES (".$unidade.")";
             $connection->query($sql);
@@ -74,4 +77,3 @@ foreach ($json_input as $val) {
 }
 
 echo json_encode($json, JSON_UNESCAPED_UNICODE);
-?>

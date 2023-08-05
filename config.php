@@ -27,5 +27,3 @@ $smtp_host = $_ENV["SMTP_HOST"];
 $smtp_username = $_ENV["SMTP_USERNAME"];
 $smtp_password = $_ENV["SMTP_PASSWORD"];
 $smtp_password = $_ENV["SMTP_PASSWORD"];
-
-?>

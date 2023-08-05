@@ -1,4 +1,5 @@
 <?php
+
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../helpers/connection.php';
 require __DIR__ . '/../helpers/sanitizer.php';
@@ -10,9 +11,11 @@ $templine = '';
 $lines = file("struct.sql");
 
 // Loop through each line
-foreach ($lines as $line){
+foreach ($lines as $line) {
     // Skip it if it's a comment
-    if (substr($line, 0, 2) == '--' || $line == '') continue;
+    if (substr($line, 0, 2) == '--' || $line == '') {
+        continue;
+    }
     // Add this line to the current segment
     $templine .= $line;
     // If it has a semicolon at the end, it's the end of the query
@@ -20,12 +23,11 @@ foreach ($lines as $line){
         // Perform the query
         $result = $connection->query($templine);
         if (!$result) {
-        	$json = array('error' => $connection->error);
-        	break;
+            $json = array('error' => $connection->error);
+            break;
         }
         // Reset temp variable to empty
         $templine = '';
     }
 }
 echo json_encode($json, JSON_UNESCAPED_UNICODE);
-?>
