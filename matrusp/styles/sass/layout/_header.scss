@@ -1,0 +1,117 @@
+
+// 
+//
+// Header Layout
+// =============
+//
+// This file structures the header layout.
+// 
+// Affected HTML
+// -------------
+// html > body > div#page-container > header
+//
+//  header
+//      span#logo
+//      ul#icons
+//
+//
+
+header {
+    // defining a position here to work with children positions
+    position: sticky;
+    top: 0;
+    width: 100%;
+    user-select: none;
+	z-index: 1;
+
+	& #header-content {
+		position: relative;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-around;
+		align-items: center;
+		background: linear-gradient(to top, darken($header-color-primary, 10%) 10px, $header-color-primary 10px, $header-color-primary 100%);
+		padding-bottom: $header-bottom-line;
+		box-shadow: $shadow-default;
+		z-index: 1;
+	}
+
+	& #loading-bar {
+		position:  absolute;
+		margin: 0;
+		bottom: 0;
+		left: 0;
+		width: 0%;
+		height: 10px;
+		background: linear-gradient(to top, $header-color-tertiary 50%, $header-color-secondary 50%, $header-color-secondary 100%);
+		transition: width ease-in-out 0.2s;
+		z-index: 2;
+	}
+}
+
+#logo-wrapper {
+	order: 1;
+}
+
+#logo,
+#icons {
+    height: $header-height - $header-bottom-line;
+}
+
+#logo {
+	font-family: $logo-font-family;
+    font-size: $font-size-logo;
+    font-weight: bold;
+    // line-height equal to its height, centralizes the text
+    line-height: $header-height - $header-bottom-line;
+    letter-spacing: $logo-letter-spacing;
+    color: $header-color-symbols;
+    cursor: default;
+    flex: 0 0 auto;
+}
+
+.beta-tag-wrapper {
+	overflow: hidden;
+	display: inline-block;
+	vertical-align: middle;
+	.beta-tag {
+		color: $header-color-symbols;
+		font-weight: lighter;
+		animation: slidefromleft 1s ease 2s backwards;
+		display: inline-block;
+	}
+}
+
+#icons {
+    display: inline-block;
+    float: right;
+    flex: 0 0 auto;
+    order: 3;
+}
+
+#save-controller {
+  display: inline-block;
+  flex: 0 0 auto;
+  order: 1;
+
+  #user-identifier:disabled {
+    display: inline-block;
+    color: white;
+    font-size: 14px;
+    background: transparent;
+    border: none;
+    text-align: right;
+  }
+}
+
+@media only screen and (max-width: 720px) {
+	#logo-wrapper {
+		order: 2;
+	}
+
+	#save-controller {
+		flex: 0 0 100%;
+		text-align: center;
+	}
+
+}

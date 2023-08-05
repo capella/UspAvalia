@@ -11,7 +11,7 @@ $options = array(
 
 
 try {
-	$data = file_get_contents("http://bcc.ime.usp.br/matrusp/db/db_usp.txt", false, stream_context_create($options));
+	$data = file_get_contents("20171.txt", false, stream_context_create($options));
 	file_put_contents("db_usp.txt", $data);
 } catch (Exception $e) {
     $json = array('error' =>  $e->getMessage());

@@ -1,0 +1,215 @@
+// 
+//
+// Lecture Schedule Layout
+// =======================
+//
+// This file structures the basic lecture schedule layout.
+// 
+// Affected HTML
+// -------------
+// html > body > div#page-container > div#main > div#lecture-schedule
+//
+//  div#lecture-explorer
+//      div#search-and-add
+//      div#accordion-window
+//
+//
+
+#lecture-schedule {
+  display: flex;
+  flex-direction: column;
+  vertical-align: top;
+  min-height: $lecture-schedule-height;
+  flex: 2 1 $lecture-schedule-basis;
+  min-width: 0;
+  margin: 16px 0;
+}
+
+#time-table {
+  width: 100%;
+  flex: 1 1 auto;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0;
+  padding-bottom: 8px;
+  box-sizing: border-box;
+}
+
+.column {
+  vertical-align: top;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 480px;
+  transition: flex ease .2s .2s;
+}
+
+.column.time {
+  flex: 0 0 auto;
+  left: 0;
+  width: 22px;
+
+  .column-header {
+    z-index: 1;
+    text-align: right;
+
+    .print & {
+      visibility: hidden;
+    }
+
+    #fit-time-table-button {
+      color: #888;
+      padding: 0;
+      padding-right: 4px;
+      min-width: 0;
+
+      &:active {
+        color: $color-accent-dark;
+      }
+
+      &.toggled {
+        color: $color-accent-dark;
+      }
+
+      &:hover {
+        background: transparent;
+        color: $color-accent;
+      }
+
+      #fit-time-table-button-arrow {
+        margin: -3px;
+        text-shadow: -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white;
+        transform: translateX(1px);
+      }
+
+      #fit-time-table-button-clock {
+        transform: scaleX(-1);
+      }
+    }
+  }
+
+  .column-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: absolute;
+  }
+}
+
+.hour {
+  flex: 0 0 0;
+  font-size: $lecture-schedule-font-size-hour;
+  color: $lecture-schedule-hour-color;
+  text-align: right;
+  line-height: 0;
+  vertical-align: middle;
+  transition: opacity ease .2s;
+
+  &:nth-child(2n) {
+    opacity: 0;
+    #time-table.short.fit & {
+      opacity: 1;
+    }
+  }
+}
+
+.column:not(.time) {
+  position: relative;
+  flex: 1 0 $column-basis;
+
+  .column-header {
+    z-index: -1;
+  }
+
+   .column-content-wrapper {
+    margin: 0 $column-margin-horizontal;
+  }
+}
+
+.column-content-wrapper {
+  flex: 1 0 0;
+  overflow: visible;
+  position: relative;
+  min-height: 0;
+}
+
+.column-content {
+  position: absolute;
+  width: 100%;
+
+  top: -31.5789%;    // Precalculated fallback values
+  height: 142.105%;  // in case css variables not supported
+  
+
+  .fit & {
+    top: var(--col-top);
+    height: var(--col-height);
+  }
+
+  will-change: height, top;
+  transition: height ease .2s, top ease .2s;
+}
+
+.column.hidden {
+  flex: 0;
+  overflow: hidden;
+
+  .column-content-wrapper {
+    margin: 0;
+  }
+}
+
+.column-header {
+  box-sizing: border-box;
+  text-align: center;
+  flex: 0 0 24px;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  color: $textgray;
+  background: white;
+  font-size: $lecture-schedule-font-size-header;
+  overflow: hidden;
+
+}
+
+.column-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  overflow: visible;
+  z-index: -3;
+
+  svg {
+    overflow: visible;
+    width: 100%;
+    height: 100%;
+
+    & line {
+      stroke: $lecture-schedule-line-stroke;
+      stroke-width: 1px;
+      shape-rendering: crispedges;
+      animation: grow ease 1s both;
+      transform-origin: center;
+
+      &.even {
+        stroke-width: 2px;
+
+        &.noon-center {
+          stroke: white;
+          stroke-width: 1px;
+        }
+
+        &.noon-outline {
+          stroke-width: 5px;
+        }
+      }
+
+      &.odd {
+        animation-delay: 0.6s;
+      }
+    }
+  }
+}

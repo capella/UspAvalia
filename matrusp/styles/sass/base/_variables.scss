@@ -1,0 +1,69 @@
+// Fonts
+$font-family: Roboto, tahoma, helvetica;
+$logo-font-family: tahoma, helvetica;
+$font-size: 12px;
+
+// Misc Basic
+$border-default: 1px solid lightgray;
+$shadow-default: 2px 1px 8px 0px rgba(0,0,0,0.4);
+
+// Base
+$page-max-width: 1080px;
+$page-min-width: 0;
+$main-padding: 16px 0;
+$header-height: 50px;
+$footer-height: 30px;
+$header-bottom-line: $header-height / 5;
+$lecture-schedule-combination-controller-height: 100px;
+$lecture-schedule-height: 560px;
+$lecture-schedule-basis: 430px;
+$lecture-explorer-height: $lecture-schedule-height;
+$lecture-explorer-basis: 330px;
+$lecture-schedule-plan-buttons-max-width: 44%;
+$lecture-explorer-plan-buttons-height: 36px;
+$lecture-explorer-plans-height: $lecture-schedule-combination-controller-height;
+$flex-spacer-basis: 16px;
+
+// Header
+$header-spacing: 12px;
+$font-size-logo: 26px;
+$logo-letter-spacing: 1px;
+$icons-square-size: $header-height - $header-bottom-line;
+$icons-spacing: 20px;
+$tooltip-triangle-width: 12px;
+$tooltip-triangle-height: 6px;
+$tooltip-width: 100px;
+$tooltip-padding-horizontal: 8px;
+$tooltip-padding-vertical: 5px;
+$tooltip-font-size: 13px;
+
+// Lecture Schedule
+$column-time-width: 40px;
+$column-basis: 80px;
+$column-background-line-height: 2px;
+$week-day-underline-height: 0px;
+$lecture-schedule-font-size-hour: 13px;
+$lecture-schedule-font-size-header: 14px;
+$schedule-box-border-left-width: 2.3px;
+$combination-controller-margin-top: 20px;
+$combination-button-width: 34px;
+$column-margin-horizontal: 4px;
+$time-table-padding: 0px 4px;
+$lecture-schedule-line-stroke: #bbb;
+$lecture-schedule-hour-color: gray;
+$lecture-schedule-header-color: gray;
+
+// Lecture Explorer
+$scroll-bar-width: 15px;
+$search-box-height: 28px;
+$search-and-add-border-width: 2px;
+$search-padding-horizontal: 5px;
+
+$width-lecture-checkbox: 30px;
+$width-lecture-code: 58px;
+$width-lecture-delete: 30px;
+$width-icon-delete: 20px;
+
+// Animation Variables
+$timing: .4s;
+$ease: cubic-bezier(0.865, 0.140, 0.095, 0.870);

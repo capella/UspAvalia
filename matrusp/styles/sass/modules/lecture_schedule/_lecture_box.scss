@@ -1,0 +1,179 @@
+.schedule-box {
+  position: absolute;
+  width: 100%;
+  box-sizing: border-box;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  transition: background-color .1s ease, border-left-width .1s linear .3s;
+  animation: appear .3s ease-out .1s backwards;
+  border-left-style: solid;
+  border-left-width: $schedule-box-border-left-width;
+  text-overflow: clip;
+  user-select: none;
+
+  .column.hidden & {
+    border-left-width: 0px;
+    transition-delay: 0s;
+  }
+
+  &.schedule-box-highlight {
+    z-index: 1;
+  }
+
+  &.schedule-box-show {
+    display: flex;
+
+    &:before {
+      box-shadow: $shadow-default;
+      z-index: -1;
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+  }
+
+  .print & {
+    animation: none;
+    transition: none;
+  }
+
+  .ecoprint & {
+    border: 1.5*$schedule-box-border-left-width solid;
+    border-left: 1.5*$schedule-box-border-left-width solid;
+    .timespan {
+      margin: -1.5*$schedule-box-border-left-width;
+      margin-left: -0.5*$schedule-box-border-left-width;
+    }
+  }
+
+  .grayscale & {
+    border: none;
+    font-weight: bold;
+  }
+}
+
+// Same order as in lecture_explorer/_accordion.scss
+@each $color in $lecture-colors {
+  $i: index($lecture-colors, $color) - 1;
+
+  .schedule-box.color-#{$i} {
+    background-color: lighten($color, 20%);
+    color: darken($color, 35%);
+    border-left-color: darken($color, 25%);
+
+    >.timespan-mini {
+      background-color: lighten($color, 20%);
+    }
+  }
+
+  .ecoprint {
+    .schedule-box.color-#{$i} {
+      background-color: white;
+      border-color: lighten($color, 20%);
+      border-left-color: darken($color, 25%);
+    }
+  }
+
+  .grayscale {
+    .schedule-box.color-#{$i} {
+      $g: 255 * $i/5 % 255;
+      $graycolor: rgb($g, $g, $g);
+      
+
+      @if $i < 5 {
+        background-color: $graycolor;
+        @if $g > 255/2 {
+          color: black;
+        }
+        @else {
+          color: white;
+        }
+      }
+      @else  {
+        $direction: 45deg;
+        @if $i < 9 {
+          $direction: -45deg;
+        }
+
+        $stripecolor: $graycolor;
+        @if $g > 255/2 {
+          color: black;
+          $stripecolor: lighten($graycolor, 5%);
+        }
+        @else {
+          color: white;
+           $stripecolor: darken($graycolor, 5%)
+        }
+
+        @include striped-bg($direction, $graycolor, $stripecolor, 2%, 15%);  
+      }
+    }
+  }
+
+  .schedule-box-highlight.color-#{$i} {
+    background-color: $color;
+
+    >.timespan-mini {
+      background-color: $color;
+    }
+  }
+}
+
+.schedule-box-highlight.schedule-box-highlight-conflict {
+  background-color: #f00;
+  border-left-color: #800;
+  color: black;
+  opacity: 0.8;
+  z-index: 1;
+}
+
+.lecture-code {
+  line-height: 100%;
+  text-align: center;
+  font-size: 14px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.timespan {
+  position: absolute;
+  font-weight: lighter;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.timespan-begin {
+  left: 2px;
+  top: 0px;
+}
+
+.timespan-end {
+  bottom: 0px;
+  right: 3px;
+}
+
+.timespan-mini {
+  left: 0;
+  right: 0;
+  visibility: hidden;
+}
+
+.timespan-mini.timespan-begin {
+  top: -14px;
+}
+
+.timespan-mini.timespan-end {
+  bottom: -13px;
+  text-align: right;
+}
+
+.schedule-box:hover.schedule-box-show .timespan-mini,
+.schedule-box-highlight.schedule-box-show .timespan-mini {
+  visibility: visible;
+  z-index: 1;
+}

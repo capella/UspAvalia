@@ -1,0 +1,30 @@
+// 
+//
+// Header Icons Layout
+// ===================
+//
+// This file structures the icons' layout inside header.
+// 
+// Affected HTML
+// -------------
+// html > body > div#page-container > header > ul#icons
+//
+//  ul#icons
+//  ->  li.icon
+//          div.hover-mask
+//          img
+//  ->  ...
+//
+//
+
+#icons {
+    .header-button-separator {
+        display: inline-block;
+        width: 20px;
+    }
+
+    button {
+        vertical-align: middle;
+        height: 100%;
+    }
+}

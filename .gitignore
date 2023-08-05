@@ -3,3 +3,4 @@ info_bd/*.txt
 /vendor/
 **/*.swp
 matrusp/db/
+**/*.log

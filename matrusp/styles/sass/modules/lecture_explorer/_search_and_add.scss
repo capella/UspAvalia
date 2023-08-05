@@ -1,0 +1,221 @@
+// 
+//
+// Search and Add Layout
+// =====================
+//
+// This file structures the basic search-and-add layout.
+// 
+// Affected HTML
+// -------------
+// html > body > div#page-container > div#main 
+// > div#lecture-explorer > div#search-and-add
+//
+//  div#search-and-add
+//      input#search
+//      button#add-extra-activity
+//      div#search-result-box
+//  ->      div.search-result.lecture-info
+//              div.lecture-info-code
+//              div.lecture-info-description
+//  ->      ...
+//
+//
+
+#search-and-add {
+    z-index: 1;
+}
+   
+#search {
+    position: relative;
+    width: 100%;
+    padding: 0 $search-padding-horizontal;
+    font-family: $font-family;
+    font-size: 14px;
+    height: $search-box-height;
+    border: $border-default;
+    z-index: 1;
+
+    &:focus {
+        box-shadow: $shadow-default;
+
+        // becomes translucent, "hiding" from user's view
+        ~ #add-extra-activity {
+            opacity: 0.4;
+        }
+				//TODO can I remove this without consequences?
+        //~ #search-result-box {
+        //    visibility: visible;
+        //}
+    }
+}
+
+// it's visible only on #search:focus
+#search-result-box {
+    position: absolute;
+    // TODO change top to variable; it is 1px more than the 
+    //      search box height.
+    top: $search-box-height - 1px;
+    display: block;
+    width: 100%;
+    height: auto;
+    // TODO change [max/min]-height to variable.
+    // TODO check if with more lectures than max-height it breaks.
+    max-height: 360px;
+    min-height: 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    cursor: default;
+    background-color: white;
+    border-radius: 0 2px 2px 2px;
+    visibility: hidden;
+    box-shadow: $shadow-default;
+    border: $border-default;
+}
+
+#search:focus:valid ~ #search-result-box:not(:empty), #search-result-box:not(:empty):active {
+    visibility: visible;
+}
+
+.search-result.empty-result, .search-result.loading-result {
+    color: gray;
+    font-size: larger;
+    margin: 20px 8px;
+    text-align: center;
+}
+
+.search-result.loading-result .search-result-subtitle{
+    font-size: small;
+    margin: 2px;
+}
+
+.search-result.lecture-info {
+    padding: 6px 4px;
+    border-bottom: 1px solid rgba(159, 159, 159, 0.8);
+    display: block;
+
+    & .lecture-info-description {
+        color: #666;
+        margin-top: 4px;
+    }
+}
+
+.search-result-selected {
+        background-color: $highlight-background;
+        color: $highlight-text;
+}
+
+#search-options-summary {
+    margin: 2px 0px;
+    user-select: none;
+    color: $textgray;
+    cursor: pointer;
+
+    flex: 1 0 0;
+    
+    & .selected-option {
+        color: $header-color-tertiary;
+        font-weight: bold;
+    }
+
+    &:hover {
+        color: #333;
+    }
+
+    &:active {
+        color: black;
+    }
+}
+
+#search-summary-wrapper {
+    display: flex;
+}
+
+#search-options-clear {
+    background: white;
+    border: none;
+    color: gray;
+
+    white-space: nowrap;
+    visibility: hidden;
+    flex: 0 0 0;
+
+    &.show-options, &.show-search {    
+        visibility: visible;
+        margin-left: 4px;
+        flex: 0 0 auto;
+    }
+
+    &:hover {
+        color: #333;
+    }
+
+    &:active {
+        color: black;
+    }
+}
+
+#search-options {
+    visibility: hidden;
+    padding-top: 4px;
+    height: 0;
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    grid-gap: 4px;
+    user-select: none;
+}
+
+#search-options.show {
+    visibility: visible;
+    height: auto;
+}
+
+#search-options-clear {
+    padding: 0;
+}
+
+#search-options label {
+    display: block;
+    color: #333;
+    text-align: center;
+}
+
+#search-options input, #search-options select {
+	max-width: 100%;
+}
+
+#search-options select {
+    width: 100%;
+}
+
+#campus-select-label {
+    grid-row: 2;
+    grid-column: 1;
+}
+
+#unit-select-label {
+    grid-row: 2;
+    grid-column: 2;
+}
+
+#department-select-label {
+    grid-row: 3;
+    grid-column: 2;
+}
+
+#search-options-timeframes {
+    grid-row: 4;
+    grid-column: 1/-1;
+
+    margin-top: 8px;
+    text-align: center;
+
+    & label {
+        display: inline;
+    }
+}
+
+#search-options-browser-error {
+    grid-row: -1;
+    grid-column: 1/-1;
+    color: #666;
+}

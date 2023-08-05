@@ -1,0 +1,61 @@
+
+#upload-warning {
+  right: 0;
+  bottom: 44px;
+  display: inline-block;
+  position: absolute;
+  color: red;
+  visibility: hidden;
+}
+
+#upload-warning.upload-warning-old-version {
+  visibility: visible; 
+}
+
+#upload-button {
+  border: $border-default;
+  padding: 12px 4px;
+  align-items: center;
+  display: inline-flex;
+  user-select: none;
+  cursor: default;
+  grid-row: 1;
+  grid-column: 2;
+
+  &:hover {
+    background-color: $hover-background-default;
+    color: darken($color-accent,10);
+  }
+
+  &:active {
+    background-color: $active-background-default;
+  }
+
+  > input {
+    display: none;
+  }
+
+  // Text 'Upload' inside the label
+  > div,
+  > img {
+    text-align: center;
+  }
+
+  > img {
+    width: 20px;
+    right: 10px;
+  }
+
+  > div {
+    width: calc(100% - 30px);
+    height: 1em;
+  }
+}
+
+#course-button {
+  grid-row: 2;
+  grid-column: 2;
+
+  cursor: default;
+  user-select: none;
+}

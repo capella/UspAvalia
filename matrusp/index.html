@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt_BR">
+<head>
+    <meta charset="UTF-8">
+    <!-- If the browser is lower than or equal to IE 9, redirect to the old page.
+        TODO verificar outros navegadores
+        TODO colocar a página correta de redirecionamento (quando for para produção, 
+            criar um link para a página antiga e.g. matrusp/old, matrusp/v1) -->
+    <!--[if lte IE 10 ]>
+        <meta http-equiv="refresh" content="0; url=http://bcc.ime.usp.br/matrusp_v1/" />
+    <![endif]-->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta property="og:title" content="MatrUSP" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://bcc.ime.usp.br/matrusp" />
+    <meta property="og:image" content="https://bcc.ime.usp.br/matrusp/matrusp.jpg" />
+    <meta property="og:site_name" content="MatrUSP" />
+    <meta property="og:description" content="Crie e organize sua grade curricular de disciplinas da Universidade de São Paulo" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FFA000" />
+    <title>MatrUSP</title>
+    
+    <link rel="icon" type="image/png" href="images/matrusp32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/matrusp16.png">
+    <link rel="icon" type="image/png" sizes="24x24" href="images/matrusp24.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/matrusp32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="images/matrusp48.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="images/matrusp64.png">
+    <link rel="icon" type="image/png" sizes="128x128" href="images/matrusp128.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="images/matrusp192.png">
+    <link rel="manifest" href="matrusp.webmanifest">
+    <link rel="stylesheet" href="styles/css/roboto.css">
+    <link rel="stylesheet" href="styles/css/icons.css">
+    <link rel="stylesheet" href="styles/css/application.css">
+</head>
+
+<body>
+    <div id="drop-overlay"><div class="fas fa-upload drop-icon"></div>
+		<span>Solte o arquivo para carregar</span>
+    </div>
+    <div id="menu-overlay"></div>
+	<div id="dialog-overlay" onclick="ui.closeDialog()">
+		<div id="print-dialog" class="dialog" onclick="event.stopPropagation()">
+			<button type="button" class="close-button" id="course-window-close" onclick="ui.closeDialog()">×</button>
+			<label id="print-format-label"><div>Formato</div>
+			<select id="print-format"><option>A4</option></select></label>
+			<label id="print-color-label"><div>Cor</div>
+			<select id="print-color"><option value="color">Colorido</option><option value="eco-color">Colorido (econômico)</option><option value="grayscale">Escala de cinza</option></select></label>
+			<div id="print-buttons">
+			<button type="button" id="download-pdf-button"><div id="download-pdf-button-icon" class="fas fa-download"></div> Salvar PDF</button>
+			<button class="emphasis" id="print-button"><div id="print-button-icon" class="fas fa-print"></div> Imprimir</button>
+			</div>
+		</div>
+		<form id="course-dialog" class="dialog" onclick="event.stopPropagation()">
+			<button type="button" class="close-button" id="course-window-close" onclick="ui.closeDialog()">×</button>
+			<label id="course-campus-select-label" class="select-label"><div>Campus</div>
+			<select name="campus" id="course-campus-select"></select></label>
+			<label id="course-unit-select-label" class="select-label"><div>Unidade</div>
+			<select name="unit" id="course-unit-select"></select></label>
+			<label id="course-select-label" class="select-label"><select name="course" id="course-select" disabled></select>
+			<div>Curso</div></label>
+			<label id="course-period-select-label" class="select-label"><select name="period" id="course-period-select" disabled></select>
+			<div>Período</div></label>
+			<div id="course-lecture-list"></div>
+			<label id="course-optative-check-label"><input id="course-optative-check" type="checkbox" name="optativas" checked>Incluir optativas</label>
+			<button type="button" id="course-accept-button">Aceitar</button>
+		</form>
+		<div id="share-dialog" class="dialog" onclick="event.stopPropagation()">
+			<button type="button" class="close-button" id="share-dialog-close" onclick="ui.closeDialog()">×</button>
+			<label><div>Seu link para compartilhar</div>
+			<div id="share-link-wrapper">
+			<input id="share-link" type="text" onfocus="this.select()" readonly value="https://bcc.ime.usp.br/matrusp/#identifier"/></label><button id="share-clipboard" class="far fa-clone"></button></div>
+			<div><button id="share-mail" class="fas fa-envelope"></button><button id="share-facebook" class="fab fa-facebook"></button><button id="share-whatsapp" class="fab fa-whatsapp"></button></div>
+			<div id="share-calendar">
+			<button id="share-gcal"><span class="fas fa-calendar-alt"></span> Enviar para Google Calendar</button><br/>
+			<button id="share-ics"><span class="fas fa-calendar-alt"></span> Exportar para calendário .ics</button><br />
+			<button id="share-download"><span class="fas fa-download"></span> Baixar grade</button>
+			</div>
+		</div>
+	</div>
+    <div id="fb-root"></div>
+	<script>(function(d, s, id) {
+	  var js, fjs = d.getElementsByTagName(s)[0];
+	  if (d.getElementById(id)) return;
+	  js = d.createElement(s); js.id = id;
+	  js.src = 'https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.2';
+	  fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));</script>
+<header id="header">
+<div id="header-content">
+    <div id="logo-wrapper"><span id="logo">MatrUSP</span><span class="beta-tag-wrapper"><span class="beta-tag">Beta</span></span></div>
+    <div id='save-controller'>
+	<input id='user-identifier' placeholder='Salve seu plano aqui'> 
+	<button id='save-button' class='header-button'>Salvar</button>
+	<button id='load-button' class='header-button'>Carregar</button>
+    </div>
+    <div id="icons">
+    <button class="fas fa-undo header-button" id="undo" title="Desfazer" onclick="state.activePlan.undo();" disabled>
+	</button>
+	<div class="header-button-separator"></div>
+	<button class="fas fa-share-square header-button" id="share" title="Compartilhar" onclick='shareBox.open();'>
+	</button>
+	<button class="fas fa-print header-button" id="pdf" title="Imprimir" onclick='printBox.open();'>
+	</button>
+	<button class="fas fa-upload header-button" id="upload" title="Carregar arquivo de grade" onclick='document.getElementById("upload-input").click()'>
+	</button>
+	<input id="upload-input" type="file" style="display: none" accept=".matrusp,application/json">
+    </div>
+    </div>
+    <div id="loading-bar"></div>
+    <div id="msg-banner" class="">
+    	<div id="msg-banner-message"></div>
+    	<button id="msg-banner-close" class="close-button">×</button>
+	</div>
+</header>
+	<div id="main">
+		<div id="lecture-schedule">
+			<div id="time-table">
+				<div class="column time">
+					<div class="column-header">
+						<button id="fit-time-table-button" title="Ajustar horário à grade">
+							<div id="fit-time-table-button-clock" class="fas fa-clock"></div><div id="fit-time-table-button-arrow" class="fas fa-arrows-alt-v"></div>
+						</button></div>
+					<div class="column-content-wrapper"><div class="column-content"></div></div>
+				</div>
+				<div class="column">
+					<div class="column-header">Segunda</div>
+					<div class="column-content-wrapper"><div class="column-content"></div></div>
+				</div>
+				<div class="column">
+					<div class="column-header">Terça</div>
+					<div class="column-content-wrapper"><div class="column-content"></div></div>
+				</div>
+				<div class="column">
+					<div class="column-header">Quarta</div>
+					<div class="column-content-wrapper"><div class="column-content"></div></div>
+				</div>
+				<div class="column">
+					<div class="column-header">Quinta</div>
+					<div class="column-content-wrapper"><div class="column-content"></div></div>
+				</div>
+				<div class="column">
+					<div class="column-header">Sexta</div>
+					<div class="column-content-wrapper"><div class="column-content"></div></div>
+				</div>
+				<div class="column hidden">
+					<div class="column-header">Sábado</div>
+					<div class="column-content-wrapper"><div class="column-content"></div></div>
+				</div>
+				<div class="column hidden">
+					<div class="column-header">Domingo</div>
+					<div class="column-content-wrapper"><div class="column-content"></div></div>
+				</div>
+			</div>
+			<div id='combination-controller'>
+				<button id="combination-paddle-left" class="small-button combination-paddle"><div class="fas fa-chevron-left fa-3x"></div></button>
+				<div id="combination-track">
+					<!--div class="combination"></div>
+					<div class="combination"></div>
+					<div class="combination"></div-->
+				</div>
+				<button id="combination-paddle-right" class="small-button combination-paddle"><div class="fas fa-chevron-right fa-3x"></div></button>
+			</div>
+		</div>
+		<div id="lecture-explorer">
+			<div id="search-and-add">
+				<input required type="text" id="search" placeholder="Digite o código ou nome da matéria" autocomplete="off">
+				<div id="search-summary-wrapper">
+					<div id="search-options-summary">Buscando em <span class="selected-option">todos os campi</span></div>
+					<button id="search-options-clear" type="button">&#x2715; Limpar</button>
+				</div>
+				<form id="search-options">
+					<label id="campus-select-label" class="select-label"><div>Campus</div>
+					<select name="campus" id="search-campus"><option value="">Todos os campi</option></select></label>
+					<label id="unit-select-label" class="select-label"><div>Unidade</div>
+					<select name="unit" id="search-unit"><option value="">Todas as unidades</option></select></label>
+					<label id="department-select-label" class="select-label"><select name="department" id="search-department" disabled><option value="">Todos os departamentos</option></select>
+					<div>Departamento</div></label>
+					<div id="search-options-timeframes">
+						<div>Período</div>
+						<label><input type="checkbox" name="timeframes[]" value="matutino" checked>Matutino</input></label>
+						<label><input type="checkbox" name="timeframes[]" value="vespertino" checked>Vespertino</input></label>
+						<label><input type="checkbox" name="timeframes[]" value="noturno" checked>Noturno</input></label>
+					</div>
+					<div id="search-options-browser-error" style="display: none;">Algumas opções de busca foram desabilitadas por não terem suporte em seu navegador. <a href="http://outdatedbrowser.com/en">Atualize já.</a></div>
+				</form>
+			<div id="search-result-box"></div>
+			</div>
+			<div id="accordion-window">
+				<div class="plan-placeholder">
+					<div class="fas fa-crow placeholder-icon"></div>
+					<div class="placeholder-title">Parece vazio aqui...</div>
+					<div class="placeholder-body">Procure disciplinas na <button class='inline-button' onclick='searchBox.searchBox.focus()'>barra acima</button> ou<br /><button onclick='courseBox.open()'>carregue a grade do seu curso</button></div>
+				</div>
+				<div id="accordion"></div>
+			</div>
+			<div id="plans-wrapper">
+				<div id="plan-paddle-left" class="plan-paddle" style="visibility: hidden"><div class="fas fa-chevron-left"></div></div>
+				<div id="plans">
+					<div id="new-plan">&#65291;</div>
+				</div>
+				<div id="plan-paddle-right" class="plan-paddle" style="visibility: hidden"><div class="fas fa-chevron-right"></div></div>
+			</div>
+			<div id="explorer-footer">
+				<div id="credits">
+					<div class="credit-wrapper"><span id="lecture-credits">0</span>Créditos<br />Aula</div>
+					<div class="credit-wrapper"><span id="work-credits">0</span>Créditos<br />Trabalho</div>
+				</div>
+			</div>
+		</div>
+    </div>
+	<footer>
+		<div id="footer-links"><a href="http://bcc.ime.usp.br/matrusp_v1">Versão antiga</a><br/>
+			 <a href="https://github.com/matrusp/matrusp/wiki/FAQ" target="_blank">Perguntas frequentes</a><br/>
+			 <a id="contact" href="mailto:apoiobcc@linux.ime.usp.br">Contato (apoiobcc@linux.ime.usp.br)</a>
+		</div>
+		<div id="github-buttons">
+			<a class="github-button" href="https://github.com/matrusp" aria-label="Follow @matrusp on GitHub">@matrusp no GitHub</a>
+			<br/>
+			<a class="github-button" href="https://github.com/matrusp/matrusp/fork" data-icon="octicon-repo-forked" data-show-count="true" aria-label="Fork matrusp/matrusp on GitHub">Fork</a>
+			<a class="github-button" href="https://github.com/matrusp/matrusp" data-icon="octicon-star" data-show-count="true" aria-label="Star matrusp/matrusp on GitHub">Star</a>
+		</div>
+		<div class="fb-page" data-href="https://www.facebook.com/matrusp" data-width="380" data-small-header="true" data-adapt-container-width="true" data-hide-cover="true" data-show-facepile="true"><blockquote cite="https://www.facebook.com/matrusp" class="fb-xfbml-parse-ignore"><a href="https://www.facebook.com/matrusp">MatrUSP</a></blockquote></div>
+
+	</footer>
+    <script type="text/javascript" src="js/redirect.js"></script>
+    <script type="text/javascript" src="js/dbhelpers.js" defer></script>
+    <script type="text/javascript" src="js/custom_lib.js" defer></script>
+    <script type="text/javascript" src="js/libs/slip.js" defer></script>
+    <script type="text/javascript" src="js/libs/date-pt-BR.js" defer></script>
+    <script type="text/javascript" src="js/libs/tinycolor-min.js" defer></script>
+    <script type="text/javascript" src="js/ui.js" defer></script>
+    <script type="text/javascript" src="js/search_box.js" defer></script>
+    <script type="text/javascript" src="js/googlecalendar.js" defer></script>
+    <script type="text/javascript" src="js/share.js" defer></script>
+    <script type="text/javascript" src="js/courses.js" defer></script>
+    <script type="text/javascript" src="js/schedule.js" defer></script>
+    <script type="text/javascript" src="js/classroom.js" defer></script>
+    <script type="text/javascript" src="js/lecture.js" defer></script>
+    <script type="text/javascript" src="js/combination.js" defer></script>
+    <script type="text/javascript" src="js/plan.js" defer></script>
+    <script type="text/javascript" src="js/state.js" defer></script>
+    <script type="text/javascript" src="js/libs/dexie.min.js"></script>
+    <script type="text/javascript" src="js/save.js" defer></script>
+    <script type="text/javascript" src="js/pdf.js" defer></script>
+    <script type="text/javascript" src="js/main.js" defer></script> <!-- main script -->
+    <script type="text/javascript" src="js/icalendar.js" defer></script>
+    <script type="text/javascript" src="js/libs/html2canvas.min.js" defer></script>
+    <script type="text/javascript" src="js/libs/jspdf.min.js"></script>
+    <script type="text/javascript" src="js/libs/jspdf.plugin.autotable.min.js"></script>
+    <script type="text/javascript" src="js/file.js" defer></script>
+    <script type="text/javascript" src="js/contact.js" defer></script>
+	<script async defer src="https://buttons.github.io/buttons.js"></script>
+    <script src="https://apis.google.com/js/client.js?onload=checkAuth" defer></script>
+</body>
+</html>

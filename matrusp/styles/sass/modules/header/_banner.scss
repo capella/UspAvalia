@@ -1,0 +1,49 @@
+#msg-banner {
+  position: absolute;
+  margin: 0;
+  top: 100%;
+  width: 100%;
+  background: fade-out($header-color-tertiary,0.2);
+  z-index: 0;
+  backdrop-filter: blur(4px);
+  color: white;
+  overflow: hidden;
+  text-align: center;
+  user-select: none;
+  transform: translateY(-100%);
+  transition: transform ease-in 0.2s;
+  
+  &.banner-open {
+    transform: translateY(0);
+    transition: transform ease-out 0.2s;
+  }
+
+  & a {
+    color: white;
+  }
+
+  & #msg-banner-message {
+    padding: 8px 28px;
+  }
+
+  & #msg-banner-close {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 24px;
+    border: none;
+    color: white;
+    background: transparent;
+    font-size: 12pt;
+    align-self: stretch;
+
+    &:hover {
+      background: fade-out(#000000,0.85);
+    }
+
+    &:active {
+      background: fade-out(#000000,0.7);
+    }
+  }
+}

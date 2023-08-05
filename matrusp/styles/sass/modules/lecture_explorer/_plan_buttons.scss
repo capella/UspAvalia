@@ -1,0 +1,202 @@
+#plans-wrapper {
+  overflow: hidden;
+  position: relative;
+
+  &:before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    content: "";
+    border-top: $border-default;
+  }
+}
+
+#plans {
+  white-space: nowrap;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  margin-bottom: -40px;
+  padding-bottom: 40px;
+  position: relative;
+}
+
+#new-plan {
+  height: $lecture-explorer-plan-buttons-height;
+  line-height: $lecture-explorer-plan-buttons-height;
+  padding: 0 8px;
+  display: inline-block;
+  overflow: hidden;
+  font-size: 16px;
+  user-select: none;
+  transition: background ease 0.1s;
+
+  &:hover {
+    background: #eee;
+  }
+
+  &:active {
+    background: #ddd;
+  }
+}
+
+.plan {
+  max-width: $lecture-schedule-plan-buttons-max-width;
+  height: $lecture-explorer-plan-buttons-height;
+  line-height: $lecture-explorer-plan-buttons-height;
+  display: inline-block;
+  position: relative;
+  border-right: $border-default;
+  border-bottom: $border-default;
+  overflow: hidden;
+  background: #e3e3e3;
+  user-select: none;
+  transition: background ease 0.1s;
+  vertical-align: top;
+
+  &:first-child {
+    border-left: $border-default;
+  }
+
+  & .plan-tab-name {
+    padding: 0 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+    overflow: hidden;
+    border: none;
+    background: transparent;
+    width: 100%;
+
+    &:disabled {
+      pointer-events: none;
+      color: #333;
+    }
+
+    &:focus {
+      padding-right: 32px;
+      text-overflow: clip;
+    }
+  }
+
+  & .plan-tab-close {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    padding: 0 6px;
+    z-index: 1;
+    text-align: center;
+    pointer-events: none;
+
+    opacity: 0;
+
+    font-size: 20px;
+    color: gray;
+
+    @media (pointer: coarse) {
+      font-size: 24px;
+    }
+
+    transition: opacity ease .1s, color ease .1s, background ease .1s;
+
+    &:before {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      width: 32px;
+      content: '';
+      z-index: -1;
+      background: linear-gradient(to left, #f3f3f3, #f3f3f3 60%, transparent);
+      pointer-events: none;
+    }
+
+    @media (hover: hover) {
+    &:hover {
+      color: $color-accent;
+      pointer-events: initial;
+    }
+    }
+  }
+
+  @media(hover: hover) {
+  &:hover {
+    background-color: #f3f3f3;
+
+    & .plan-tab-close {
+      opacity: 1;
+      pointer-events: initial;
+    }
+  }
+  }
+
+  &:active {
+    background-color: white;
+
+    & .plan-tab-close:before {
+      background: linear-gradient(to left, white, white 60%, transparent);
+    }
+  }
+
+  &.plan-active {
+    z-index: 2;
+    background: white;
+
+    &:hover {
+      background: white;
+    }
+
+    &:active {
+      background: white;
+    }
+
+    & .plan-tab-close {
+      opacity: 1;
+      pointer-events: initial;
+
+      &:before {
+        background: linear-gradient(to left, white, white 60%, transparent);
+      }
+    }
+  }
+}
+
+.plan-paddle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 3;
+  padding: 0 8px;
+  text-align: center;
+
+  visibility: hidden;
+
+  border: $border-default;
+  border-top: none;
+  user-select: none;
+
+  background: #e3e3e3;
+
+  height: $lecture-explorer-plan-buttons-height;
+  line-height: $lecture-explorer-plan-buttons-height;
+
+  overflow:hidden;
+
+  &:hover {
+    background-color: #f3f3f3;
+  }
+
+  &.show {
+    visibility: visible;
+  }
+
+  &#plan-paddle-left {
+    left:0;
+  }
+
+  &#plan-paddle-right {
+    right:0;
+  }
+}

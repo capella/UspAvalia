@@ -1,0 +1,44 @@
+// 
+//
+// Footer Layout
+// =============
+//
+// This file structures the footer layout.
+// 
+// Affected HTML
+// -------------
+// html > body > div#page-container > footer
+//
+//	footer
+//		a
+//		a	
+//
+//
+
+footer {
+  width: 100%;
+  padding: 4px 10%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  align-items: flex-end;
+  justify-content: space-around;
+
+  #footer-links {
+    flex: 1 0 auto;
+    margin: 12px 0;
+  }
+
+  #github-buttons {
+    flex: 0 0 auto;
+    text-align: right;
+    margin: 8px;
+  }
+
+  .fb-page {
+    flex: 0 1 380px;
+    margin: 8px;
+    min-height: 121px;
+  }
+}

@@ -1,0 +1,65 @@
+// 
+//
+// Base Layout
+// ===========
+//
+// This file structures the basic layout for the page. It defines
+// positioning and min/max sizes on a base level: this means that 
+// it only modifies elements listed here.
+// 
+// Affected HTML
+// -------------
+//
+//   html
+//     body
+//       div#page-container
+//         header
+//         div#main
+//           div#lecture-schedule
+//			 div.flex-spacer
+//           div#lecture-explorer
+//         footer
+//
+//
+
+* {
+  box-sizing: border-box;
+
+  &:focus {
+  	outline: none;
+  }
+}
+
+html, body {
+    min-width: $page-min-width;
+}
+
+body {
+    overflow: auto;
+    background: $header-color-background;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+#main {
+    position: relative;
+	display: flex;
+	flex-wrap: wrap;
+
+	flex: 1 0 auto;
+
+	max-width: $page-max-width;
+    min-width: $page-min-width;
+    width: 100%;
+    z-index: 0;
+}
+
+footer {
+	flex: 0 0 auto;
+}
+
+.flex-spacer {
+	flex: 0 0 $flex-spacer-basis;
+}

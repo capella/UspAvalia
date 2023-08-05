@@ -1,0 +1,86 @@
+#course-dialog {
+    &.show {
+        display: grid;
+    }
+
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    grid-gap: 12px;
+
+    user-select: none;
+    width: 400px;
+
+        label {
+            display: block;
+            color: #333;
+            text-align: center;
+        }
+
+        select {
+            width: 100%;
+        }
+}
+
+#course-campus-select-label {
+    grid-row: 1;
+    grid-column: 1;
+}
+
+#course-unit-select-label {
+    grid-row: 1;
+    grid-column: 2/5;
+}
+
+#course-select-label {
+    grid-row: 2;
+    grid-column: 1/4;
+}
+
+#course-period-select-label {
+    grid-row: 2;
+    grid-column: 4;
+}
+
+#course-lecture-list {
+    grid-row: 3;
+    grid-column: 1/5;
+
+
+    .course-lecture-type {
+        color: darkgray;
+        text-transform: uppercase;
+        font-weight: bold;
+        font-family: Roboto,tahoma,helvetica;
+        font-size: 12px;
+        margin-top: 8px;
+        margin-bottom: 2px;
+    }
+
+    .course-no-lectures {
+        color: gray;
+    }
+
+    .course-lecture {
+        
+        &.course-lecture-disabled {
+            color: gray;
+            text-decoration: line-through;
+        }
+    }
+}
+
+#course-plan-erase-warning {
+    grid-column: 2/4;
+    grid-row: 4;
+    color: #444;
+    text-align: right;
+}
+
+#course-accept-button {
+    grid-column: 4;
+    grid-row: 4;
+}
+
+#course-optative-check-label {
+    grid-column: 1;
+    grid-row: 4;
+}
