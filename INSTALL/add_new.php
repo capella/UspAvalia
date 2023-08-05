@@ -6,35 +6,22 @@ use voku\helper\HtmlDomParser;
 
 set_time_limit (1000000);
 
-// Configuracoes
-$url_disciplina = 'https://uspdigital.usp.br/jupiterweb/obterTurma?sgldis=';
-
 $json = ["ok"];
 
-$options = array(
-    "ssl" => array(
-        "verify_peer" => false,
-        "verify_peer_name" => false,
-    ),
-);
-
-$string = file_get_contents("db_usp.txt");
+$string = file_get_contents("../matrusp/db/db.json");
 $json_input = json_decode($string, true);
 
 $count = 0;
+$count_inserts = 0;
 
-foreach ($json_input['TODOS'] as $val) {
-    $codigo = GetSQLValueString($val[0], "text");
-    $nome = GetSQLValueString($val[1], "text");
+foreach ($json_input as $val) {
+    $codigo = GetSQLValueString($val['codigo'], "text");
+    $nome = GetSQLValueString($val['nome'], "text");
     $sql =   "SELECT codigo FROM disciplinas WHERE codigo = ".$codigo;
 
     $result = $connection->query($sql);
     if($result && $result->num_rows == 0){
-
-        $data = file_get_contents($url_disciplina.$val[0], false, stream_context_create($options));
-        $html = HtmlDomParser::str_get_html($data);
-        $disciplina = $html->find('td b font[face="Verdana, Arial, Helvetica, sans-serif"] span[class="txt_arial_10pt_black"]');
-        $unidade = $disciplina[0]->plaintext;
+        $unidade = $val['unidade'];
         if (!isset($unidade) || $unidade == "") continue;
         $unidade = html_entity_decode ($unidade);
         $unidade = GetSQLValueString(trim($unidade), "text");
@@ -67,13 +54,15 @@ foreach ($json_input['TODOS'] as $val) {
             $json = array('error' => $connection->error.$val[0]);
             break;
         }
-        $html->clear(); 
-        unset($html);
 
         // tell for next
-        $progress = $count/sizeof($json_input['TODOS']);
+        $progress = $count/sizeof($json_input);
         $json = array("continue" => $progress);
-        break;
+        if ($count_inserts >= 250) {
+            break;
+        } else {
+            $count_inserts += 1;
+        }
     }
     if ($result) {
         $result->close();

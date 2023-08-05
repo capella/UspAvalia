@@ -7,7 +7,7 @@ $options = array(
         "verify_peer" => false,
         "verify_peer_name" => false,
     ),
-);  
+);
 
 
 try {
@@ -16,6 +16,7 @@ try {
 } catch (Exception $e) {
     $json = array('error' =>  $e->getMessage());
 }
+
 
 echo json_encode($json, JSON_UNESCAPED_UNICODE);
 ?>

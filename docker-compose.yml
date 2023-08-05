@@ -27,8 +27,6 @@ services:
       - .env
     ports:
       - 3030:80
-    volumes:
-      - ./var/www/html/
 
 volumes:
   mysql:
