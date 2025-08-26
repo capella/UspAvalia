@@ -14,7 +14,7 @@
   $arr = array('Avaliação Geral', 'Didática', 'Empenho/Dedicação', 'Relação com os alunos', 'Dificuldade');
 reset($arr);
 while (list($key, $value) = each($arr)) {
-    $chave = $key+1;
+    $chave = $key + 1;
     ?>
     <hr style="margin-bottom: 6px; margin-top:0;">
     <b><?=$value;?></b>

@@ -14,7 +14,7 @@ if (!empty($session)) {
     try {
         $uid = $facebook->getUser();
         $user = $facebook->api('/me');
-    } catch(Exception $e) {
+    } catch (Exception $e) {
     }
     if (!empty($user)) {
         echo '<pre>';

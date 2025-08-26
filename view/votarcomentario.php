@@ -5,7 +5,7 @@ if (!$user) {
     exit;
 }
 
-if (isset($_GET["id"])&&isset($user_profile['id'])&&($_GET['voto']==1||$_GET['voto']==-1)) {
+if (isset($_GET["id"]) && isset($user_profile['id']) && ($_GET['voto'] == 1 || $_GET['voto'] == -1)) {
 
     $insertSQL = sprintf(
         "INSERT INTO votoscomentario (idcomentario, iduso, voto, time) VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE time=VALUES(time), voto=VALUES(voto)",

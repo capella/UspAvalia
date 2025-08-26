@@ -19,7 +19,7 @@ if (isset($_POST['query'])) {
 
     $result = $connection->query($sql);
 
-    while($row = $result->fetch_assoc()) {
+    while ($row = $result->fetch_assoc()) {
         $json[] = array(
            "name" => $row['nome'],
            "type" => $row['type'],

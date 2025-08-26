@@ -33,7 +33,7 @@ if (isset($_SESSION['fb_access_token'])) {
 }
 
 $page = 'index';
-if(isset($_GET['p'])&&$_GET['p']!='') {
+if (isset($_GET['p']) && $_GET['p'] != '') {
     $page  = $_GET['p'];
 }
 
@@ -54,7 +54,7 @@ $template = !in_array($page, $no_template_pages);
 if ($template) {
     include($header);
 }
-if(file_exists("view/" . $page . ".php")) {
+if (file_exists("view/" . $page . ".php")) {
     include('view/' . $page . '.php');
 } else {
     include('view/error.php');

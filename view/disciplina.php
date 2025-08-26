@@ -46,7 +46,7 @@ if (isset($_GET['id'])) {
       <tr>
          <td><a href="?p=ver&id=<?= $row['id'];?>"><?=$row['Pnome'];?></a></td>
          <td><a href="?p=ver&id=<?= $row['id'];?>"><?=$row['Dnome'];?> - <?=$row['codigo'];?></a></td>
-         <td><?= $row['media'] ? number_format($row['media']*2, 2, ',', ' ') : "Sem avaliações";?></td>
+         <td><?= $row['media'] ? number_format($row['media'] * 2, 2, ',', ' ') : "Sem avaliações";?></td>
          <td>
             <button class="btn btn-success" data-toggle="modal" data-target="#modal<?=$row['id'];?>">
                Avaliar

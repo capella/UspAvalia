@@ -9,7 +9,7 @@ $sql = "SELECT * FROM disciplinas";
 
 $result = $connection->query($sql);
 
-while($row = $result->fetch_assoc()) {
+while ($row = $result->fetch_assoc()) {
     $json[] = $row['id'];
 }
 $result->close();

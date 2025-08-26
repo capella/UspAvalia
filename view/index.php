@@ -2,10 +2,10 @@
 
 function getNumber($conn, $query, $field, $cachename)
 {
-    if (!is_file($cachename) || filemtime($cachename) < time()-1*300) {
+    if (!is_file($cachename) || filemtime($cachename) < time() - 1 * 300) {
         $result = $conn->query($query);
         $number = 0;
-        if($result) {
+        if ($result) {
             $result_row = $result->fetch_assoc();
             $number = $result_row[$field];
             $result->close();
@@ -22,7 +22,7 @@ function media($conn)
 {
     $query = "SELECT AVG(nota) as m FROM votos WHERE tipo <> 5;";
     $n = getNumber($conn, $query, 'm', 'media.cache');
-    return number_format($n*2, 2, ',', ' ');
+    return number_format($n * 2, 2, ',', ' ');
 }
 
 function avaliacoes($conn)

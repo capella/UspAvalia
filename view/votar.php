@@ -8,7 +8,7 @@ if (!$user) {
 $arr = array('Avaliação Geral', 'Didática', 'Empenho/Dedicação', 'Relação com os alunos', 'Dificuldade');
 reset($arr);
 while (list($key, $value) = each($arr)) {
-    $chave = $key+1;
+    $chave = $key + 1;
     if ((isset($_GET["nota".$chave])) && ($_GET["nota".$chave] != "")) {
         $insertSQL = sprintf(
             "INSERT INTO votos (APid, iduso, `time`, nota, tipo) VALUES (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE `time`=%s, nota=%s",

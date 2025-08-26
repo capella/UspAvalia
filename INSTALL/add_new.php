@@ -21,7 +21,7 @@ foreach ($json_input as $val) {
     $sql =   "SELECT codigo FROM disciplinas WHERE codigo = ".$codigo;
 
     $result = $connection->query($sql);
-    if($result && $result->num_rows == 0) {
+    if ($result && $result->num_rows == 0) {
         $unidade = $val['unidade'];
         if (!isset($unidade) || $unidade == "") {
             continue;
@@ -33,7 +33,7 @@ foreach ($json_input as $val) {
         $sql =   "SELECT id FROM unidades WHERE NOME = ".$unidade;
         $result = $connection->query($sql);
         $unidadeID = null;
-        if($result && $result->num_rows == 0) {
+        if ($result && $result->num_rows == 0) {
             $sql =   "INSERT INTO unidades (NOME) VALUES (".$unidade.")";
             $connection->query($sql);
             $unidadeID = $connection->insert_id;
@@ -59,7 +59,7 @@ foreach ($json_input as $val) {
         }
 
         // tell for next
-        $progress = $count/sizeof($json_input);
+        $progress = $count / sizeof($json_input);
         $json = array("continue" => $progress);
         if ($count_inserts >= 250) {
             break;

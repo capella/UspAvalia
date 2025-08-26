@@ -61,8 +61,8 @@ if (isset($_GET['id'])) {
       <div class="col-md-4">
          <div class="thumbnail">
             <div class="caption">
-               <h4><?= $arr[$row['tipo']-1]; ?></h4>
-               <?php if($row['count'] != 0) :?>
+               <h4><?= $arr[$row['tipo'] - 1]; ?></h4>
+               <?php if ($row['count'] != 0) :?>
                   <h3 style="text-align:center"><?= number_format($row['avg'], 3, ',', ' '); ?></h3>
                   <p class="graph" avg="<?= $row['avg']; ?>" std="<?= $row['std']; ?>"></p>
                   <p><small>Quesito avaliado <?= $row['count']; ?> vezes.</small></p>
@@ -109,7 +109,7 @@ if (isset($_GET['id'])) {
       Se você ler um comentário verídico e relevante, aperte "Positivo", caso contrário, "Negativo".
       </p>
       <hr>
-      <?php if($comentarios_result->num_rows > 0): ?>
+      <?php if ($comentarios_result->num_rows > 0): ?>
          <ul class="media-list">
             <?php while ($row = $comentarios_result->fetch_assoc()) { ?>
             <li class="media">

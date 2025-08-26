@@ -13,7 +13,7 @@ if (isset($_GET['id'])) {
     $sql = "SELECT * FROM disciplinas WHERE id = ".$id;
     $result = $connection->query($sql);
 
-    if($result && $result->num_rows == 0) {
+    if ($result && $result->num_rows == 0) {
         return;
     } else {
         $disciplina = mysqli_fetch_assoc($result);
