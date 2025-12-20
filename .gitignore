@@ -1,7 +1,9 @@
-error_log
-info_bd/*.txt
-/vendor/
-**/*.swp
-matrusp/db/
 **/*.log
-.php-cs-fixer.cache
+**/*.swp
+.uspavalia.yaml
+CLAUDE.md
+test_output/
+tmp/
+uspavalia
+uspavalia.db
+.claude/

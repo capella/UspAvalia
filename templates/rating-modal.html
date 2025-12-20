@@ -1,0 +1,117 @@
+{{define "rating-modal"}}
+<!-- Modal for Rating - Unified for all users -->
+<div class="modal fade" id="modal{{.Data.ClassProfessor.ID}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="ratingForm{{.Data.ClassProfessor.ID}}" data-class-professor-id="{{.Data.ClassProfessor.ID}}" data-user-logged="{{if .User}}true{{else}}false{{end}}">
+                {{if .User}}
+                <input type="hidden" name="gorilla.csrf.Token" value="{{.CSRFToken}}">
+                {{end}}
+                <input type="hidden" name="class_professor_id" value="{{.Data.ClassProfessor.ID}}">
+                
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">{{.Data.Professor.Name}} - {{.Data.Discipline.Code}}</h4>
+                </div>
+                <div class="modal-body">
+                    <p style="text-align: justify;">
+                        Escolha uma nota entre 0 e 5 para avaliar {{.Data.Professor.Name}},
+                        na disciplina {{.Data.Discipline.Name}} - {{.Data.Discipline.Code}} nos
+                        seguintes quesitos. Em dificuldade, notas maiores significam maior
+                        dificuldade.{{if not .User}} Após avaliar, você será direcionado para fazer login.{{else}} O voto é secreto.{{end}}
+                    </p>
+
+                    <!-- Rating Categories -->
+                    <hr style="margin-bottom: 6px; margin-top:0;">
+                    <b>Avaliação Geral</b>
+                    <div style="text-align:center;">
+                        <div class="input select rating-c" style="margin: auto; width:260px;">
+                            <select id="select1{{.Data.ClassProfessor.ID}}" name="type1" class="rating" data-type="1">
+                                <option value=""></option>
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr style="margin-bottom: 6px; margin-top:0;">
+                    <b>Didática</b>
+                    <div style="text-align:center;">
+                        <div class="input select rating-c" style="margin: auto; width:260px;">
+                            <select id="select2{{.Data.ClassProfessor.ID}}" name="type2" class="rating" data-type="2">
+                                <option value=""></option>
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr style="margin-bottom: 6px; margin-top:0;">
+                    <b>Empenho/Dedicação</b>
+                    <div style="text-align:center;">
+                        <div class="input select rating-c" style="margin: auto; width:260px;">
+                            <select id="select3{{.Data.ClassProfessor.ID}}" name="type3" class="rating" data-type="3">
+                                <option value=""></option>
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr style="margin-bottom: 6px; margin-top:0;">
+                    <b>Relação com os alunos</b>
+                    <div style="text-align:center;">
+                        <div class="input select rating-c" style="margin: auto; width:260px;">
+                            <select id="select4{{.Data.ClassProfessor.ID}}" name="type4" class="rating" data-type="4">
+                                <option value=""></option>
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr style="margin-bottom: 6px; margin-top:0;">
+                    <b>Dificuldade</b>
+                    <div style="text-align:center;">
+                        <div class="input select rating-c" style="margin: auto; width:260px;">
+                            <select id="select5{{.Data.ClassProfessor.ID}}" name="type5" class="rating" data-type="5">
+                                <option value=""></option>
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+                    {{if .User}}
+                    <button type="submit" class="btn btn-primary">Avaliar</button>
+                    {{else}}
+                    <button type="submit" class="btn btn-primary">Avaliar e Fazer Login</button>
+                    {{end}}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{{end}}

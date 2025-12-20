@@ -1,0 +1,48 @@
+{{define "title"}}Email Verificado - USP Avalia{{end}}
+
+{{define "content"}}
+<div class="starter-template text-center">
+    <h1>USP Avalia</h1>
+    <p class="lead">Bem-vindo à comunidade!</p>
+</div>
+
+<div align="center">
+    <div class="row" style="max-width: 500px;">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header text-center bg-success text-white">
+                    <h4>
+                        <i class="fas fa-check-circle me-2"></i>
+                        Email Verificado!
+                    </h4>
+                </div>
+                <div class="card-body text-center">
+                {{if .Data.Success}}
+                    <div class="alert alert-success" role="alert">
+                        <strong>{{.Data.Success}}</strong>
+                    </div>
+                {{end}}
+                
+                <p class="lead">Parabéns! Sua conta foi verificada com sucesso.</p>
+                <p>Você já está logado e pode começar a usar o USP Avalia.</p>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                    <a href="/" class="btn btn-primary btn-lg">
+                        <i class="fas fa-home me-2"></i>
+                        Ir para a Página Inicial
+                    </a>
+                </div>
+            </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <p class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Agora você pode avaliar professores e disciplinas, fazer comentários e muito mais!
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

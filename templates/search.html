@@ -1,0 +1,34 @@
+{{define "title"}}Pesquisa{{end}}
+
+{{define "content"}}
+<h2>Pesquisa</h2>
+<form method="get" action="/search">
+  <div class="input-group">
+    <input type="text" class="form-control typeahead" name="pesquisa" value="{{.Data.Query}}" autocomplete="off">
+    <span class="input-group-btn">
+      <input type="hidden" name="p" value="pesquisa" />	
+      <button class="btn btn-default" type="submit">Pesquisar!</button>
+    </span>
+  </div><!-- /input-group -->
+</form>
+
+<p>
+  {{if and .Data.Query (or .Data.Disciplines .Data.Professors)}}
+  <table class="table table-striped">
+    <thead><tr><th>Nome</th><th>Tipo</th></tr></thead>
+    {{range .Data.Disciplines}}
+      <tr><td><a href="/disciplina/{{.ID}}">{{.Code}} - {{.Name}}</a></td><td>Disciplina</td></tr>
+    {{end}}
+    {{range .Data.Professors}}
+      <tr><td><a href="/professor/{{.ID}}">{{.Name}}</a></td><td>Professor(a)</td></tr>
+    {{end}}
+  </table>
+  {{else if .Data.Query}}
+  <div class="alert alert-danger">Não encontramos nada com {{.Data.Query}}. <a href="/add"> Deseja criar adicionar nova disciplina ou professor? Clique aqui. </a></div>
+  {{end}}
+</p>
+<hr />
+{{if .Data.Query}}
+<small>Foram encontrados {{.Data.ResultCount}} registros.</small>
+{{end}}
+{{end}}

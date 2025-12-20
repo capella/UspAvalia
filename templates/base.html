@@ -1,0 +1,354 @@
+{{define "base"}}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <!-- Favicons -->
+    <link
+      rel="apple-touch-icon"
+      sizes="57x57"
+      href="/static/apple-icon-57x57.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="60x60"
+      href="/static/apple-icon-60x60.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="72x72"
+      href="/static/apple-icon-72x72.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="76x76"
+      href="/static/apple-icon-76x76.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="114x114"
+      href="/static/apple-icon-114x114.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="120x120"
+      href="/static/apple-icon-120x120.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="144x144"
+      href="/static/apple-icon-144x144.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="/static/apple-icon-152x152.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/static/apple-icon-180x180.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="/static/android-icon-192x192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/static/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="96x96"
+      href="/static/favicon-96x96.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/static/favicon-16x16.png"
+    />
+    <link rel="manifest" href="/static/favicons/manifest.json" />
+    <meta name="msapplication-TileColor" content="#101010" />
+    <meta
+      name="msapplication-TileImage"
+      content="/static/ms-icon-144x144.png"
+    />
+    <meta name="theme-color" content="#101010" />
+    <title>{{template "title" .}} - USP Avalia</title>
+    <!-- Bootstrap core CSS -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" type="text/css" href="/static/css/meu.css" />
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" type="text/css" href="/static/css/cover.css" />
+    <!-- FontAwesome Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      /* Override local FontAwesome to use CDN version */
+      @font-face {
+        font-family: FontAwesome;
+        src: none !important;
+      }
+    </style>
+    <!-- Bootstrap core JavaScript
+      ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@1.11.0/dist/jquery.min.js"></script>
+    <script
+      type="text/javascript"
+      src="/static/js/jquery.barrating.min.js"
+    ></script>
+    <script>
+      (function (i, s, o, g, r, a, m) {
+        i["GoogleAnalyticsObject"] = r;
+        ((i[r] =
+          i[r] ||
+          function () {
+            (i[r].q = i[r].q || []).push(arguments);
+          }),
+          (i[r].l = 1 * new Date()));
+        ((a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]));
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m);
+      })(
+        window,
+        document,
+        "script",
+        "//www.google-analytics.com/analytics.js",
+        "ga",
+      );
+      ga("create", "UA-49934159-1", "uspavalia.com");
+      ga("send", "pageview");
+    </script>
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button
+            type="button"
+            class="navbar-toggle"
+            data-toggle="collapse"
+            data-target=".navbar-collapse"
+          >
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">USP Avalia</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="/">Pesquisar</a></li>
+            <li><a href="/email">Contato</a></li>
+            <li><a href="/destaques">Destaques</a></li>
+            <li><a href="/sobre">Sobre</a></li>
+            <li><a href="/matrusp">Matrusp</a></li>
+            {{if .User}}
+            <li><a href="/logout">Logout</a></li>
+            {{else}}
+            <li><a href="/login">Login</a></li>
+            {{end}}
+          </ul>
+        </div>
+        <!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div class="container">{{template "content" .}}</div>
+
+    <script
+      type="text/javascript"
+      src="/static/js/jquery.barrating.min.js"
+    ></script>
+    <style>
+      .disparity-line {
+        pointer-events: none;
+        stroke: #37241d;
+        stroke-width: 2;
+        opacity: 0.65;
+        shape-rendering: crispEdges;
+      }
+
+      .reference-line {
+        stroke: #cccccc;
+        stroke-width: 1;
+        shape-rendering: crispEdges;
+      }
+
+      .axis {
+        font: 10px sans-serif;
+      }
+
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+      }
+
+      .grid text {
+        display: none;
+      }
+
+      .grid line {
+        stroke: #e9e9e9;
+        stroke-dasharray: 2, 5;
+      }
+      .grid path {
+        fill: none;
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script>
+      $(".graph").each(function () {
+        var max = 10;
+        var min = 0;
+        var media = parseInt($(this).attr("avg"));
+        var std = parseInt($(this).attr("std"));
+
+        var margin = { top: 0, right: 10, bottom: 10, left: 15 },
+          width = $(this).width() - margin.left - margin.right,
+          height = 50 - margin.top - margin.bottom;
+
+        var svgContainer = d3
+          .select($(this).get(0))
+          .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.right + margin.bottom)
+          .append("g")
+          .attr(
+            "transform",
+            "translate(" + margin.left + "," + margin.top + ")",
+          );
+
+        //Draw the line
+        var linah = 7.0 / 10;
+
+        var constante = width / (max - min);
+        svgContainer
+          .append("line")
+          .attr("x1", constante * media)
+          .attr("y1", height * linah)
+          .attr("x2", constante * Math.max(media - std, min))
+          .attr("y2", height * linah)
+          .classed("disparity-line", !0);
+
+        svgContainer
+          .append("line")
+          .attr("x1", constante * Math.min(media + std, max))
+          .attr("y1", height * linah)
+          .attr("x2", constante * media)
+          .attr("y2", height * linah)
+          .classed("disparity-line", !0);
+
+        var x = d3.scale.linear().domain([min, max]).range([0, width]);
+
+        var xAxis = d3.svg
+          .axis()
+          .scale(x)
+          .orient("bottom")
+          .ticks(10, "")
+          .tickSize(6, 0);
+
+        var xAxis2 = d3.svg
+          .axis()
+          .scale(x)
+          .ticks(10)
+          .orient("bottom")
+          .tickSize(-height);
+
+        svgContainer
+          .append("g")
+          .attr("class", "grid")
+          .attr("transform", "translate(0," + height + ")")
+          .call(xAxis2);
+
+        svgContainer
+          .append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + height + ")")
+          .call(xAxis);
+
+        var pointg = svgContainer.append("g").classed("mean-point", !0),
+          ponto = pointg
+            .append("path")
+            .attr("d", "M-4.5,0L0,-4.5L4.5,0L0,4.5Z");
+        pointg.attr(
+          "transform",
+          "translate(" + constante * media + "," + height * linah + ")",
+        );
+      });
+    </script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-3-typeahead@4.0.2/bootstrap3-typeahead.min.js"></script>
+    <script>
+      $("input.typeahead").typeahead({
+        fitToElement: true,
+        minLength: 4,
+        source: function (query, process) {
+          return $.post(
+            "/typeahead",
+            { query: query, "gorilla.csrf.Token": "{{.CSRFToken}}" },
+            function (data) {
+              return process(data);
+            },
+          );
+        },
+        matcher: function (item) {
+          return true;
+        },
+        autoSelect: false,
+        afterSelect: function (item) {
+          if (item.type == 0) window.location.href = "/professor/" + item.id;
+          else window.location.href = "/disciplina/" + item.id;
+        },
+      });
+    </script>
+    <script src="/static/js/app.js"></script>
+
+    <!-- Google Analytics -->
+    <script>
+      (function (i, s, o, g, r, a, m) {
+        i["GoogleAnalyticsObject"] = r;
+        ((i[r] =
+          i[r] ||
+          function () {
+            (i[r].q = i[r].q || []).push(arguments);
+          }),
+          (i[r].l = 1 * new Date()));
+        ((a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]));
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m);
+      })(
+        window,
+        document,
+        "script",
+        "//www.google-analytics.com/analytics.js",
+        "ga",
+      );
+
+      ga("create", "UA-49934159-1", "uspavalia.com");
+      ga("send", "pageview");
+    </script>
+  </body>
+</html>
+{{end}}

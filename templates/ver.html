@@ -1,0 +1,225 @@
+{{define "title"}}{{.Data.Professor.Name}} - {{.Data.Discipline.Code}}{{end}}
+
+{{define "content"}}
+<div class="row">
+    <div class="col-md-12">
+        <h2>
+            <span itemprop="title">{{.Data.Professor.Name}}</span>
+            <small>
+                <span itemprop="affiliation">{{.Data.Discipline.Name}} - {{.Data.Discipline.Code}}</span>
+            </small>
+        </h2>
+
+        <!-- Avaliações -->
+        <hr>
+        <div class="row">
+            <div class="thumbnails">
+                {{range .Data.RatingStats}}
+                <div class="col-md-4">
+                    <div class="thumbnail">
+                        <div class="caption">
+                            <h4>{{.Name}}</h4>
+                            {{if gt .Count 0}}
+                                <h3 style="text-align:center">{{printf "%.3f" .Average}}</h3>
+                                <p class="graph" avg="{{.Average}}" std="{{.StdDev}}"></p>
+                                <p><small>Quesito avaliado {{.Count}} vezes.</small></p>
+                            {{else}}
+                                <p>
+                                    <br>
+                                    <h4 style="text-align:center">Sem avaliações</h4>
+                                    <br>
+                                    <br>
+                                </p>
+                            {{end}}
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+
+                {{if eq .Data.TotalVotes 0}}
+                <!-- No votes yet - centered AVALIAR button with encouraging message -->
+                <div class="col-md-12" style="text-align: center; margin-top: 40px; margin-bottom: 40px;">
+                    <div style="font-size: 80px; color: #ddd; margin-bottom: 20px;">☹️</div>
+                    <h3>Nenhuma avaliação ainda</h3>
+                    <p class="lead text-muted">Seja o primeiro a avaliar este professor!</p>
+                    <p class="text-muted">Sua avaliação ajudará outros alunos a escolherem suas disciplinas.</p>
+                    <button class="btn btn-success btn-lg" data-toggle="modal" data-target="#modal{{.Data.ClassProfessor.ID}}" style="margin-top: 20px;">
+                        <span class="glyphicon glyphicon-star"></span> FAZER A PRIMEIRA AVALIAÇÃO
+                    </button>
+                </div>
+                {{else}}
+                <!-- Has votes - show AVALIAR button in column -->
+                <div class="col-md-4" style="text-align: center;">
+                    <button class="btn btn-success btn-block btn-lg" data-toggle="modal" data-target="#modal{{.Data.ClassProfessor.ID}}" style="margin-top: 20%;">
+                        AVALIAR
+                    </button>
+                </div>
+                {{end}}
+                {{template "modal" .Data.Modal }}
+
+
+            </div>
+        </div>
+        <hr>
+
+        {{if gt .Data.TotalVotes 0}}
+        <!-- Vote Activity Heatmap - only show if there are votes -->
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="text-center mb-3">Atividade de Avaliações</h3>
+                <div id="vote-heatmap" style="max-width: 900px; margin: 0 auto;"></div>
+                <p class="text-center text-muted mt-2"><small>Número de avaliações nos últimos 12 meses para este professor/disciplina</small></p>
+            </div>
+        </div>
+        <hr>
+        {{end}}
+
+        <!-- Comentários -->
+        <div class="row">
+            <div class="col-md-8">
+                <h3>Comentários</h3>
+                <p style="text-align: justify;">
+                    Área destina a comentários referente a disciplina {{.Data.Discipline.Name}} - {{.Data.Discipline.Code}}
+                    com o professor {{.Data.Professor.Name}}. Os comentários devem ser feitos com o objetivo de auxiliar
+                    o docente a melhorar a qualidade das aulas. Elogios também são aceitos. Comentários com muitas
+                    qualificações negativas serão automaticamente retirados. Os comentários também são anônimos.<br>
+                    Se você ler um comentário verídico e relevante, aperte "Positivo", caso contrário, "Negativo".
+                </p>
+                <hr>
+                {{if .Data.Comments}}
+                    <ul class="media-list">
+                        {{range .Data.Comments}}
+                        <li class="media">
+                            <div class="media-body">
+                                <h4 class="media-heading">{{.FormattedTime}}</h4>
+                                <div class="row">
+                                    <div class="col-md-8" style="text-align:justify">
+                                        {{.Content}}
+                                    </div>
+                                    <div class="col-md-4" style="opacity: 0.75;">
+                                        {{if $.User}}
+                                        <form method="POST" action="/vote-comment" style="display: inline;">
+                                            <input type="hidden" name="comment_id" value="{{.ID}}">
+                                            <input type="hidden" name="vote" value="1">
+                                            <input type="hidden" name="gorilla.csrf.Token" value="{{$.CSRFToken}}">
+                                            <button type="submit" class="btn btn-success btn-block">
+                                                <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+                                                Positivo&nbsp;&nbsp;&nbsp;
+                                                <span class="badge">{{.PositiveVotes}}</span>
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="/vote-comment" style="display: inline;">
+                                            <input type="hidden" name="comment_id" value="{{.ID}}">
+                                            <input type="hidden" name="vote" value="-1">
+                                            <input type="hidden" name="gorilla.csrf.Token" value="{{$.CSRFToken}}">
+                                            <button type="submit" class="btn btn-danger btn-block">
+                                                <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
+                                                Negativo&nbsp;&nbsp;&nbsp;
+                                                <span class="badge">{{.NegativeVotes}}</span>
+                                            </button>
+                                        </form>
+                                        {{else}}
+                                        <a class="btn btn-success btn-block" href="/login">
+                                            <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+                                            Positivo&nbsp;&nbsp;&nbsp;
+                                            <span class="badge">{{.PositiveVotes}}</span>
+                                        </a>
+                                        <a class="btn btn-danger btn-block" href="/login">
+                                            <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
+                                            Negativo&nbsp;&nbsp;&nbsp;
+                                            <span class="badge">{{.NegativeVotes}}</span>
+                                        </a>
+                                        {{end}}
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        {{end}}
+                    </ul>
+                {{else}}
+                    <div class="alert alert-warning" style="opacity: 0.5;">Sem comentários</div>
+                {{end}}
+                <hr>
+            </div>
+            <div class="col-md-4">
+                <div class="well">
+                    {{if .User}}
+                    <form  method="POST" action="/comment">
+                        <input type="hidden" name="gorilla.csrf.Token" value="{{.CSRFToken}}">
+                        <input type="hidden" name="class_professor_id" value="{{.Data.ClassProfessor.ID}}">
+                        <div class="form-group">
+                            <label for="comentario">Novo Comentário:</label>
+                            <textarea class="form-control" name="comentario" rows="6" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-default btn-block">Salvar</button>
+                    </form>
+                    {{else}}
+                    <div class="form-group">
+                        <label>Novo Comentário:</label>
+                        <textarea class="form-control" rows="6" disabled placeholder="Faça login para comentar"></textarea>
+                    </div>
+                    <a href="/login" class="btn btn-primary btn-block">Login para Comentar</a>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{template "thankyou-modal" .}}
+{{template "modal-js" .}}
+
+{{if gt .Data.TotalVotes 0}}
+<!-- Cal-Heatmap CSS and JS - only load if there are votes -->
+<link rel="stylesheet" href="https://unpkg.com/cal-heatmap@3.6.2/cal-heatmap.css">
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script src="https://unpkg.com/cal-heatmap@3.6.2/cal-heatmap.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+   // Get class_professor ID from the page
+   const classProfessorId = {{.Data.ClassProfessor.ID}};
+
+   // Fetch vote activity data for this specific class/professor
+   fetch('/api/vote-activity?id=' + classProfessorId)
+      .then(response => response.json())
+      .then(data => {
+         // Transform data for cal-heatmap
+         const heatmapData = {};
+         data.forEach(item => {
+            heatmapData[item.date] = item.value;
+         });
+
+         // Initialize cal-heatmap v3
+         const cal = new CalHeatMap();
+         cal.init({
+            itemSelector: '#vote-heatmap',
+            domain: 'month',
+            subDomain: 'day',
+            data: heatmapData,
+            start: new Date(new Date().setMonth(new Date().getMonth() - 11)),
+            cellSize: 12,
+            cellPadding: 2,
+            cellRadius: 2,
+            range: 12,
+            legend: [2, 5, 10, 20],
+            legendColors: ['#efefef', '#d6e685', '#8cc665', '#44a340', '#1e6823'],
+            displayLegend: true,
+            subDomainTextFormat: '%d',
+            itemName: ['avaliação', 'avaliações'],
+            domainLabelFormat: function(date) {
+               const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+               return months[date.getMonth()];
+            }
+         });
+      })
+      .catch(error => {
+         console.error('Error loading vote activity data:', error);
+         document.getElementById('vote-heatmap').innerHTML =
+            '<p class="text-center text-muted">Não foi possível carregar o gráfico de atividade</p>';
+      });
+});
+</script>
+{{end}}
+
+{{end}}

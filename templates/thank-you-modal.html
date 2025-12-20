@@ -1,0 +1,29 @@
+{{define "thankyou-modal"}}
+<!-- Thank You Modal -->
+<div class="modal fade" id="thankYouModal" tabindex="-1" role="dialog" aria-labelledby="thankYouModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header text-center" style="border-bottom: none; padding-bottom: 10px;">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <div style="font-size: 3em; color: #28a745; margin: 10px 0;">
+          <i class="glyphicon glyphicon-heart"></i>
+        </div>
+      </div>
+      <div class="modal-body text-center" style="padding-top: 0;">
+        <h4 class="modal-title" style="color: #333; margin-bottom: 15px;">Obrigado pelo seu voto!</h4>
+        <p style="color: #666; margin-bottom: 20px;">
+          Sua avaliação é muito importante para nossa comunidade acadêmica.
+        </p>
+        <p style="color: #888; font-size: 0.9em;">
+          Continue colaborando para melhorar a qualidade do ensino na USP.
+        </p>
+      </div>
+      <div class="modal-footer text-center" style="border-top: none; padding-top: 0;">
+        <button type="button" class="btn btn-success" data-dismiss="modal" onclick="window.location.reload()">
+          <i class="glyphicon glyphicon-ok"></i> Continuar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

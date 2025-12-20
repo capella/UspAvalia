@@ -1,0 +1,74 @@
+{{define "title"}}Contato - USP Avalia{{end}}
+
+{{define "content"}}
+<div class="container" style="margin-top: 50px;">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Contato</h3>
+                </div>
+                <div class="card-body">
+                    {{if .Data.Success}}
+                    <div class="alert alert-success" role="alert">
+                        {{.Data.Success}}
+                    </div>
+                    <p><a href="/">Voltar para página inicial</a></p>
+                    {{else}}
+                    {{if .Data.Error}}
+                    <div class="alert alert-danger" role="alert">
+                        {{.Data.Error}}
+                    </div>
+                    {{end}}
+
+                    <p>Tem sugestões ou encontrou algum problema? Entre em contato conosco!</p>
+                    <p>Você também pode usar nosso <a href="https://github.com/capella/UspAvalia" target="_blank">GitHub</a> para reportar problemas.</p>
+
+                    <form method="POST" action="/contato" id="contactForm">
+                        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+
+                        <div class="form-group">
+                            <label for="first_name">Nome *</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="last_name">Sobrenome *</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="telephone">Telefone</label>
+                            <input type="tel" class="form-control" id="telephone" name="telephone">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="comments">Mensagem *</label>
+                            <textarea class="form-control" id="comments" name="comments" rows="5" required></textarea>
+                        </div>
+
+                        {{if not .User}}
+                        <div class="form-group">
+                            <div class="h-captcha" data-sitekey="{{.Data.HCaptchaSiteKey}}"></div>
+                        </div>
+                        {{end}}
+
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Enviar</button>
+                        <a href="/" class="btn btn-secondary">Cancelar</a>
+                    </form>
+
+                    {{if not .User}}
+                    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+                    {{end}}
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

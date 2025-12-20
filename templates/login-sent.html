@@ -1,0 +1,47 @@
+{{define "title"}}Email Enviado - USP Avalia{{end}}
+
+{{define "content"}}
+<div class="container" style="margin-top: 50px;">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Email Enviado</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success" role="alert">
+                        <h4 class="alert-heading"><i class="fas fa-check-circle"></i> Link de login enviado!</h4>
+                        <p>Verifique sua caixa de entrada em <strong>{{.Data.Email}}</strong></p>
+                        <hr>
+                        <p class="mb-0">O link expira em <strong>15 minutos</strong>.</p>
+                    </div>
+
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Próximos passos:</h5>
+                            <ol>
+                                <li>Abra seu email</li>
+                                <li>Clique no link "Fazer Login"</li>
+                                <li>Você será automaticamente conectado</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <p class="text-muted">
+                        <small>
+                            <i class="fas fa-info-circle"></i>
+                            Não recebeu o email?
+                            Verifique a pasta de spam ou
+                            <a href="/login">solicite um novo link</a>.
+                        </small>
+                    </p>
+
+                    <div class="text-center mt-4">
+                        <a href="/" class="btn btn-primary">Voltar para Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

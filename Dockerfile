@@ -1,35 +1,65 @@
-FROM python:3 as db
-COPY ./matrusp/py/ .
+# Build stage
+FROM golang:1.24.6-alpine AS builder
 
-RUN pip install --no-cache-dir html5lib aiohttp python-dateutil beautifulsoup4 aiodns multi-key-dict
-RUN mkdir db/
-RUN python3 parse_cursos_usp.py db/
-RUN python3 parse_usp.py db/
+# Install build dependencies for SQLite
+RUN apk add --no-cache git ca-certificates gcc musl-dev sqlite-dev
 
-FROM php:7-apache
+# Set working directory
+WORKDIR /app
 
-LABEL maintainer="gabriel@capella.pro"
+# Copy go mod and sum files
+COPY go.mod go.sum ./
 
-# Packages
-RUN apt-get update && \
-	DEBIAN_FRONTEND=noninteractive apt-get install -y curl zlib1g-dev git
+# Download dependencies
+RUN go mod download
 
-RUN docker-php-ext-install mysqli
-RUN cp /etc/apache2/mods-available/rewrite.load /etc/apache2/mods-enabled/rewrite.load
+# Copy source code
+COPY . .
 
-# Setup the Composer installer
-RUN curl -o /tmp/composer-setup.php https://getcomposer.org/installer \
-  && curl -o /tmp/composer-setup.sig https://composer.github.io/installer.sig \
-  && php -r "if (hash('SHA384', file_get_contents('/tmp/composer-setup.php')) !== trim(file_get_contents('/tmp/composer-setup.sig'))) { unlink('/tmp/composer-setup.php'); echo 'Invalid installer' . PHP_EOL; exit(1); }"
+# Build the application with CGO enabled for SQLite
+RUN CGO_ENABLED=1 GOOS=linux go build -a -o uspavalia .
 
-RUN php /tmp/composer-setup.php --no-ansi --install-dir=/usr/local/bin --filename=composer && rm -rf /tmp/composer-setup.php
-COPY composer.json /var/www/html/
-WORKDIR /var/www/html/
-RUN php /usr/local/bin/composer install  --no-dev
-WORKDIR /
+# Runtime stage
+FROM alpine:latest
 
-COPY --from=db db /var/www/html/matrusp/db
+# Install ca-certificates for HTTPS requests (OAuth), wget for healthcheck/cron, and SQLite runtime
+RUN apk --no-cache add ca-certificates wget sqlite-libs
 
-ADD . /var/www/html/
-RUN chmod 777 /var/www/html/INSTALL/db_usp.txt
+WORKDIR /app
 
+# Copy the binary from builder stage
+COPY --from=builder /app/uspavalia .
+
+# Copy configuration file
+COPY --from=builder /app/.uspavalia.yaml .
+
+# Copy templates and static files
+COPY --from=builder /app/templates ./templates
+COPY --from=builder /app/static ./static
+COPY --from=builder /app/matrusp ./matrusp
+
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Create non-root user
+RUN adduser -D -s /bin/sh uspavalia
+
+# Change ownership of app directory
+RUN chown -R uspavalia:uspavalia /app
+
+# Switch to non-root user
+USER uspavalia
+
+# Expose port
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost:8080/ || exit 1
+
+# Set entrypoint
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+
+# Run the application
+CMD ["./uspavalia", "serve"]
