@@ -64,7 +64,7 @@ type Email struct {
 }
 
 func Load() *Config {
-	viper.SetDefault("server.host", "localhost")
+	viper.SetDefault("server.host", "0.0.0.0")
 	viper.SetDefault("server.port", "8080")
 	viper.SetDefault("server.url", "http://localhost:8080")
 	viper.SetDefault("server.force_https", false)

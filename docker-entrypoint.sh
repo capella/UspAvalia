@@ -24,8 +24,8 @@ update_disciplines() {
         # Days until Sunday (7 = Sunday)
         if [ "$current_day" -eq 7 ]; then
             # It's Sunday
-            if [ "$current_hour" -lt 3 ]; then
-                # Before 3 AM today
+            if [ "$current_hour" -lt 3 ] || { [ "$current_hour" -eq 3 ] && [ "$current_minute" -eq 0 ]; }; then
+                # Before or at 3:00 AM today
                 days_until=0
             else
                 # After 3 AM, wait until next Sunday
@@ -36,14 +36,17 @@ update_disciplines() {
             days_until=$((7 - current_day))
         fi
 
-        # Calculate total seconds to wait
-        hours_until=$((days_until * 24 + 3 - current_hour))
-        minutes_until=$((hours_until * 60 - current_minute))
-        seconds_until=$((minutes_until * 60))
+        # Calculate seconds until target time (3:00 AM)
+        # Target: days_until days from now at 03:00:00
+        current_seconds=$((current_hour * 3600 + current_minute * 60))
+        target_seconds=$((3 * 3600))  # 3:00 AM = 3 * 3600 seconds
 
-        # If we're past 3 AM on Sunday, wait a full week
-        if [ "$seconds_until" -lt 0 ]; then
-            seconds_until=$((seconds_until + 604800))  # Add a week in seconds
+        if [ "$days_until" -eq 0 ]; then
+            # Today - just calculate time difference
+            seconds_until=$((target_seconds - current_seconds))
+        else
+            # Future day - add remaining time today + full days + target time
+            seconds_until=$(( (86400 - current_seconds) + ((days_until - 1) * 86400) + target_seconds ))
         fi
 
         echo "[$(date)] Next discipline update scheduled in $((seconds_until / 3600)) hours"
