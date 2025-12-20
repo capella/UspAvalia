@@ -11,7 +11,7 @@ import (
 	"uspavalia/internal/models"
 	"uspavalia/pkg/auth"
 
-	"github.com/gorilla/csrf"
+	csrf "filippo.io/csrf/gorilla"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -366,8 +366,9 @@ func (s *Server) handleContact(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
 		data := PageData{
-			CSRFToken: csrf.Token(r),
-			User:      currentUser,
+			CSRFToken:         csrf.Token(r),
+			CSRFTokenTemplate: csrf.TemplateField(r),
+			User:              currentUser,
 			Data: map[string]interface{}{
 				"HCaptchaSiteKey": s.config.Security.HCaptchaSiteKey,
 			},
@@ -385,7 +386,6 @@ func (s *Server) handleContact(w http.ResponseWriter, r *http.Request) {
 	firstName := strings.TrimSpace(r.FormValue("first_name"))
 	lastName := strings.TrimSpace(r.FormValue("last_name"))
 	email := strings.TrimSpace(r.FormValue("email"))
-	telephone := strings.TrimSpace(r.FormValue("telephone"))
 	comments := strings.TrimSpace(r.FormValue("comments"))
 
 	// Validate required fields
@@ -409,7 +409,11 @@ func (s *Server) handleContact(w http.ResponseWriter, r *http.Request) {
 		)
 		if err != nil || !valid {
 			logrus.Printf("hCaptcha verification failed: %v", err)
-			s.renderContactError(w, r, "Verificação de segurança falhou. Por favor, tente novamente")
+			s.renderContactError(
+				w,
+				r,
+				"Verificação de segurança falhou. Por favor, tente novamente",
+			)
 			return
 		}
 	}
@@ -434,7 +438,7 @@ func (s *Server) handleContact(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send email
-	if err := s.emailService.SendContactEmail(firstName, lastName, email, telephone, comments); err != nil {
+	if err := s.emailService.SendContactEmail(firstName, lastName, email, comments); err != nil {
 		logrus.Printf("Contact email error: %v", err)
 		s.renderContactError(w, r, "Erro ao enviar mensagem. Por favor, tente novamente mais tarde")
 		return

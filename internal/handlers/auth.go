@@ -13,7 +13,7 @@ import (
 	"uspavalia/internal/models"
 	"uspavalia/pkg/auth"
 
-	"github.com/gorilla/csrf"
+	csrf "filippo.io/csrf/gorilla"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
@@ -195,7 +195,8 @@ func (s *Server) handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleRequestLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		data := PageData{
-			CSRFToken: csrf.Token(r),
+			CSRFToken:         csrf.Token(r),
+			CSRFTokenTemplate: csrf.TemplateField(r),
 			Data: map[string]interface{}{
 				"HCaptchaSiteKey": s.config.Security.HCaptchaSiteKey,
 			},
@@ -291,7 +292,12 @@ func (s *Server) handleMagicLink(w http.ResponseWriter, r *http.Request) {
 	// Find user
 	var user models.User
 	if err := s.db.Where("email_hash = ? AND email_verified = ?", emailHash, true).First(&user).Error; err != nil {
-		s.renderErrorPage(w, r, http.StatusNotFound, "Usuário não encontrado ou email não verificado")
+		s.renderErrorPage(
+			w,
+			r,
+			http.StatusNotFound,
+			"Usuário não encontrado ou email não verificado",
+		)
 		return
 	}
 

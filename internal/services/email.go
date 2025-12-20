@@ -22,7 +22,7 @@ type EmailTemplate struct {
 
 func NewEmailService(cfg *config.Config) *EmailService {
 	client := sendgrid.NewSendClient(cfg.Email.SendGridAPIKey)
-	
+
 	return &EmailService{
 		config: cfg,
 		client: client,
@@ -33,28 +33,34 @@ func NewEmailService(cfg *config.Config) *EmailService {
 func (es *EmailService) SendEmail(toEmail, toName string, template EmailTemplate) error {
 	from := mail.NewEmail(es.config.Email.FromName, es.config.Email.FromEmail)
 	to := mail.NewEmail(toName, toEmail)
-	
-	message := mail.NewSingleEmail(from, template.Subject, to, template.PlainText, template.HTMLContent)
-	
+
+	message := mail.NewSingleEmail(
+		from,
+		template.Subject,
+		to,
+		template.PlainText,
+		template.HTMLContent,
+	)
+
 	response, err := es.client.Send(message)
 	if err != nil {
 		log.Printf("Failed to send email: %v", err)
 		return err
 	}
-	
+
 	if response.StatusCode >= 400 {
 		log.Printf("SendGrid error: Status %d, Body: %s", response.StatusCode, response.Body)
 		return fmt.Errorf("email service error: %d", response.StatusCode)
 	}
-	
+
 	log.Printf("Email sent successfully to %s", toEmail)
 	return nil
 }
 
 // SendVerificationEmail sends an email verification email
 func (es *EmailService) SendVerificationEmail(toEmail, toName, token string) error {
-	verificationURL := fmt.Sprintf("%s/verify-email?token=%s", es.config.Email.BaseURL, token)
-	
+	verificationURL := fmt.Sprintf("%s/verify-email?token=%s", es.config.Server.URL, token)
+
 	template := EmailTemplate{
 		Subject: "Verificação de Email - USP Avalia",
 		PlainText: fmt.Sprintf(`
@@ -110,14 +116,14 @@ Equipe USP Avalia
 </html>
 		`, toName, verificationURL, verificationURL),
 	}
-	
+
 	return es.SendEmail(toEmail, toName, template)
 }
 
 // SendPasswordResetEmail sends a password reset email
 func (es *EmailService) SendPasswordResetEmail(toEmail, toName, token string) error {
-	resetURL := fmt.Sprintf("%s/reset-password?token=%s", es.config.Email.BaseURL, token)
-	
+	resetURL := fmt.Sprintf("%s/reset-password?token=%s", es.config.Server.URL, token)
+
 	template := EmailTemplate{
 		Subject: "Redefinir Senha - USP Avalia",
 		PlainText: fmt.Sprintf(`
@@ -182,7 +188,9 @@ Equipe USP Avalia
 }
 
 // SendContactEmail sends a contact form submission to the admin
-func (es *EmailService) SendContactEmail(firstName, lastName, email, telephone, comments string) error {
+func (es *EmailService) SendContactEmail(
+	firstName, lastName, email, comments string,
+) error {
 	adminEmail := "contato@uspavalia.com"
 	if es.config.Email.FromEmail != "" {
 		adminEmail = es.config.Email.FromEmail
@@ -195,14 +203,13 @@ Nova mensagem de contato recebida:
 
 Nome: %s %s
 Email: %s
-Telefone: %s
 
 Mensagem:
 %s
 
 ---
 Enviado através do formulário de contato do USP Avalia
-		`, firstName, lastName, email, telephone, comments),
+		`, firstName, lastName, email, comments),
 		HTMLContent: fmt.Sprintf(`
 <!DOCTYPE html>
 <html>
@@ -236,10 +243,6 @@ Enviado através do formulário de contato do USP Avalia
                 <div class="field-value"><a href="mailto:%s">%s</a></div>
             </div>
             <div class="field">
-                <div class="field-label">Telefone:</div>
-                <div class="field-value">%s</div>
-            </div>
-            <div class="field">
                 <div class="field-label">Mensagem:</div>
                 <div class="message-box">%s</div>
             </div>
@@ -250,7 +253,7 @@ Enviado através do formulário de contato do USP Avalia
     </div>
 </body>
 </html>
-		`, firstName, lastName, email, email, telephone, comments),
+		`, firstName, lastName, email, email, comments),
 	}
 
 	return es.SendEmail(adminEmail, "USP Avalia Admin", template)

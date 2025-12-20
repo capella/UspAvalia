@@ -61,7 +61,6 @@ type Email struct {
 	SendGridAPIKey string `mapstructure:"sendgrid_api_key"`
 	FromEmail      string `mapstructure:"from_email"`
 	FromName       string `mapstructure:"from_name"`
-	BaseURL        string `mapstructure:"base_url"` // For email verification links
 }
 
 func Load() *Config {
@@ -82,7 +81,6 @@ func Load() *Config {
 	viper.SetDefault("old_database.name", "uspavalia_old")
 	viper.SetDefault("security.session_name", "uspavalia_session")
 	viper.SetDefault("email.from_name", "USP Avalia")
-	viper.SetDefault("email.base_url", "http://localhost:8080")
 
 	viper.SetEnvPrefix("USPAVALIA")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))

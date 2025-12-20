@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"uspavalia/internal/models"
 
-	"github.com/gorilla/csrf"
+	csrf "filippo.io/csrf/gorilla"
 )
 
 func (s *Server) handleTypeahead(w http.ResponseWriter, r *http.Request) {

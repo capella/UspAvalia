@@ -9,7 +9,7 @@ import (
 	"uspavalia/internal/models"
 	"uspavalia/internal/services"
 
-	"github.com/gorilla/csrf"
+	csrf "filippo.io/csrf/gorilla"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/prometheus/client_golang/prometheus"
@@ -90,14 +90,13 @@ func (s *Server) setupRoutes() {
 	CSRFMiddleware := csrf.Protect(
 		[]byte(s.config.Security.CSRFKey),
 		csrf.Secure(false),
-		csrf.Path("/"),
 	)
 
+	s.router.Use(CSRFMiddleware)
 	s.router.Use(middleware.SecurityHeaders)
 	s.router.Use(middleware.Logging)
 	s.router.Use(middleware.PrometheusMetrics)
 	s.router.Use(middleware.RateLimit(generalLimiter))
-	s.router.Use(CSRFMiddleware)
 
 	// Static files with caching headers
 	staticHandler := http.StripPrefix("/static/", http.FileServer(http.Dir("static/")))

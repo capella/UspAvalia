@@ -12,13 +12,17 @@ func SecurityHeaders(next http.Handler) http.Handler {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("X-XSS-Protection", "1; mode=block")
 		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+
 		w.Header().Set("Content-Security-Policy",
 			"default-src 'self'; "+
-				"script-src 'self' 'unsafe-inline' maxcdn.bootstrapcdn.com cdn.jsdelivr.net cdnjs.cloudflare.com www.google-analytics.com unpkg.com d3js.org; "+
+				// Added js.hcaptcha.com inside the script-src directive
+				"script-src 'self' 'unsafe-inline' maxcdn.bootstrapcdn.com cdn.jsdelivr.net cdnjs.cloudflare.com www.google-analytics.com unpkg.com d3js.org js.hcaptcha.com; "+
 				"style-src 'self' 'unsafe-inline' maxcdn.bootstrapcdn.com cdn.jsdelivr.net cdnjs.cloudflare.com fonts.googleapis.com unpkg.com; "+
-				"img-src 'self' data: *.googleusercontent.com; "+
+				"img-src 'self' data: *.googleusercontent.com *.hcaptcha.com; "+
+				"frame-src 'self' *.hcaptcha.com; "+
 				"font-src 'self' maxcdn.bootstrapcdn.com cdn.jsdelivr.net cdnjs.cloudflare.com fonts.gstatic.com; "+
-				"connect-src 'self' accounts.google.com www.google-analytics.com")
+				// Added cdn.jsdelivr.net and maxcdn.bootstrapcdn.com to allow loading source maps (.map files)
+				"connect-src 'self' accounts.google.com www.google-analytics.com cdn.jsdelivr.net maxcdn.bootstrapcdn.com")
 
 		// Remove server header for security
 		w.Header().Set("Server", "")
