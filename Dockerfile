@@ -30,13 +30,13 @@ WORKDIR /app
 # Copy the binary from builder stage
 COPY --from=builder /app/uspavalia .
 
-# Copy configuration file
-COPY --from=builder /app/.uspavalia.yaml .
-
 # Copy templates and static files
 COPY --from=builder /app/templates ./templates
 COPY --from=builder /app/static ./static
 COPY --from=builder /app/matrusp ./matrusp
+
+# Note: Configuration should be provided via environment variables
+# See docker-compose.yml or use -e flags with docker run
 
 # Copy entrypoint script
 COPY docker-entrypoint.sh /usr/local/bin/

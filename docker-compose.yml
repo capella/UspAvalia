@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  uspavalia:
+    build: .
+    image: uspavalia:latest
+    container_name: uspavalia
+    ports:
+      - "8080:8080"
+    environment:
+      # Server configuration
+      - USPAVALIA_SERVER_HOST=0.0.0.0
+      - USPAVALIA_SERVER_PORT=8080
+      - USPAVALIA_SERVER_URL=${SERVER_URL:-http://localhost:8080}
+
+      # Database configuration (SQLite by default)
+      - USPAVALIA_DATABASE_TYPE=sqlite
+      - USPAVALIA_DATABASE_PATH=/app/data/uspavalia.db
+
+      # Security keys (CHANGE THESE IN PRODUCTION!)
+      - USPAVALIA_SECURITY_SECRET_KEY=${SECRET_KEY:-please-change-this-secret-key-in-production}
+      - USPAVALIA_SECURITY_CSRF_KEY=${CSRF_KEY:-please-change-this-csrf-key-in-production}
+      - USPAVALIA_SECURITY_MAGIC_LINK_HMAC_KEY=${MAGIC_LINK_HMAC_KEY:-please-change-this-hmac-key-in-production}
+
+      # hCaptcha (optional - for bot protection)
+      - USPAVALIA_SECURITY_HCAPTCHA_SITE_KEY=${HCAPTCHA_SITE_KEY:-}
+      - USPAVALIA_SECURITY_HCAPTCHA_SECRET_KEY=${HCAPTCHA_SECRET_KEY:-}
+
+      # Google OAuth
+      - USPAVALIA_OAUTH_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - USPAVALIA_OAUTH_GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - USPAVALIA_OAUTH_GOOGLE_REDIRECT_URL=${GOOGLE_REDIRECT_URL:-http://localhost:8080/auth/google/callback}
+
+      # Email (SendGrid)
+      - USPAVALIA_EMAIL_SENDGRID_API_KEY=${SENDGRID_API_KEY:-}
+      - USPAVALIA_EMAIL_FROM_EMAIL=${FROM_EMAIL:-noreply@uspavalia.com}
+      - USPAVALIA_EMAIL_FROM_NAME=USP Avalia
+
+    volumes:
+      # Persist database and static files
+      - ./data:/app/data
+      - ./matrusp:/app/matrusp
+
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "-O", "/dev/null", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    restart: unless-stopped
+
+# Optional: MySQL database service
+# Uncomment this section if you prefer MySQL over SQLite
+#
+# services:
+#   mysql:
+#     image: mysql:8.0
+#     container_name: uspavalia-mysql
+#     environment:
+#       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+#       MYSQL_DATABASE: uspavalia
+#       MYSQL_USER: uspavalia
+#       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-uspavaliapassword}
+#     volumes:
+#       - mysql_data:/var/lib/mysql
+#     ports:
+#       - "3306:3306"
+#     healthcheck:
+#       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+#     restart: unless-stopped
+#
+#   uspavalia:
+#     depends_on:
+#       mysql:
+#         condition: service_healthy
+#     environment:
+#       - USPAVALIA_DATABASE_TYPE=mysql
+#       - USPAVALIA_DATABASE_HOST=mysql
+#       - USPAVALIA_DATABASE_PORT=3306
+#       - USPAVALIA_DATABASE_USER=uspavalia
+#       - USPAVALIA_DATABASE_PASSWORD=${MYSQL_PASSWORD:-uspavaliapassword}
+#       - USPAVALIA_DATABASE_NAME=uspavalia
+#
+# volumes:
+#   mysql_data:

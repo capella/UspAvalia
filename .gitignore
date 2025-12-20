@@ -1,9 +1,25 @@
 **/*.log
 **/*.swp
+
+# Configuration files with secrets
 .uspavalia.yaml
+.env
+.env.*
+
+# Project documentation
 CLAUDE.md
-test_output/
-tmp/
+
+# Build artifacts
 uspavalia
 uspavalia.db
+*.db
+*.db-shm
+*.db-wal
+
+# Temporary directories
+test_output/
+tmp/
+data/
+
+# Claude Code
 .claude/
