@@ -247,7 +247,7 @@ func (s *Server) handleRequestLogin(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	if err := s.db.Where("email_hash = ?", emailHash).First(&user).Error; err != nil {
 		// Don't reveal if user exists - always show success
-		s.renderLoginSent(w, r, email)
+		s.renderLoginSent(w, r)
 		return
 	}
 
@@ -270,7 +270,7 @@ func (s *Server) handleRequestLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.renderLoginSent(w, r, email)
+	s.renderLoginSent(w, r)
 }
 
 // handleMagicLink processes magic link authentication
@@ -327,12 +327,9 @@ func (s *Server) renderLoginRequestError(w http.ResponseWriter, r *http.Request,
 }
 
 // renderLoginSent renders the "login email sent" confirmation page
-func (s *Server) renderLoginSent(w http.ResponseWriter, r *http.Request, email string) {
+func (s *Server) renderLoginSent(w http.ResponseWriter, r *http.Request) {
 	data := PageData{
 		CSRFToken: csrf.Token(r),
-		Data: map[string]interface{}{
-			"Email": email,
-		},
 	}
 	s.renderTemplate(w, r, "login-sent", data)
 }

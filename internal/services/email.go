@@ -53,7 +53,7 @@ func (es *EmailService) SendEmail(toEmail, toName string, template EmailTemplate
 		return fmt.Errorf("email service error: %d", response.StatusCode)
 	}
 
-	log.Printf("Email sent successfully to %s", toEmail)
+	log.Printf("Email sent successfully")
 	return nil
 }
 
