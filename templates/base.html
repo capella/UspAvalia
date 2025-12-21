@@ -161,10 +161,15 @@
             <li><a href="/destaques">Destaques</a></li>
             <li><a href="/sobre">Sobre</a></li>
             <li><a href="/matrusp">Matrusp</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
             {{if .User}}
-            <li><a href="/logout">Logout</a></li>
+            <li class="navbar-text" style="color: #9d9d9d; padding-right: 5px;">
+              <i class="fa fa-user" style="color: #5cb85c;"></i> Conectado
+            </li>
+            <li><a href="/logout"><i class="fa fa-sign-out"></i> Sair</a></li>
             {{else}}
-            <li><a href="/login">Login</a></li>
+            <li><a href="/login"><i class="fa fa-sign-in"></i> Entrar</a></li>
             {{end}}
           </ul>
         </div>
