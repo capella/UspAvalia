@@ -92,10 +92,7 @@ func (s *Server) setupRoutes() {
 		logrus.Warn("CSRF protection is DISABLED - do not use in production!")
 	}
 
-	CSRFMiddleware := csrf.Protect(
-		[]byte(s.config.Security.CSRFKey),
-		csrf.Secure(!disableCSRF),
-	)
+	CSRFMiddleware := csrf.Protect([]byte(s.config.Security.CSRFKey))
 	s.router.Use(CSRFMiddleware)
 	s.router.Use(middleware.SecurityHeaders)
 	s.router.Use(middleware.Logging)
@@ -283,10 +280,6 @@ func (s *Server) renderTemplate(
 		logrus.Printf("Error executing template %s: %v", name, err)
 		s.renderErrorPage(w, r, http.StatusInternalServerError, "Temos um problema :(")
 	}
-}
-
-func (s *Server) renderError(w http.ResponseWriter, r *http.Request, statusCode int) {
-	w.WriteHeader(statusCode)
 }
 
 func (s *Server) handle404(w http.ResponseWriter, r *http.Request) {

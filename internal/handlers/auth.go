@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"net/http"
 	"regexp"
 	"strings"
@@ -13,17 +12,14 @@ import (
 	"uspavalia/internal/models"
 	"uspavalia/pkg/auth"
 
-	csrf "filippo.io/csrf/gorilla"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
 
 type PageData struct {
-	CSRFToken         string
-	CSRFTokenTemplate template.HTML
-	User              *models.User
-	Data              interface{}
+	User *models.User
+	Data interface{}
 }
 
 // Email validation regex
@@ -32,18 +28,6 @@ var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]
 // validateEmail validates email format
 func validateEmail(email string) bool {
 	return emailRegex.MatchString(email)
-}
-
-// getUserByEmailHash finds user by email hash
-func (s *Server) getUserByEmailHash(email string) (*models.User, error) {
-	emailHash := auth.HashEmail(email, s.config.Security.SecretKey)
-
-	var user models.User
-	if err := s.db.Where("email_hash = ?", emailHash).First(&user).Error; err != nil {
-		return nil, err
-	}
-
-	return &user, nil
 }
 
 func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
@@ -143,8 +127,6 @@ func (s *Server) handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleRequestLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		data := PageData{
-			CSRFToken:         csrf.Token(r),
-			CSRFTokenTemplate: csrf.TemplateField(r),
 			Data: map[string]interface{}{
 				"HCaptchaSiteKey": s.config.Security.HCaptchaSiteKey,
 			},
@@ -298,7 +280,6 @@ func (s *Server) handleMagicLink(w http.ResponseWriter, r *http.Request) {
 // renderLoginRequestError renders the login request page with an error message
 func (s *Server) renderLoginRequestError(w http.ResponseWriter, r *http.Request, errorMsg string) {
 	data := PageData{
-		CSRFToken: csrf.Token(r),
 		Data: map[string]interface{}{
 			"Error":           errorMsg,
 			"HCaptchaSiteKey": s.config.Security.HCaptchaSiteKey,
@@ -309,8 +290,6 @@ func (s *Server) renderLoginRequestError(w http.ResponseWriter, r *http.Request,
 
 // renderLoginSent renders the "login email sent" confirmation page
 func (s *Server) renderLoginSent(w http.ResponseWriter, r *http.Request) {
-	data := PageData{
-		CSRFToken: csrf.Token(r),
-	}
+	data := PageData{}
 	s.renderTemplate(w, r, "login-sent", data)
 }

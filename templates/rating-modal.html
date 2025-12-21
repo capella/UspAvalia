@@ -4,9 +4,6 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <form id="ratingForm{{.Data.ClassProfessor.ID}}" data-class-professor-id="{{.Data.ClassProfessor.ID}}" data-user-logged="{{if .User}}true{{else}}false{{end}}">
-                {{if .User}}
-                <input type="hidden" name="gorilla.csrf.Token" value="{{.CSRFToken}}">
-                {{end}}
                 <input type="hidden" name="class_professor_id" value="{{.Data.ClassProfessor.ID}}">
                 
                 <div class="modal-header">

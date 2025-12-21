@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"uspavalia/internal/models"
-
-	csrf "filippo.io/csrf/gorilla"
 )
 
 func (s *Server) handleTypeahead(w http.ResponseWriter, r *http.Request) {
@@ -56,8 +54,7 @@ func (s *Server) handleSearch(w http.ResponseWriter, r *http.Request) {
 
 	if query == "" {
 		data := PageData{
-			CSRFToken: csrf.Token(r),
-			User:      s.getCurrentUser(r),
+			User: s.getCurrentUser(r),
 		}
 		s.renderTemplate(w, r, "search", data)
 		return
@@ -77,8 +74,7 @@ func (s *Server) handleSearch(w http.ResponseWriter, r *http.Request) {
 	resultCount := len(disciplines) + len(professors)
 
 	data := PageData{
-		CSRFToken: csrf.Token(r),
-		User:      s.getCurrentUser(r),
+		User: s.getCurrentUser(r),
 		Data: map[string]interface{}{
 			"Query":       query,
 			"Disciplines": disciplines,

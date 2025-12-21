@@ -221,9 +221,6 @@
         url: "/vote-batch",
         method: "POST",
         contentType: "application/json",
-        headers: {
-          "X-CSRF-Token": "{{.CSRFToken}}",
-        },
         data: JSON.stringify(requestData),
         success: function (response) {
           form.closest(".modal").modal("hide");

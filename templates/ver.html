@@ -101,7 +101,6 @@
                                         <form method="POST" action="/vote-comment" style="display: inline;">
                                             <input type="hidden" name="comment_id" value="{{.ID}}">
                                             <input type="hidden" name="vote" value="1">
-                                            <input type="hidden" name="gorilla.csrf.Token" value="{{$.CSRFToken}}">
                                             <button type="submit" class="btn btn-success btn-block">
                                                 <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
                                                 Positivo&nbsp;&nbsp;&nbsp;
@@ -111,7 +110,6 @@
                                         <form method="POST" action="/vote-comment" style="display: inline;">
                                             <input type="hidden" name="comment_id" value="{{.ID}}">
                                             <input type="hidden" name="vote" value="-1">
-                                            <input type="hidden" name="gorilla.csrf.Token" value="{{$.CSRFToken}}">
                                             <button type="submit" class="btn btn-danger btn-block">
                                                 <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span>
                                                 Negativo&nbsp;&nbsp;&nbsp;
@@ -145,7 +143,6 @@
                 <div class="well">
                     {{if .User}}
                     <form  method="POST" action="/comment">
-                        <input type="hidden" name="gorilla.csrf.Token" value="{{.CSRFToken}}">
                         <input type="hidden" name="class_professor_id" value="{{.Data.ClassProfessor.ID}}">
                         <div class="form-group">
                             <label for="comentario">Novo Comentário:</label>

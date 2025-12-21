@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"compress/gzip"
 	"net/http"
-	"os"
 	"regexp"
 	"time"
 
@@ -66,23 +64,6 @@ func httpGetWithCharsetAndStatus(
 	}
 
 	return doc, resp.StatusCode, nil
-}
-
-// createGzipFile creates a gzipped version of the given file
-func createGzipFile(originalPath string, data []byte) error {
-	gzipPath := originalPath + ".gz"
-
-	file, err := os.Create(gzipPath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	writer := gzip.NewWriter(file)
-	defer writer.Close()
-
-	_, err = writer.Write(data)
-	return err
 }
 
 // getTeachingUnits fetches all teaching units from Jupiter Web

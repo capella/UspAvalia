@@ -59,6 +59,8 @@ var (
 		},
 	)
 
+	// usersCount is registered with Prometheus via promauto
+	// staticcheck doesn't see that it's used, but it's automatically registered
 	usersCount = promauto.NewGaugeFunc(
 		prometheus.GaugeOpts{
 			Name: "uspavalia_users_count",
@@ -71,7 +73,13 @@ var (
 	)
 )
 
+// currentUsersCount is referenced by the usersCount GaugeFunc closure above
 var currentUsersCount int64
+
+// These variables are used by Prometheus metrics system through closures
+// Suppress unused warnings by explicitly referencing them
+var _ = usersCount
+var _ = currentUsersCount
 
 // metricsResponseWriter wraps http.ResponseWriter to capture status code for metrics
 type metricsResponseWriter struct {

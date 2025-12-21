@@ -116,13 +116,13 @@
     <script>
       (function (i, s, o, g, r, a, m) {
         i["GoogleAnalyticsObject"] = r;
-        ((i[r] =
+        (i[r] =
           i[r] ||
           function () {
             (i[r].q = i[r].q || []).push(arguments);
           }),
-          (i[r].l = 1 * new Date()));
-        ((a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]));
+          (i[r].l = 1 * new Date());
+        (a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]);
         a.async = 1;
         a.src = g;
         m.parentNode.insertBefore(a, m);
@@ -164,12 +164,16 @@
           </ul>
           <ul class="nav navbar-nav navbar-right">
             {{if .User}}
-            <li class="navbar-text" style="color: #9d9d9d; padding-right: 5px;">
-              <i class="fa fa-user" style="color: #5cb85c;"></i> Conectado
+            <li class="navbar-text" style="color: #9d9d9d; padding-right: 5px">
+              <i class="fa fa-user" style="color: #5cb85c"></i> Conectado
             </li>
-            <li><a href="/logout"><i class="fa fa-sign-out"></i> Sair</a></li>
+            <li>
+              <a href="/logout"><i class="fa fa-sign-out"></i> Sair</a>
+            </li>
             {{else}}
-            <li><a href="/login"><i class="fa fa-sign-in"></i> Entrar</a></li>
+            <li>
+              <a href="/login"><i class="fa fa-sign-in"></i> Entrar</a>
+            </li>
             {{end}}
           </ul>
         </div>
@@ -309,13 +313,9 @@
         fitToElement: true,
         minLength: 4,
         source: function (query, process) {
-          return $.post(
-            "/typeahead",
-            { query: query, "gorilla.csrf.Token": "{{.CSRFToken}}" },
-            function (data) {
-              return process(data);
-            },
-          );
+          return $.post("/typeahead", { query: query }, function (data) {
+            return process(data);
+          });
         },
         matcher: function (item) {
           return true;
@@ -333,13 +333,13 @@
     <script>
       (function (i, s, o, g, r, a, m) {
         i["GoogleAnalyticsObject"] = r;
-        ((i[r] =
+        (i[r] =
           i[r] ||
           function () {
             (i[r].q = i[r].q || []).push(arguments);
           }),
-          (i[r].l = 1 * new Date()));
-        ((a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]));
+          (i[r].l = 1 * new Date());
+        (a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]);
         a.async = 1;
         a.src = g;
         m.parentNode.insertBefore(a, m);

@@ -11,7 +11,6 @@ import (
 	"uspavalia/internal/models"
 	"uspavalia/pkg/auth"
 
-	csrf "filippo.io/csrf/gorilla"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -100,8 +99,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	stats := s.calculateStats()
 
 	data := PageData{
-		CSRFToken: csrf.Token(r),
-		User:      s.getCurrentUser(r),
+		User: s.getCurrentUser(r),
 		Data: map[string]interface{}{
 			"BestRated": bestRated,
 			"Stats":     stats,
@@ -154,13 +152,11 @@ func (s *Server) handleDiscipline(w http.ResponseWriter, r *http.Request) {
 		modals = append(modals, map[string]interface{}{
 			"ClassProfessor": result.ClassProfessor,
 			"Media":          mediaValue,
-			"CSRFToken":      csrf.Token(r),
 		})
 	}
 
 	data := PageData{
-		CSRFToken: csrf.Token(r),
-		User:      s.getCurrentUser(r),
+		User: s.getCurrentUser(r),
 		Data: map[string]interface{}{
 			"Discipline": discipline,
 			"List":       modals,
@@ -219,13 +215,11 @@ func (s *Server) handleProfessor(w http.ResponseWriter, r *http.Request) {
 		modals = append(modals, map[string]interface{}{
 			"ClassProfessor": result.ClassProfessor,
 			"Media":          mediaValue,
-			"CSRFToken":      csrf.Token(r),
 		})
 	}
 
 	data := PageData{
-		CSRFToken: csrf.Token(r),
-		User:      s.getCurrentUser(r),
+		User: s.getCurrentUser(r),
 		Data: map[string]interface{}{
 			"Professor": professor,
 			"List":      modals,
@@ -327,8 +321,7 @@ func (s *Server) handleVer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := PageData{
-		CSRFToken: csrf.Token(r),
-		User:      s.getCurrentUser(r),
+		User: s.getCurrentUser(r),
 		Data: map[string]interface{}{
 			"ClassProfessor": classProfessor,
 			"Professor":      classProfessor.Professor,
@@ -337,7 +330,6 @@ func (s *Server) handleVer(w http.ResponseWriter, r *http.Request) {
 			"Comments":       comments,
 			"TotalVotes":     totalVotes,
 			"Modal": map[string]interface{}{
-				"CSRFToken":      csrf.TemplateField(r),
 				"ClassProfessor": classProfessor,
 			},
 		},
@@ -355,8 +347,7 @@ func (s *Server) handleVer(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleAbout(w http.ResponseWriter, r *http.Request) {
 	data := PageData{
-		CSRFToken: csrf.Token(r),
-		User:      s.getCurrentUser(r),
+		User: s.getCurrentUser(r),
 	}
 	s.renderTemplate(w, r, "sobre", data)
 }
@@ -366,9 +357,7 @@ func (s *Server) handleContact(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
 		data := PageData{
-			CSRFToken:         csrf.Token(r),
-			CSRFTokenTemplate: csrf.TemplateField(r),
-			User:              currentUser,
+			User: currentUser,
 			Data: map[string]interface{}{
 				"HCaptchaSiteKey": s.config.Security.HCaptchaSiteKey,
 			},
@@ -456,8 +445,7 @@ func (s *Server) handleContact(w http.ResponseWriter, r *http.Request) {
 
 	// Show success
 	data := PageData{
-		CSRFToken: csrf.Token(r),
-		User:      s.getCurrentUser(r),
+		User: s.getCurrentUser(r),
 		Data: map[string]interface{}{
 			"Success": "Mensagem enviada com sucesso! Obrigado pelo contato.",
 		},
@@ -469,8 +457,7 @@ func (s *Server) renderContactError(w http.ResponseWriter, r *http.Request, erro
 	currentUser := s.getCurrentUser(r)
 
 	data := PageData{
-		CSRFToken: csrf.Token(r),
-		User:      currentUser,
+		User: currentUser,
 		Data: map[string]interface{}{
 			"Error":           errorMsg,
 			"HCaptchaSiteKey": s.config.Security.HCaptchaSiteKey,
@@ -513,8 +500,7 @@ func (s *Server) handleTopRated(w http.ResponseWriter, r *http.Request) {
 	`).Scan(&bestRatedProfessors)
 
 	data := PageData{
-		CSRFToken: csrf.Token(r),
-		User:      s.getCurrentUser(r),
+		User: s.getCurrentUser(r),
 		Data: map[string]interface{}{
 			"BestRatedDisciplines": bestRatedDisciplines,
 			"BestRatedProfessors":  bestRatedProfessors,
