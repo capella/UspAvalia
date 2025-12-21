@@ -22,7 +22,6 @@ type ClassProfessor struct {
 	UpdatedAt  time.Time  `                                   json:"updated_at"`
 }
 
-
 func (cp *ClassProfessor) CalculateStatsByType(db *gorm.DB) ([]VoteTypeStats, error) {
 	var results []struct {
 		Type      int     `gorm:"column:type"`
@@ -61,4 +60,3 @@ func (cp *ClassProfessor) CalculateStatsByType(db *gorm.DB) ([]VoteTypeStats, er
 
 	return stats, nil
 }
-

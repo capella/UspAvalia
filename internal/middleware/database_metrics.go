@@ -73,7 +73,7 @@ func (c *DatabaseMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 
 	// Count users
-	if err := c.db.Model(&models.User{}).Count(&count).Error; err == nil{
+	if err := c.db.Model(&models.User{}).Count(&count).Error; err == nil {
 		ch <- prometheus.MustNewConstMetric(
 			c.totalUsers,
 			prometheus.GaugeValue,

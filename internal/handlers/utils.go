@@ -20,7 +20,6 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"status":"ok","timestamp":"` + fmt.Sprintf("%d", time.Now().Unix()) + `"}`))
 }
 
-
 // XML sitemap structures following Google's best practices
 type SitemapURL struct {
 	XMLName xml.Name `xml:"url"`

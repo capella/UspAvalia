@@ -217,7 +217,6 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 				schedulesJSON, _ := json.Marshal(turma.Horario)
 				vacanciesJSON, _ := json.Marshal(turma.Vagas)
 
-
 				offering := models.ClassOffering{
 					DisciplineID:    dbDiscipline.ID,
 					Code:            turma.Codigo,
@@ -259,7 +258,7 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 						// Remove content in parentheses
 						professorName := regexp.MustCompile(`\(.*?\)`).ReplaceAllString(professorRaw, "")
 						professorName = strings.TrimSpace(professorName)
-					if professorName != "" && len(professorName) > 3 && len(professorName) < 50 && regexp.MustCompile(`[a-zA-ZÀ-ÿ]`).MatchString(professorName) && strings.Contains(professorName, " ") && !strings.Contains(professorName, "Júpiter") && professorName != "Instituto Oceanográfico" {
+						if professorName != "" && len(professorName) > 3 && len(professorName) < 50 && regexp.MustCompile(`[a-zA-ZÀ-ÿ]`).MatchString(professorName) && strings.Contains(professorName, " ") && !strings.Contains(professorName, "Júpiter") && professorName != "Instituto Oceanográfico" {
 							professorNames[professorName] = true
 						}
 					}
@@ -902,4 +901,3 @@ func toInt(s string) int {
 	}
 	return 0
 }
-

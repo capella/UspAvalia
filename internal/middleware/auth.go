@@ -15,7 +15,7 @@ func RequireAuth(store sessions.Store) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			session, _ := store.Get(r, "uspavalia_session")
-			
+
 			userID, ok := session.Values["user_id"]
 			if !ok || userID == nil {
 				http.Redirect(w, r, "/login", http.StatusFound)
@@ -32,7 +32,7 @@ func OptionalAuth(store sessions.Store) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			session, _ := store.Get(r, "uspavalia_session")
-			
+
 			if userID, ok := session.Values["user_id"]; ok && userID != nil {
 				ctx := context.WithValue(r.Context(), UserIDKey, userID)
 				r = r.WithContext(ctx)
