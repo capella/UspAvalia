@@ -5,15 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 	"uspavalia/internal/middleware"
 	"uspavalia/internal/models"
 	"uspavalia/pkg/auth"
 
 	csrf "filippo.io/csrf/gorilla"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
@@ -172,15 +173,24 @@ func (s *Server) handleRequestLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	valid, err := auth.VerifyHCaptcha(
-		s.config.Security.HCaptchaSecretKey,
-		hcaptchaResponse,
-		r.RemoteAddr,
-	)
-	if err != nil || !valid {
-		log.Printf("hCaptcha verification failed: %v", err)
-		s.renderLoginRequestError(w, r, "Verificação de segurança falhou")
-		return
+	if hcaptchaResponse != "" {
+		valid, err := auth.VerifyHCaptcha(
+			s.config.Security.HCaptchaSecretKey,
+			hcaptchaResponse,
+			r.RemoteAddr,
+		)
+		if err != nil || !valid {
+			if s.config.DevMode {
+				logrus.Printf(
+					"[DEV MODE] hCaptcha verification failed: %v - bypassing validation",
+					err,
+				)
+			} else {
+				logrus.Printf("hCaptcha verification failed: %v", err)
+				s.renderLoginRequestError(w, r, "Verificação de segurança falhou")
+				return
+			}
+		}
 	}
 
 	// Validate email
@@ -189,24 +199,36 @@ func (s *Server) handleRequestLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Find user by email hash
+	// Generate email hash
 	emailHash := auth.HashEmail(email, s.config.Security.SecretKey)
-	var user models.User
-	if err := s.db.Where("email_hash = ?", emailHash).First(&user).Error; err != nil {
-		// Don't reveal if user exists - always show success
-		s.renderLoginSent(w, r)
+
+	// Generate one-time use token
+	token := auth.GenerateSecureToken()
+	expiresAt := time.Now().Add(auth.MagicLinkExpiry)
+
+	// Store token in database
+	loginToken := models.LoginToken{
+		Token:     token,
+		EmailHash: emailHash,
+		ExpiresAt: expiresAt,
+	}
+	if err := s.db.Create(&loginToken).Error; err != nil {
+		logrus.Printf("Error creating login token: %v", err)
+		s.renderLoginRequestError(w, r, "Erro ao gerar link de login. Tente novamente.")
 		return
 	}
-
-	// Generate magic link token
-	token, _ := auth.GenerateMagicLinkToken(emailHash, []byte(s.config.Security.MagicLinkHMACKey))
 
 	// Create login URL
 	loginURL := fmt.Sprintf("%s/auth/magic-link?token=%s", s.config.Server.URL, token)
 
+	// Log magic link in dev mode
+	if s.config.DevMode {
+		logrus.Printf("[DEV MODE] Magic link for %s: %s", email, loginURL)
+	}
+
 	// Send email
 	if err := s.emailService.SendMagicLink(email, loginURL); err != nil {
-		log.Printf("Error sending magic link email: %v", err)
+		logrus.Printf("Error sending magic link email: %v", err)
 		s.renderLoginRequestError(w, r, "Erro ao enviar email. Tente novamente.")
 		return
 	}
@@ -216,37 +238,55 @@ func (s *Server) handleRequestLogin(w http.ResponseWriter, r *http.Request) {
 
 // handleMagicLink processes magic link authentication
 func (s *Server) handleMagicLink(w http.ResponseWriter, r *http.Request) {
-	token := r.URL.Query().Get("token")
+	tokenStr := r.URL.Query().Get("token")
 
-	if token == "" {
+	if tokenStr == "" {
 		s.renderErrorPage(w, r, http.StatusBadRequest, "Link inválido")
 		return
 	}
 
-	// Verify token
-	emailHash, valid := auth.VerifyMagicLinkToken(token, []byte(s.config.Security.MagicLinkHMACKey))
-	if !valid {
-		s.renderErrorPage(w, r, http.StatusUnauthorized, "Link de login expirado ou inválido")
+	// Look up token in database
+	var loginToken models.LoginToken
+	if err := s.db.Where("token = ?", tokenStr).First(&loginToken).Error; err != nil {
+		s.renderErrorPage(w, r, http.StatusUnauthorized, "Link de login inválido ou já utilizado")
 		return
 	}
 
-	// Find user
-	var user models.User
-	if err := s.db.Where("email_hash = ?", emailHash).First(&user).Error; err != nil {
-		s.renderErrorPage(
-			w,
-			r,
-			http.StatusNotFound,
-			"Usuário não encontrado",
-		)
+	// Check if token is expired
+	if time.Now().After(loginToken.ExpiresAt) {
+		// Delete expired token
+		s.db.Delete(&loginToken)
+		s.renderErrorPage(w, r, http.StatusUnauthorized, "Link de login expirado")
 		return
+	}
+
+	// Delete token immediately (one-time use)
+	if err := s.db.Delete(&loginToken).Error; err != nil {
+		logrus.Printf("Error deleting login token: %v", err)
+		// Continue anyway - the login should still work
+	}
+
+	// Find or create user
+	var user models.User
+	result := s.db.Where("email_hash = ?", loginToken.EmailHash).First(&user)
+	if result.Error != nil {
+		// Create new user
+		user = models.User{
+			EmailHash: loginToken.EmailHash,
+		}
+		if err := s.db.Create(&user).Error; err != nil {
+			logrus.Printf("Error creating user: %v", err)
+			s.renderErrorPage(w, r, http.StatusInternalServerError, "Erro ao criar usuário")
+			return
+		}
+		middleware.RecordRegistration()
 	}
 
 	// Create session
 	session, _ := s.store.Get(r, s.config.Security.SessionName)
 	session.Values["user_id"] = fmt.Sprintf("%d", user.ID)
 	if err := session.Save(r, w); err != nil {
-		log.Printf("Error saving session: %v", err)
+		logrus.Printf("Error saving session: %v", err)
 		s.renderErrorPage(w, r, http.StatusInternalServerError, "Erro ao criar sessão")
 		return
 	}

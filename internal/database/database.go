@@ -77,6 +77,7 @@ func Initialize(cfg *config.Config) (*gorm.DB, error) {
 func autoMigrate(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&models.User{},
+		&models.LoginToken{},
 		&models.Unit{},
 		&models.Course{},
 		&models.Discipline{},

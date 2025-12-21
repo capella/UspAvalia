@@ -3,7 +3,6 @@ package handlers
 import (
 	"html/template"
 	"net/http"
-	"os"
 	"time"
 	"uspavalia/internal/config"
 	"uspavalia/internal/middleware"
@@ -55,6 +54,7 @@ func NewServer(cfg *config.Config, db *gorm.DB) *Server {
 	s.loadTemplates()
 	s.setupRoutes()
 	s.startMetricsUpdater()
+	s.startTokenCleanup()
 
 	return s
 }
@@ -87,8 +87,7 @@ func (s *Server) setupRoutes() {
 	go authLimiter.CleanupIPs()
 	go apiLimiter.CleanupIPs()
 
-	// CSRF protection middleware (disabled in dev mode or when DISABLE_CSRF env var is set)
-	disableCSRF := s.config.DevMode || os.Getenv("DISABLE_CSRF") == "true"
+	disableCSRF := s.config.DevMode
 	if disableCSRF {
 		logrus.Warn("CSRF protection is DISABLED - do not use in production!")
 	}
@@ -216,6 +215,24 @@ func (s *Server) updateUserCount() {
 	middleware.SetUsersCount(count)
 }
 
+// startTokenCleanup starts a background routine to clean up expired login tokens
+func (s *Server) startTokenCleanup() {
+	// Clean up expired tokens every hour
+	go func() {
+		ticker := time.NewTicker(1 * time.Hour)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			result := s.db.Where("expires_at < ?", time.Now()).Delete(&models.LoginToken{})
+			if result.Error != nil {
+				logrus.Printf("Error cleaning up expired login tokens: %v", result.Error)
+			} else if result.RowsAffected > 0 {
+				logrus.Printf("Cleaned up %d expired login tokens", result.RowsAffected)
+			}
+		}
+	}()
+}
+
 func (s *Server) Start() error {
 	addr := s.config.Server.Host + ":" + s.config.Server.Port
 
@@ -227,7 +244,11 @@ func (s *Server) Start() error {
 		IdleTimeout:  time.Duration(s.config.Server.IdleTimeout) * time.Second,
 	}
 
-	logrus.Printf("Server starting on %s", addr)
+	mode := "production"
+	if s.config.DevMode {
+		mode = "development"
+	}
+	logrus.Printf("Server starting on %s (mode: %s)", addr, mode)
 	return server.ListenAndServe()
 }
 

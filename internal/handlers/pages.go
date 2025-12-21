@@ -398,23 +398,33 @@ func (s *Server) handleContact(w http.ResponseWriter, r *http.Request) {
 	if currentUser == nil {
 		hcaptchaResponse := r.FormValue("h-captcha-response")
 		if hcaptchaResponse == "" {
-			s.renderContactError(w, r, "Por favor, complete o desafio de segurança")
-			return
+			if s.config.DevMode {
+				logrus.Printf("[DEV MODE] hCaptcha response missing - bypassing validation")
+			} else {
+				s.renderContactError(w, r, "Por favor, complete o desafio de segurança")
+				return
+			}
 		}
 
-		valid, err := auth.VerifyHCaptcha(
-			s.config.Security.HCaptchaSecretKey,
-			hcaptchaResponse,
-			r.RemoteAddr,
-		)
-		if err != nil || !valid {
-			logrus.Printf("hCaptcha verification failed: %v", err)
-			s.renderContactError(
-				w,
-				r,
-				"Verificação de segurança falhou. Por favor, tente novamente",
+		if hcaptchaResponse != "" {
+			valid, err := auth.VerifyHCaptcha(
+				s.config.Security.HCaptchaSecretKey,
+				hcaptchaResponse,
+				r.RemoteAddr,
 			)
-			return
+			if err != nil || !valid {
+				if s.config.DevMode {
+					logrus.Printf("[DEV MODE] hCaptcha verification failed: %v - bypassing validation", err)
+				} else {
+					logrus.Printf("hCaptcha verification failed: %v", err)
+					s.renderContactError(
+						w,
+						r,
+						"Verificação de segurança falhou. Por favor, tente novamente",
+					)
+					return
+				}
+			}
 		}
 	}
 
