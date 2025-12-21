@@ -168,7 +168,6 @@ func (s *Server) setupRoutes() {
 	// Authentication routes (rate limited)
 	auth.HandleFunc("/login", s.handleRequestLogin).Methods("GET", "POST")
 	auth.HandleFunc("/auth/magic-link", s.handleMagicLink).Methods("GET")
-	auth.HandleFunc("/verify-email", s.handleEmailVerification).Methods("GET")
 	auth.HandleFunc("/auth/google", s.handleGoogleLogin).Methods("GET")
 	auth.HandleFunc("/auth/google/callback", s.handleGoogleCallback).Methods("GET")
 

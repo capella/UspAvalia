@@ -17,10 +17,8 @@ const (
 	// BcryptCost follows OWASP recommendations with minimum cost of 12 for 2025
 	BcryptCost = 12
 
-	// Token expiry times
-	EmailVerificationExpiry = 24 * time.Hour    // 24 hours for email verification
-	PasswordResetExpiry     = 15 * time.Minute  // 15 minutes for password reset (security best practice)
-	MagicLinkExpiry         = 15 * time.Minute  // 15 minutes for magic link authentication
+	// Magic link token expiry time
+	MagicLinkExpiry = 15 * time.Minute // 15 minutes for magic link authentication
 )
 
 // HashPassword hashes a password using bcrypt with high cost factor
@@ -47,28 +45,6 @@ func HashEmail(email, secretKey string) string {
 // GenerateSecureToken generates a cryptographically secure random token
 func GenerateSecureToken() string {
 	return uuid.New().String()
-}
-
-// IsTokenExpired checks if a token has expired
-func IsTokenExpired(expiry *time.Time) bool {
-	if expiry == nil {
-		return true
-	}
-	return time.Now().After(*expiry)
-}
-
-// GenerateEmailVerificationToken generates a token for email verification
-func GenerateEmailVerificationToken() (string, time.Time) {
-	token := GenerateSecureToken()
-	expiry := time.Now().Add(EmailVerificationExpiry)
-	return token, expiry
-}
-
-// GeneratePasswordResetToken generates a token for password reset
-func GeneratePasswordResetToken() (string, time.Time) {
-	token := GenerateSecureToken()
-	expiry := time.Now().Add(PasswordResetExpiry)
-	return token, expiry
 }
 
 // GenerateMagicLinkToken creates an HMAC-signed token for magic link authentication

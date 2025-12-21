@@ -45,54 +45,6 @@ func (s *Server) getUserByEmailHash(email string) (*models.User, error) {
 	return &user, nil
 }
 
-func (s *Server) handleEmailVerification(w http.ResponseWriter, r *http.Request) {
-	token := r.URL.Query().Get("token")
-	if token == "" {
-		s.renderErrorPage(w, r, http.StatusBadRequest, "Token de verificação inválido")
-		return
-	}
-
-	var user models.User
-	if err := s.db.Where("email_verification_token = ?", token).First(&user).Error; err != nil {
-		s.renderErrorPage(
-			w,
-			r,
-			http.StatusNotFound,
-			"Token de verificação não encontrado ou já usado",
-		)
-		return
-	}
-
-	if auth.IsTokenExpired(user.EmailVerificationExpiry) {
-		s.renderErrorPage(w, r, http.StatusBadRequest, "Token de verificação expirado")
-		return
-	}
-
-	// Verify email
-	user.EmailVerified = true
-	user.EmailVerificationToken = ""
-	user.EmailVerificationExpiry = nil
-
-	if err := s.db.Save(&user).Error; err != nil {
-		log.Printf("Email verification save error: %v", err)
-		s.renderErrorPage(w, r, http.StatusInternalServerError, "Erro ao verificar email")
-		return
-	}
-
-	// Auto-login the user
-	session, _ := s.store.Get(r, s.config.Security.SessionName)
-	session.Values["user_id"] = fmt.Sprintf("%d", user.ID)
-	session.Save(r, w)
-
-	data := PageData{
-		CSRFToken: csrf.Token(r),
-		Data: map[string]interface{}{
-			"Success": "Email verificado com sucesso! Você está agora logado.",
-		},
-	}
-	s.renderTemplate(w, r, "email-verified", data)
-}
-
 func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	session, _ := s.store.Get(r, s.config.Security.SessionName)
 	delete(session.Values, "user_id")
@@ -170,18 +122,13 @@ func (s *Server) handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	if result.Error != nil {
 		// Create new user
 		user = models.User{
-			EmailHash:     emailHash,
-			EmailVerified: true, // Google emails are pre-verified
+			EmailHash: emailHash,
 		}
 		if err := s.db.Create(&user).Error; err != nil {
 			http.Error(w, "Failed to create user", http.StatusInternalServerError)
 			return
 		}
 		middleware.RecordRegistration()
-	} else {
-		// Link Google account
-		user.EmailVerified = true // Google emails are pre-verified
-		s.db.Save(&user)
 	}
 
 	session.Values["user_id"] = fmt.Sprintf("%d", user.ID)
@@ -251,12 +198,6 @@ func (s *Server) handleRequestLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if email is verified
-	if !user.EmailVerified {
-		s.renderLoginRequestError(w, r, "Email não verificado. Verifique seu email primeiro.")
-		return
-	}
-
 	// Generate magic link token
 	token, _ := auth.GenerateMagicLinkToken(emailHash, []byte(s.config.Security.MagicLinkHMACKey))
 
@@ -291,12 +232,12 @@ func (s *Server) handleMagicLink(w http.ResponseWriter, r *http.Request) {
 
 	// Find user
 	var user models.User
-	if err := s.db.Where("email_hash = ? AND email_verified = ?", emailHash, true).First(&user).Error; err != nil {
+	if err := s.db.Where("email_hash = ?", emailHash).First(&user).Error; err != nil {
 		s.renderErrorPage(
 			w,
 			r,
 			http.StatusNotFound,
-			"Usuário não encontrado ou email não verificado",
+			"Usuário não encontrado",
 		)
 		return
 	}
