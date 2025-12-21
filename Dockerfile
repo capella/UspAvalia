@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.24.6-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # Install build dependencies for SQLite
 RUN apk add --no-cache git ca-certificates gcc musl-dev sqlite-dev

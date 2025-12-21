@@ -239,7 +239,12 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 				if result.Error != nil {
 					// Offering doesn't exist, create it
 					if err := db.Create(&offering).Error; err != nil {
-						fmt.Printf("Warning: Failed to create class offering %s-%s: %v\n", disc.Codigo, turma.Codigo, err)
+						fmt.Printf(
+							"Warning: Failed to create class offering %s-%s: %v\n",
+							disc.Codigo,
+							turma.Codigo,
+							err,
+						)
 					}
 				} else {
 					// Offering exists, update it
@@ -256,9 +261,15 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 				for _, horario := range turma.Horario {
 					for _, professorRaw := range horario.Professores {
 						// Remove content in parentheses
-						professorName := regexp.MustCompile(`\(.*?\)`).ReplaceAllString(professorRaw, "")
+						professorName := regexp.MustCompile(`\(.*?\)`).
+							ReplaceAllString(professorRaw, "")
 						professorName = strings.TrimSpace(professorName)
-						if professorName != "" && len(professorName) > 3 && len(professorName) < 50 && regexp.MustCompile(`[a-zA-ZÀ-ÿ]`).MatchString(professorName) && strings.Contains(professorName, " ") && !strings.Contains(professorName, "Júpiter") && professorName != "Instituto Oceanográfico" {
+						if professorName != "" && len(professorName) > 3 &&
+							len(professorName) < 50 &&
+							regexp.MustCompile(`[a-zA-ZÀ-ÿ]`).MatchString(professorName) &&
+							strings.Contains(professorName, " ") &&
+							!strings.Contains(professorName, "Júpiter") &&
+							professorName != "Instituto Oceanográfico" {
 							professorNames[professorName] = true
 						}
 					}
@@ -277,7 +288,11 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 						UnitID: unit.ID,
 					}
 					if err := db.Create(&professor).Error; err != nil {
-						fmt.Printf("Warning: Failed to create professor %s: %v\n", professorName, err)
+						fmt.Printf(
+							"Warning: Failed to create professor %s: %v\n",
+							professorName,
+							err,
+						)
 						continue
 					}
 					storedProfessors++
@@ -285,7 +300,8 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 
 				// Create ClassProfessor association
 				var classProfessor models.ClassProfessor
-				result = db.Where("class_id = ? AND professor_id = ?", dbDiscipline.ID, professor.ID).First(&classProfessor)
+				result = db.Where("class_id = ? AND professor_id = ?", dbDiscipline.ID, professor.ID).
+					First(&classProfessor)
 				if result.Error != nil {
 					// Association doesn't exist, create it
 					classProfessor = models.ClassProfessor{
@@ -293,7 +309,12 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 						ProfessorID: professor.ID,
 					}
 					if err := db.Create(&classProfessor).Error; err != nil {
-						fmt.Printf("Warning: Failed to create association for %s-%s: %v\n", disc.Codigo, professorName, err)
+						fmt.Printf(
+							"Warning: Failed to create association for %s-%s: %v\n",
+							disc.Codigo,
+							professorName,
+							err,
+						)
 						continue
 					}
 					storedAssociations++
@@ -590,7 +611,10 @@ func parseTurmas(doc *goquery.Document) ([]TurmaInfo, error) {
 					)
 				}
 				if currentVagas == nil {
-					fmt.Printf("Warning: Class %s has no enrollment data registered\n", currentTurma.Codigo)
+					fmt.Printf(
+						"Warning: Class %s has no enrollment data registered\n",
+						currentTurma.Codigo,
+					)
 				}
 			}
 

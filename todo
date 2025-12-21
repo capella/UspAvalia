@@ -1,9 +1,0 @@
-- Add a test for creating a user, adding a new discipline and voting on it.
-- Inside the docker container, once a week check for new disciplines and update the database (parse-courses, parse-disciplines and run http://localhost:8080/install steps). 
-- Add a test that check if a user can vote
-- Check if all the php pages have the golang equivalent.
-- Make sure only logged in user can vote/comment
-- Fix matrusp
-- Check if no credentials are in the database!
-
-

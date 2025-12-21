@@ -1,4 +1,4 @@
-name: Lint
+name: Go Quality & Tests
 
 on:
   push:
@@ -7,10 +7,10 @@ on:
     branches: ["*"]
 
 jobs:
-  golangci-lint:
-    name: Go Lint
+  # Go formatting check
+  gofmt:
+    name: Format Check
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,52 +18,22 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24.6'
+          go-version: '1.25'
           cache: true
 
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v4
-        with:
-          version: latest
-          args: --timeout=5m
-
-  gofmt:
-    name: Go Format
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.24.6'
-
-      - name: Run gofmt
+      - name: Check formatting
         run: |
-          # Format all Go files
-          gofmt -w -s .
-
-          # Check if there are any changes
-          if [[ -n $(git status --porcelain) ]]; then
-            echo "Formatting changes detected"
-            git config --local user.email "github-actions[bot]@users.noreply.github.com"
-            git config --local user.name "github-actions[bot]"
-            git add .
-            git commit -m "Apply gofmt formatting"
-            git push
-          else
-            echo "No formatting changes needed"
+          if [ -n "$(gofmt -l .)" ]; then
+            echo "Go files must be formatted with gofmt. Please run:"
+            echo "  gofmt -w -s ."
+            gofmt -l .
+            exit 1
           fi
 
+  # Static analysis with go vet
   go-vet:
     name: Go Vet
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -71,16 +41,16 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24.6'
+          go-version: '1.25'
           cache: true
 
       - name: Run go vet
         run: go vet ./...
 
-  tests:
-    name: Run Tests
+  # Static analysis with staticcheck (official Go static analyzer)
+  staticcheck:
+    name: Staticcheck
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -88,7 +58,47 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24.6'
+          go-version: '1.25'
+          cache: true
+
+      - name: Install staticcheck
+        run: go install honnef.co/go/tools/cmd/staticcheck@latest
+
+      - name: Run staticcheck
+        run: staticcheck ./...
+
+  # Security vulnerability scanning
+  govulncheck:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Run govulncheck
+        run: govulncheck ./...
+
+  # Unit tests with race detection and coverage
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
           cache: true
 
       - name: Download dependencies
@@ -105,3 +115,40 @@ jobs:
           file: ./coverage.out
           flags: unittests
           fail_ci_if_error: false
+
+  # Build verification
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+
+      - name: Build
+        run: go build -v ./...
+
+  # Dependency verification
+  mod-verify:
+    name: Verify Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+
+      - name: Verify go.mod and go.sum
+        run: |
+          go mod verify
+          go mod tidy
+          git diff --exit-code go.mod go.sum
