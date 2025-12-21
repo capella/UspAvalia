@@ -17,8 +17,8 @@ if(!navigator.onLine) {
   self.close();
 }
 var dbPromise = matruspDB.metadata.get('ETag').then(async (etag) => {
-  // Fetch DB from the server. Send ETag to avoid downloading exactly the same DB again.
-  var response = await fetch('../db/db.json', {method: 'GET', headers: {'If-None-Match': etag || ''}});
+  // Fetch DB from the API. Send ETag to avoid downloading exactly the same DB again.
+  var response = await fetch('/api/matrusp/disciplines', {method: 'GET', headers: {'If-None-Match': etag || ''}});
   if(!response.ok) {
     // End worker if server returns 304 not modified
     if(response.status == 304) {
@@ -30,7 +30,7 @@ var dbPromise = matruspDB.metadata.get('ETag').then(async (etag) => {
   // Update the indexedDB and put new etag when done
   self.addProgress(0.1);
   await Promise.all([matruspDB.trigrams.clear(),matruspDB.lectures.clear()]);
-  await loadLectures(await response.json()); 
+  await loadLectures(await response.json());
   await matruspDB.metadata.put(response.headers.get("ETag"),"ETag");
 });
 

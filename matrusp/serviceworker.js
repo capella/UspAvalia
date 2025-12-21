@@ -1,4 +1,4 @@
-var CACHE_NAME = "Matrusp";
+var CACHE_NAME = "Matrusp-v2"; // Increment version to invalidate old cache
 
 self.recentFetches = [];
 
@@ -47,11 +47,19 @@ function cacheUpdateRefresh(request) {
 
     // Se o pedido for encontrado em cache, fazer um pedido para a rede e colocar em cache, mas retornar a resposta do cache
     //  antes que ele seja concluido. Enviar o ETag da resposta salva para evitar baixar conteúdo repetido.
-    var promise = fetch(request.url, {method: 'GET', headers: {'If-None-Match': response.headers.get("ETag").replace('-gzip','')}}).then(async newresponse => {
+    var etag = response.headers.get("ETag");
+    var promise = fetch(request.url, {method: 'GET', headers: {'If-None-Match': etag ? etag.replace('-gzip','') : ''}}).then(async newresponse => {
       if(newresponse.ok) {
+        // Only send refresh message if ETag actually changed
+        var newEtag = newresponse.headers.get("ETag");
+        var shouldRefresh = !etag || (newEtag && newEtag !== etag);
+
         cache = await self.caches.open(CACHE_NAME);
         cache.put(request,newresponse);
-        sendRefreshMessage();
+
+        if(shouldRefresh) {
+          sendRefreshMessage();
+        }
       }
     }).catch(e => {});
     self.recentFetches.push(promise);
@@ -78,7 +86,8 @@ async function networkCache(request) {
 
   //Tentar obter a resposta da rede, se não conseguir, retornar a do cache
   try {
-    var netResponse = await fetch(request.url, {method: 'GET', headers: {'If-None-Match': cacheResponse ? cacheResponse.headers.get("ETag").replace('-gzip','') : ''}});
+    var etag = cacheResponse ? cacheResponse.headers.get("ETag") : null;
+    var netResponse = await fetch(request.url, {method: 'GET', headers: {'If-None-Match': etag ? etag.replace('-gzip','') : ''}});
     if(netResponse.ok) {
       await self.caches.open(CACHE_NAME).then(cache => cache.put(request,netResponse.clone()));
       return netResponse;

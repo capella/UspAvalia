@@ -1,0 +1,38 @@
+{{define "title"}}Erro {{.Data.StatusCode}}{{end}}
+
+{{define "content"}}
+<div class="row">
+    <div class="col-md-12">
+        <h2>{{.Data.Message}}</h2>
+        <h4>Vamos tentar resolver o mais rápido possível. Se o problema persistir, mande um email na aba Contato.</h4>
+        <small>Erro: {{.Data.StatusCode}}</small>
+        <hr>
+        <div class="" style="text-align:center">
+            <img src="/static/images/poster.jpg" class="img-responsive img-thumbnail" alt="" style="max-width: 400px;">
+            <p>Ajude a divulgar o projeto imprimindo o poster e colocando em sua unidade: <a href="/static/images/poster.pdf" onclick="ga('send', 'event', 'Poster', 'click', '{{.Data.StatusCode}}');">poster em PDF</a>.</p>
+        </div>
+    </div>
+</div>
+
+<style>
+.img-responsive {
+    max-width: 100%;
+    height: auto;
+}
+
+.img-thumbnail {
+    display: inline-block;
+    max-width: 100%;
+    height: auto;
+    padding: 4px;
+    line-height: 1.42857143;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.text-center {
+    text-align: center;
+}
+</style>
+{{end}}

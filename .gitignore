@@ -1,7 +1,25 @@
-error_log
-info_bd/*.txt
-/vendor/
-**/*.swp
-matrusp/db/
 **/*.log
-.php-cs-fixer.cache
+**/*.swp
+
+# Configuration files with secrets
+.uspavalia.yaml
+.env
+.env.*
+
+# Project documentation
+CLAUDE.md
+
+# Build artifacts
+uspavalia
+uspavalia.db
+*.db
+*.db-shm
+*.db-wal
+
+# Temporary directories
+test_output/
+tmp/
+data/
+
+# Claude Code
+.claude/

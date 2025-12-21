@@ -1,0 +1,111 @@
+{{define "title"}}Destaques{{end}} {{define "content"}}
+<h2>10 Melhores</h2>
+<hr />
+<h4>Cursos Avaliados</h4>
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Média</th>
+        <th>Votos</th>
+        <th>Disciplina</th>
+        <th>Unidade</th>
+        <th>Professor</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{if .Data.BestRatedDisciplines}} {{range .Data.BestRatedDisciplines}}
+      <tr>
+        <td>
+          <span class="badge bg-success">{{printf "%.2f" .Average}}</span>
+        </td>
+        <td>{{.VoteCount}}</td>
+        <td>
+          <strong>{{.DisciplineName}}</strong><br />
+          <small class="text-muted">{{.Code}}</small>
+        </td>
+        <td>{{.UnitName}}</td>
+        <td>{{.ProfessorName}}</td>
+        <td>
+          <a
+            href="/ver/{{.ID}}"
+            class="btn btn-success btn-sm"
+          >
+            Ver Avaliações
+          </a>
+        </td>
+      </tr>
+      {{end}} {{end}}
+    </tbody>
+  </table>
+</div>
+
+<h4>Professores Avaliados</h4>
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Média</th>
+        <th>Votos</th>
+        <th>Professor</th>
+        <th>Unidade</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{if .Data.BestRatedProfessors}} {{range .Data.BestRatedProfessors}}
+      <tr>
+        <td>
+          <span class="badge bg-success">{{printf "%.2f" .Average}}</span>
+        </td>
+        <td>{{.VoteCount}}</td>
+        <td>{{.ProfessorName}}</td>
+        <td>{{.UnitName}}</td>
+        <td>
+          <a href="/professor/{{.ProfessorID}}" class="btn btn-success btn-sm">
+            Avaliar
+          </a>
+        </td>
+      </tr>
+      {{end}} {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}} {{if .Data.BestRated}}
+<div class="row mt-5">
+  <div class="col-md-12">
+    <h2>Melhores Avaliados</h2>
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Disciplina</th>
+            <th>Professor</th>
+            <th>Unidade</th>
+            <th>Média</th>
+            <th>Votos</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Data.BestRated}}
+          <tr>
+            <td>
+              <strong>{{.DisciplineName}}</strong><br />
+              <small class="text-muted">{{.Code}}</small>
+            </td>
+            <td>{{.ProfessorName}}</td>
+            <td>{{.UnitName}}</td>
+            <td>
+              <span class="badge bg-success">{{printf "%.1f" .Average}}</span>
+            </td>
+            <td>{{.VoteCount}}</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{{end}}
+<small>Só foram avaliados professores com 15 ou mais votos.</small>

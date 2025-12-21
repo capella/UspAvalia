@@ -2,13 +2,6 @@
 <html lang="pt_BR">
 <head>
     <meta charset="UTF-8">
-    <!-- If the browser is lower than or equal to IE 9, redirect to the old page.
-        TODO verificar outros navegadores
-        TODO colocar a página correta de redirecionamento (quando for para produção, 
-            criar um link para a página antiga e.g. matrusp/old, matrusp/v1) -->
-    <!--[if lte IE 10 ]>
-        <meta http-equiv="refresh" content="0; url=http://bcc.ime.usp.br/matrusp_v1/" />
-    <![endif]-->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta property="og:title" content="MatrUSP" />
     <meta property="og:type" content="website" />
@@ -19,7 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#FFA000" />
     <title>MatrUSP</title>
-    
+
     <link rel="icon" type="image/png" href="images/matrusp32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="images/matrusp16.png">
     <link rel="icon" type="image/png" sizes="24x24" href="images/matrusp24.png">
@@ -83,7 +76,7 @@
 <div id="header-content">
     <div id="logo-wrapper"><span id="logo">MatrUSP</span><span class="beta-tag-wrapper"><span class="beta-tag">by UspAvalia</span></span></div>
     <div id='save-controller' style="display: None;">
-	<input id='user-identifier' placeholder='Salve seu plano aqui'> 
+	<input id='user-identifier' placeholder='Salve seu plano aqui'>
 	<button id='save-button' class='header-button'>Salvar</button>
 	<button id='load-button' class='header-button'>Carregar</button>
     </div>
@@ -207,7 +200,6 @@
 			<a class="github-button" href="https://github.com/matrusp/matrusp" data-icon="octicon-star" data-show-count="true" aria-label="Star matrusp/matrusp on GitHub">Star</a>
 		</div>
 	</footer>
-    <script type="text/javascript" src="js/redirect.js"></script>
     <script type="text/javascript" src="js/dbhelpers.js" defer></script>
     <script type="text/javascript" src="js/custom_lib.js" defer></script>
     <script type="text/javascript" src="js/libs/slip.js" defer></script>

@@ -1,0 +1,10 @@
+Nova mensagem de contato recebida:
+
+Nome: {{.FirstName}} {{.LastName}}
+Email: {{.Email}}
+
+Mensagem:
+{{.Comments}}
+
+---
+Enviado através do formulário de contato do USP Avalia

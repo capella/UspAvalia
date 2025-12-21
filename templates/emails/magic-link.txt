@@ -1,0 +1,11 @@
+Login UspAvalia
+
+Clique no link abaixo para fazer login:
+{{.LoginURL}}
+
+Este link expira em 15 minutos.
+
+Se você não solicitou este login, ignore este email.
+
+Atenciosamente,
+Equipe USP Avalia

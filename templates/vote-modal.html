@@ -1,0 +1,238 @@
+{{define "modal"}}
+<!-- Modal for Rating - Unified for all users -->
+<div
+  class="modal fade"
+  id="modal{{.ClassProfessor.ID}}"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="myModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form
+        id="ratingForm{{.ClassProfessor.ID}}"
+        data-class-professor-id="{{.ClassProfessor.ID}}"
+      >
+        <input
+          type="hidden"
+          name="class_professor_id"
+          value="{{.ClassProfessor.ID}}"
+        />
+
+        <div class="modal-header">
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-hidden="true"
+          >
+            &times;
+          </button>
+          <h4 class="modal-title">
+            {{.ClassProfessor.Professor.Name}} -
+            {{.ClassProfessor.Discipline.Code}}
+          </h4>
+        </div>
+        <div class="modal-body">
+          <p style="text-align: justify">
+            Escolha uma nota entre 0 e 5 para avaliar
+            {{.ClassProfessor.Professor.Name}}, na disciplina
+            {{.ClassProfessor.Discipline.Name}} -
+            {{.ClassProfessor.Discipline.Code}} nos seguintes quesitos. Em
+            dificuldade, notas maiores significam maior dificuldade.{{if not
+            .User}} Após avaliar, você será direcionado para fazer
+            login.{{else}} O voto é secreto.{{end}}
+          </p>
+
+          <!-- Rating Categories -->
+          <hr style="margin-bottom: 6px; margin-top: 0" />
+          <b>Avaliação Geral</b>
+          <div style="text-align: center">
+            <div
+              class="input select rating-c"
+              style="margin: auto; width: 260px"
+            >
+              <select
+                id="select1{{.ClassProfessor.ID}}"
+                name="type1"
+                class="rating"
+                data-type="1"
+              >
+                <option value=""></option>
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+          </div>
+
+          <hr style="margin-bottom: 6px; margin-top: 0" />
+          <b>Didática</b>
+          <div style="text-align: center">
+            <div
+              class="input select rating-c"
+              style="margin: auto; width: 260px"
+            >
+              <select
+                id="select2{{.ClassProfessor.ID}}"
+                name="type2"
+                class="rating"
+                data-type="2"
+              >
+                <option value=""></option>
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+          </div>
+
+          <hr style="margin-bottom: 6px; margin-top: 0" />
+          <b>Empenho/Dedicação</b>
+          <div style="text-align: center">
+            <div
+              class="input select rating-c"
+              style="margin: auto; width: 260px"
+            >
+              <select
+                id="select3{{.ClassProfessor.ID}}"
+                name="type3"
+                class="rating"
+                data-type="3"
+              >
+                <option value=""></option>
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+          </div>
+
+          <hr style="margin-bottom: 6px; margin-top: 0" />
+          <b>Relação com os alunos</b>
+          <div style="text-align: center">
+            <div
+              class="input select rating-c"
+              style="margin: auto; width: 260px"
+            >
+              <select
+                id="select4{{.ClassProfessor.ID}}"
+                name="type4"
+                class="rating"
+                data-type="4"
+              >
+                <option value=""></option>
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+          </div>
+
+          <hr style="margin-bottom: 6px; margin-top: 0" />
+          <b>Dificuldade</b>
+          <div style="text-align: center">
+            <div
+              class="input select rating-c"
+              style="margin: auto; width: 260px"
+            >
+              <select
+                id="select5{{.ClassProfessor.ID}}"
+                name="type5"
+                class="rating"
+                data-type="5"
+              >
+                <option value=""></option>
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">
+            Fechar
+          </button>
+          <button type="submit" class="btn btn-primary">Avaliar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{{end}} {{define "modal-js"}}
+<script>
+  $(document).ready(function () {
+    $(".rating").barrating({
+      theme: "bootstrap-stars",
+      showValues: true,
+      showSelectedRating: false,
+    });
+
+    // Unified form handler for all rating forms
+    $('form[id^="ratingForm"]').on("submit", function (e) {
+      e.preventDefault();
+      var form = $(this);
+      var isUserLogged = form.data("user-logged");
+
+      // Collect all ratings
+      var ratings = [];
+      form.find("select.rating").each(function () {
+        var value = $(this).val();
+        var type = $(this).data("type");
+        if (value) {
+          ratings.push({
+            type: type,
+            score: parseInt(value),
+          });
+        }
+      });
+
+      if (ratings.length === 0) {
+        alert("Por favor, avalie pelo menos um quesito.");
+        return;
+      }
+
+      // Handle logged-in user - submit all votes in single request
+      var requestData = {
+        class_professor_id: parseInt(
+          form.find('input[name="class_professor_id"]').val(),
+        ),
+        votes: ratings,
+      };
+
+      $.ajax({
+        url: "/vote-batch",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(requestData),
+        success: function (response) {
+          form.closest(".modal").modal("hide");
+          setTimeout(function () {
+            $("#thankYouModal").modal("show");
+          }, 300);
+        },
+        error: function () {
+          alert("Erro ao enviar avaliação. Tente novamente.");
+        },
+      });
+    });
+  });
+</script>
+{{end}}

@@ -1,0 +1,91 @@
+{{define "title"}}{{.Data.Discipline.Name}} - {{.Data.Discipline.Code}}{{end}}
+{{define "content"}}
+<div class="row">
+  <div class="col-md-12">
+    <h2>{{.Data.Discipline.Name}} - {{.Data.Discipline.Code}}</h2>
+    <p class="text-muted">{{.Data.Discipline.Unit.Name}}</p>
+
+    <hr />
+
+    <h3>Pesquisa</h3>
+    <form method="get" action="/search">
+      <div class="input-group">
+        <input
+          type="text"
+          class="form-control typeahead"
+          name="pesquisa"
+          autocomplete="off"
+          placeholder="Digite o nome da disciplina ou professor..."
+        />
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="submit">Pesquisar!</button>
+        </span>
+      </div>
+    </form>
+
+    <br />
+    <hr />
+
+    {{if .Data.List}}
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Nome Professor</th>
+            <th>Nota (0-10)</th>
+            <th>Ações</th>
+            <th>Ver</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Data.List}}
+          <tr>
+            <td>
+              <a href="/ver/{{.ClassProfessor.ID}}"
+                >{{.ClassProfessor.Professor.Name}}</a
+              >
+            </td>
+            <td>
+              {{if and .Media (gt .Media 0.0)}}
+                {{printf "%.2f" .Media}}
+              {{else}}
+                Sem avaliações
+              {{end}}
+            </td>
+            <td>
+              {{if $.User}}
+              <button
+                class="btn btn-success"
+                data-toggle="modal"
+                data-target="#modal{{.ID}}"
+              >
+                Avaliar
+              </button>
+              {{else}}
+              <a href="/login" class="btn btn-primary">Login para avaliar</a>
+              {{end}}
+            </td>
+            <td>
+              <a href="/ver/{{.ClassProfessor.ID}}" class="btn btn-info"
+                >Ver Avaliações</a
+              >
+            </td>
+          </tr>
+
+          <!-- Modal for Rating -->
+          {{template "modal" . }} {{end}}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      <small>Foram encontrados {{len .Data.List}} registros.</small>
+    </p>
+    {{else}}
+    <p>Não encontramos ninguém que ministre essa disciplina :(.</p>
+    {{end}}
+
+    <hr />
+  </div>
+</div>
+
+{{template "thankyou-modal" .}} {{template "modal-js" .}} {{end}}

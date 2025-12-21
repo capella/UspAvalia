@@ -1,4 +1,83 @@
-.gitignore
-README.md
-/vendor/
+# Git
 .git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+*.md
+CLAUDE.md
+DEPLOYMENT.md
+MIGRATION_SUMMARY.md
+docs/
+
+# Tests
+*_test.go
+testdata/
+coverage.txt
+*.test
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment & Config (should use env vars or mount volumes)
+.env
+.env.*
+.uspavalia.yaml
+
+# Example files (not needed in container)
+.uspavalia.example.yaml
+.env.example
+
+# Database files (should use volumes)
+*.db
+*.db-shm
+*.db-wal
+*.sql
+
+# Build artifacts
+uspavalia
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.log
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Legacy PHP files (not needed for Go app)
+vendor/
+composer.json
+composer.lock
+index.php
+config.php
+config_example.php
+view/
+helpers/
+INSTALL/
+
+# Data directories (should use volumes)
+data/
+
+# Node modules (if any)
+node_modules/
+package-lock.json

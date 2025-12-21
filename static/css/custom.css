@@ -1,0 +1,167 @@
+/* Custom styles for USP Avalia */
+
+.alert-floating {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 300px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.jumbotron {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+.rating-stars {
+    color: #ffc107;
+}
+
+.vote-buttons .btn {
+    margin: 0 2px;
+}
+
+.comment-card {
+    border-left: 3px solid #007bff;
+}
+
+.comment-meta {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.vote-score {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.difficulty-badge {
+    background-color: #fd7e14;
+}
+
+.professor-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.professor-card:hover {
+    transform: translateY(-2px);
+}
+
+.search-highlight {
+    background-color: #fff3cd;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+/* Rating component */
+.rating-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.rating-label {
+    min-width: 100px;
+    font-weight: 500;
+}
+
+.rating-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.rating-buttons .btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Comment section */
+.comment-section {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 30px;
+}
+
+.comment-item {
+    background-color: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-left: 4px solid #007bff;
+}
+
+.comment-votes {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.comment-votes .btn {
+    padding: 2px 8px;
+    font-size: 12px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .rating-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .rating-label {
+        min-width: auto;
+        text-align: center;
+    }
+    
+    .rating-buttons {
+        justify-content: center;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Success/error messages */
+.alert-floating {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+    min-width: 300px;
+}
+
+/* Custom badges */
+.badge-rating {
+    font-size: 1rem;
+    padding: 0.5em 0.75em;
+}
+
+/* Statistics cards */
+.stats-card {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    color: white;
+    border-radius: 10px;
+}
+
+.stats-number {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+/* Navigation improvements */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}

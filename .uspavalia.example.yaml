@@ -1,0 +1,75 @@
+server:
+  host: "0.0.0.0"
+  port: "8080"
+  url: "http://localhost:8080"
+  # tls_cert_file: "./ssl/cert.pem"    # Uncomment for HTTPS
+  # tls_key_file: "./ssl/key.pem"     # Uncomment for HTTPS
+  force_https: false                   # Set to true in production behind proxy
+  read_timeout: 15                     # seconds
+  write_timeout: 15                    # seconds
+  idle_timeout: 60                     # seconds
+
+database:
+  type: "sqlite"                       # sqlite or mysql
+  path: "./uspavalia.db"              # SQLite database file path
+  # MySQL settings (uncomment to use MySQL):
+  # type: "mysql"
+  # host: "localhost"
+  # port: 3306
+  # user: "uspavalia"
+  # password: "your-mysql-password"
+  # name: "uspavalia"
+
+old_database:
+  # Configuration for importing data from legacy PHP/MySQL database
+  # Only needed if running: ./uspavalia import-old-data
+  type: "mysql"
+  host: "localhost"
+  port: 3307
+  user: "uspavalia"
+  password: "your-old-db-password"
+  name: "uspavalia_old"
+
+security:
+  # Generate secure keys for production: openssl rand -base64 32
+  secret_key: "CHANGE-THIS-TO-RANDOM-32-BYTE-SECRET-KEY"
+  csrf_key: "CHANGE-THIS-TO-ANOTHER-RANDOM-32-BYTE-KEY"
+  magic_link_hmac_key: "CHANGE-THIS-TO-RANDOM-HMAC-KEY-32-BYTES"
+  session_name: "uspavalia_session"
+
+  # hCaptcha (optional - for bot protection)
+  # Sign up at https://www.hcaptcha.com/
+  hcaptcha_site_key: "your-hcaptcha-site-key"
+  hcaptcha_secret_key: "your-hcaptcha-secret-key"
+
+oauth:
+  google:
+    # Get credentials at https://console.cloud.google.com/
+    client_id: "your-google-client-id.apps.googleusercontent.com"
+    client_secret: "your-google-client-secret"
+    redirect_url: "http://localhost:8080/auth/google/callback"
+
+email:
+  # Sign up at https://sendgrid.com/
+  sendgrid_api_key: "your-sendgrid-api-key"
+  from_email: "noreply@uspavalia.com"
+  from_name: "USP Avalia"
+
+# Production Notes:
+#
+# 1. Generate secure random keys:
+#    openssl rand -base64 32
+#
+# 2. Copy this file to .uspavalia.yaml and update with your actual values
+#
+# 3. Never commit .uspavalia.yaml with real credentials to version control
+#
+# 4. Use HTTPS in production (configure via reverse proxy like Nginx/Traefik)
+#
+# 5. Enable hCaptcha to prevent bot abuse on registration/login/contact forms
+#
+# 6. Configure SendGrid for magic link authentication emails
+#
+# 7. Use MySQL for production (better performance than SQLite)
+#
+# 8. Set proper server.url for your domain (e.g., https://uspavalia.com)
