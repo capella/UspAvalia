@@ -315,11 +315,11 @@ func (s *Server) handleVer(w http.ResponseWriter, r *http.Request) {
 			var comment CommentWithVotes
 			var rawTime int64
 
-			err := rows.Scan(&comment.ID, &comment.UserID, &comment.Content,
-				&comment.ClassProfessorID, &rawTime, &comment.CreatedAt, &comment.UpdatedAt,
+			err := rows.Scan(&comment.Comment.ID, &comment.Comment.UserID, &comment.Comment.Content,
+				&comment.Comment.ClassProfessorID, &rawTime, &comment.Comment.CreatedAt, &comment.Comment.UpdatedAt,
 				&comment.PositiveVotes, &comment.NegativeVotes)
 			if err == nil {
-				comment.Time = rawTime
+				comment.Comment.Time = rawTime
 				comment.FormattedTime = time.Unix(rawTime, 0).Format("02/01/2006 - 15:04:05")
 				comments = append(comments, comment)
 			}

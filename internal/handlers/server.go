@@ -3,6 +3,7 @@ package handlers
 import (
 	"html/template"
 	"net/http"
+	"os"
 	"time"
 	"uspavalia/internal/config"
 	"uspavalia/internal/middleware"
@@ -86,12 +87,16 @@ func (s *Server) setupRoutes() {
 	go authLimiter.CleanupIPs()
 	go apiLimiter.CleanupIPs()
 
-	// CSRF protection middleware (will be applied selectively unless disabled for testing)
+	// CSRF protection middleware (disabled in dev mode or when DISABLE_CSRF env var is set)
+	disableCSRF := s.config.DevMode || os.Getenv("DISABLE_CSRF") == "true"
+	if disableCSRF {
+		logrus.Warn("CSRF protection is DISABLED - do not use in production!")
+	}
+
 	CSRFMiddleware := csrf.Protect(
 		[]byte(s.config.Security.CSRFKey),
-		csrf.Secure(false),
+		csrf.Secure(!disableCSRF),
 	)
-
 	s.router.Use(CSRFMiddleware)
 	s.router.Use(middleware.SecurityHeaders)
 	s.router.Use(middleware.Logging)

@@ -8,6 +8,7 @@ import (
 )
 
 type Config struct {
+	DevMode     bool     `mapstructure:"dev_mode"`
 	Database    Database `mapstructure:"database"`
 	OldDatabase Database `mapstructure:"old_database"`
 	Server      Server   `mapstructure:"server"`
@@ -64,6 +65,7 @@ type Email struct {
 }
 
 func Load() *Config {
+	viper.SetDefault("dev_mode", false)
 	viper.SetDefault("server.host", "0.0.0.0")
 	viper.SetDefault("server.port", "8080")
 	viper.SetDefault("server.url", "http://localhost:8080")

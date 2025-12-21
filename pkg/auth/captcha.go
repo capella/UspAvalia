@@ -17,9 +17,9 @@ type HCaptchaResponse struct {
 // VerifyHCaptcha validates an hCaptcha response token with the hCaptcha API
 func VerifyHCaptcha(secretKey, responseToken, remoteIP string) (bool, error) {
 	resp, err := http.PostForm("https://hcaptcha.com/siteverify", url.Values{
-		"secret":   {secretKey},
-		"response": {responseToken},
-		"remoteip": {remoteIP},
+		"secret":   []string{secretKey},
+		"response": []string{responseToken},
+		"remoteip": []string{remoteIP},
 	})
 	if err != nil {
 		return false, err

@@ -1,34 +1,107 @@
-name: fix-style
+name: Lint
 
-on: [push]
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["*"]
 
 jobs:
-  cs-fix:
+  golangci-lint:
+    name: Go Lint
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get branch names
-        id: branch-name
-        uses: tj-actions/branch-names@v7.0.7
-
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.6'
+          cache: true
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v4
+        with:
+          version: latest
+          args: --timeout=5m
+
+  gofmt:
+    name: Go Format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - name: Setup Go
+        uses: actions/setup-go@v5
         with:
-          php-version: 7.4
-          tools: php-cs-fixer
+          go-version: '1.24.6'
 
-      - name: Install dependencies
-        run: composer install
+      - name: Run gofmt
+        run: |
+          # Format all Go files
+          gofmt -w -s .
 
-      - name: Fix style
-        run: php-cs-fixer fix --allow-risky=yes --using-cache=no .
+          # Check if there are any changes
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "Formatting changes detected"
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add .
+            git commit -m "Apply gofmt formatting"
+            git push
+          else
+            echo "No formatting changes needed"
+          fi
 
-      - name: Commit style fixes
-        uses: stefanzweifel/git-auto-commit-action@v4
+  go-vet:
+    name: Go Vet
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
         with:
-          commit_message: Apply php-cs-fixer changes
+          go-version: '1.24.6'
+          cache: true
+
+      - name: Run go vet
+        run: go vet ./...
+
+  tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.6'
+          cache: true
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run tests
+        env:
+          DISABLE_CSRF: "true"
+        run: go test -v -race -coverprofile=coverage.out ./...
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.out
+          flags: unittests
+          fail_ci_if_error: false

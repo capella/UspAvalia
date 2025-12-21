@@ -5,13 +5,13 @@ import (
 	"log"
 	"uspavalia/internal/config"
 
-	"github.com/sendgrid/sendgrid-go"
+	sendgrid "github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
 type EmailService struct {
 	config *config.Config
-	client *sendgrid.Client
+	apiKey string
 }
 
 type EmailTemplate struct {
@@ -21,11 +21,9 @@ type EmailTemplate struct {
 }
 
 func NewEmailService(cfg *config.Config) *EmailService {
-	client := sendgrid.NewSendClient(cfg.Email.SendGridAPIKey)
-
 	return &EmailService{
 		config: cfg,
-		client: client,
+		apiKey: cfg.Email.SendGridAPIKey,
 	}
 }
 
@@ -42,7 +40,8 @@ func (es *EmailService) SendEmail(toEmail, toName string, template EmailTemplate
 		template.HTMLContent,
 	)
 
-	response, err := es.client.Send(message)
+	client := sendgrid.NewSendClient(es.apiKey)
+	response, err := client.Send(message)
 	if err != nil {
 		log.Printf("Failed to send email: %v", err)
 		return err
@@ -53,7 +52,15 @@ func (es *EmailService) SendEmail(toEmail, toName string, template EmailTemplate
 		return fmt.Errorf("email service error: %d", response.StatusCode)
 	}
 
-	log.Printf("Email sent successfully")
+	if es.config.DevMode {
+		log.Printf("Email sent successfully (dev mode)\nSubject: %s\nPlain Text:\n%s\nHTML:\n%s",
+			template.Subject,
+			template.PlainText,
+			template.HTMLContent,
+		)
+	} else {
+		log.Printf("Email sent successfully")
+	}
 	return nil
 }
 
