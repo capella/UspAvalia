@@ -141,7 +141,7 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 		for _, disc := range disciplines {
 			// Get or create unit by name
 			var unit models.Unit
-			result := db.Where("NOME = ?", disc.Unidade).First(&unit)
+			result := db.Where("name = ?", disc.Unidade).First(&unit)
 			if result.Error != nil {
 				// Unit doesn't exist, create it
 				unit = models.Unit{Name: disc.Unidade}
