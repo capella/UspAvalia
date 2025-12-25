@@ -399,7 +399,7 @@ func (s *Server) handleContact(w http.ResponseWriter, r *http.Request) {
 			valid, err := auth.VerifyHCaptcha(
 				s.config.Security.HCaptchaSecretKey,
 				hcaptchaResponse,
-				r.RemoteAddr,
+				r,
 			)
 			if err != nil || !valid {
 				if s.config.DevMode {

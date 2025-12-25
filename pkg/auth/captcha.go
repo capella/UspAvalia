@@ -2,8 +2,11 @@ package auth
 
 import (
 	"encoding/json"
+	"fmt"
+	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -15,7 +18,12 @@ type HCaptchaResponse struct {
 }
 
 // VerifyHCaptcha validates an hCaptcha response token with the hCaptcha API
-func VerifyHCaptcha(secretKey, responseToken, remoteIP string) (bool, error) {
+func VerifyHCaptcha(secretKey, responseToken string, r *http.Request) (bool, error) {
+	remoteIP, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		remoteIP = r.RemoteAddr
+	}
+
 	resp, err := http.PostForm("https://hcaptcha.com/siteverify", url.Values{
 		"secret":   []string{secretKey},
 		"response": []string{responseToken},
@@ -31,5 +39,12 @@ func VerifyHCaptcha(secretKey, responseToken, remoteIP string) (bool, error) {
 		return false, err
 	}
 
-	return result.Success, nil
+	if !result.Success {
+		if len(result.ErrorCodes) > 0 {
+			return false, fmt.Errorf("hCaptcha verification failed: %s", strings.Join(result.ErrorCodes, ", "))
+		}
+		return false, fmt.Errorf("hCaptcha verification failed: unknown error")
+	}
+
+	return true, nil
 }
