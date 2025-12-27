@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -18,6 +19,16 @@ func (s *Server) handleVoteActivity(w http.ResponseWriter, r *http.Request) {
 	// Get vote activity for the last year
 	oneYearAgo := time.Now().AddDate(-1, 0, 0)
 
+	// Detect database type and use appropriate date function
+	var dateExpression string
+	dialectName := s.db.Dialector.Name()
+	if dialectName == "sqlite" {
+		dateExpression = "DATE(datetime(time, 'unixepoch'))"
+	} else {
+		// MySQL and other databases
+		dateExpression = "DATE(FROM_UNIXTIME(time))"
+	}
+
 	// Check if filtering by class_professor ID
 	idParam := r.URL.Query().Get("id")
 	var query string
@@ -32,27 +43,27 @@ func (s *Server) handleVoteActivity(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Query votes for specific class/professor grouped by date
-		query = `
+		query = fmt.Sprintf(`
 			SELECT
-				DATE(datetime(time, 'unixepoch')) as date,
+				%s as date,
 				COUNT(*) as count
 			FROM votes
 			WHERE time >= ? AND class_professor_id = ?
-			GROUP BY DATE(datetime(time, 'unixepoch'))
+			GROUP BY %s
 			ORDER BY date ASC
-		`
+		`, dateExpression, dateExpression)
 		args = []interface{}{oneYearAgo.Unix(), classProfessorID}
 	} else {
 		// Query all votes grouped by date
-		query = `
+		query = fmt.Sprintf(`
 			SELECT
-				DATE(datetime(time, 'unixepoch')) as date,
+				%s as date,
 				COUNT(*) as count
 			FROM votes
 			WHERE time >= ?
-			GROUP BY DATE(datetime(time, 'unixepoch'))
+			GROUP BY %s
 			ORDER BY date ASC
-		`
+		`, dateExpression, dateExpression)
 		args = []interface{}{oneYearAgo.Unix()}
 	}
 
