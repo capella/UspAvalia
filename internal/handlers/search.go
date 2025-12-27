@@ -55,6 +55,12 @@ func (s *Server) handleSearch(w http.ResponseWriter, r *http.Request) {
 	if query == "" {
 		data := PageData{
 			User: s.getCurrentUser(r),
+			Data: map[string]interface{}{
+				"Query":       "",
+				"Disciplines": []models.Discipline{},
+				"Professors":  []models.Professor{},
+				"ResultCount": 0,
+			},
 		}
 		s.renderTemplate(w, r, "search", data)
 		return
