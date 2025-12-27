@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"uspavalia/internal/middleware"
 	"uspavalia/internal/models"
@@ -13,6 +14,18 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+)
+
+// statsCache holds cached stats with expiration
+type statsCache struct {
+	stats      *models.Stats
+	expiration time.Time
+	mu         sync.RWMutex
+}
+
+var (
+	cachedStats = &statsCache{}
+	statsCacheDuration = 5 * time.Minute
 )
 
 type RatingStat struct {
@@ -29,6 +42,26 @@ type CommentWithVotes struct {
 	NegativeVotes int    `json:"negative_votes"`
 }
 
+// get returns cached stats if valid, otherwise nil
+func (c *statsCache) get() *models.Stats {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	if time.Now().Before(c.expiration) {
+		return c.stats
+	}
+	return nil
+}
+
+// set stores stats with expiration time
+func (c *statsCache) set(stats *models.Stats, duration time.Duration) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.stats = stats
+	c.expiration = time.Now().Add(duration)
+}
+
 func (s *Server) getCurrentUser(r *http.Request) *models.User {
 	if userID, ok := middleware.GetUserID(r); ok {
 		var user models.User
@@ -40,6 +73,12 @@ func (s *Server) getCurrentUser(r *http.Request) *models.User {
 }
 
 func (s *Server) calculateStats() *models.Stats {
+	// Check cache first
+	if cached := cachedStats.get(); cached != nil {
+		return cached
+	}
+
+	// Cache miss - calculate stats
 	var avgRating float64
 	var totalEvaluations int64
 	var totalUsers int64
@@ -65,11 +104,16 @@ func (s *Server) calculateStats() *models.Stats {
 	}
 	totalUsers = usersResult.Count
 
-	return &models.Stats{
+	stats := &models.Stats{
 		AverageRating:    formatNumber(avgRating, 2),
 		TotalEvaluations: formatNumber(float64(totalEvaluations), 0),
 		TotalUsers:       formatNumber(float64(totalUsers), 0),
 	}
+
+	// Store in cache for 5 minutes
+	cachedStats.set(stats, statsCacheDuration)
+
+	return stats
 }
 
 // formatNumber formats numbers with Portuguese locale (comma as decimal separator)
