@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 	"uspavalia/internal/config"
 	"uspavalia/internal/database"
 	"uspavalia/internal/models"
@@ -327,10 +328,10 @@ func importProfessors(oldDB, newDB *gorm.DB) error {
 	validProfessors := make([]models.Professor, 0, len(oldProfessors))
 	skipped := 0
 	for _, oldProf := range oldProfessors {
-		if oldProf.Nome != "" {
+		if strings.TrimSpace(oldProf.Nome) != "" {
 			newProf := models.Professor{
 				ID:     oldProf.ID,
-				Name:   oldProf.Nome,
+				Name:   strings.TrimSpace(oldProf.Nome),
 				UnitID: oldProf.UnitID,
 				Usage:  oldProf.Usage,
 				Time:   oldProf.Time,
