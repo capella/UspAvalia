@@ -108,7 +108,7 @@ func (s *Server) setupRoutes() {
 	s.router.PathPrefix("/matrusp/").Handler(middleware.StaticFileHeaders(matruspHandler))
 
 	// Health check endpoint (no rate limiting)
-	s.router.HandleFunc("/health", s.handleHealth).Methods("GET")
+	s.router.HandleFunc("/health", s.handleHealth).Methods("GET", "HEAD")
 
 	// Prometheus metrics endpoint (no CSRF protection)
 	s.router.Handle("/metrics", promhttp.Handler()).Methods("GET")
@@ -151,7 +151,7 @@ func (s *Server) setupRoutes() {
 		} else {
 			s.handleHome(w, r)
 		}
-	}).Methods("GET")
+	}).Methods("GET", "HEAD")
 	public.HandleFunc("/disciplina/{id:[0-9]+}", s.handleDiscipline).Methods("GET")
 	public.HandleFunc("/professor/{id:[0-9]+}", s.handleProfessor).Methods("GET")
 	public.HandleFunc("/ver/{id:[0-9]+}", s.handleVer).Methods("GET")
