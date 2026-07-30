@@ -33,7 +33,7 @@ cp .uspavalia.example.yaml .uspavalia.yaml
 Edite `.uspavalia.yaml` com suas configurações:
 - Chaves de segurança (secret_key, csrf_key, magic_link_hmac_key)
 - Google OAuth credentials
-- SendGrid API key (opcional, para emails)
+- AWS SES credentials (opcional, para emails)
 - hCaptcha keys (opcional, para proteção contra bots)
 
 **Importante**: Gere chaves seguras para produção:
@@ -92,7 +92,7 @@ O sistema suporta dois métodos de autenticação:
 - **ORM**: GORM (SQLite/MySQL)
 - **Templates**: Go html/template
 - **Autenticação**: OAuth 2.0 (Google), Magic Links (HMAC)
-- **Email**: SendGrid
+- **Email**: AWS SES
 - **Segurança**: CSRF protection, rate limiting, hCaptcha
 
 ### Estrutura de Diretórios
