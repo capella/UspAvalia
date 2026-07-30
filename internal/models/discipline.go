@@ -5,7 +5,7 @@ import "time"
 type Discipline struct {
 	ID     uint   `gorm:"primaryKey"        json:"id"`
 	Name   string `gorm:"size:500;not null" json:"name"`
-	Code   string `gorm:"size:40;not null"  json:"code"`
+	Code   string `gorm:"size:40;not null;uniqueIndex" json:"code"`
 	UnitID uint   `gorm:"not null"          json:"unit_id"`
 	Usage  string `gorm:"size:200"          json:"usage,omitempty"`
 	Time   *int64 `                         json:"time,omitempty"`

@@ -9,8 +9,8 @@ import (
 
 type ClassProfessor struct {
 	ID          uint   `gorm:"primaryKey" json:"id"`
-	ClassID     uint   `gorm:"not null"   json:"class_id"`
-	ProfessorID uint   `gorm:"not null"   json:"professor_id"`
+	ClassID     uint   `gorm:"not null;uniqueIndex:idx_class_professor" json:"class_id"`
+	ProfessorID uint   `gorm:"not null;uniqueIndex:idx_class_professor" json:"professor_id"`
 	Usage       string `gorm:"size:200"   json:"usage,omitempty"`
 	Time        *int64 `                  json:"time,omitempty"`
 

@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 	"uspavalia/internal/config"
 	"uspavalia/internal/database"
 	"uspavalia/internal/models"
@@ -244,7 +245,7 @@ func importUnits(oldDB, newDB *gorm.DB) error {
 	for i, oldU := range oldUnits {
 		newUnits[i] = models.Unit{
 			ID:   oldU.ID,
-			Name: oldU.Nome,
+			Name: strings.TrimSpace(oldU.Nome),
 		}
 	}
 
@@ -284,7 +285,7 @@ func importDisciplines(oldDB, newDB *gorm.DB) error {
 	for i, oldD := range oldDisciplines {
 		newDisciplines[i] = models.Discipline{
 			ID:     oldD.ID,
-			Name:   oldD.Nome,
+			Name:   strings.TrimSpace(oldD.Nome),
 			Code:   oldD.Codigo,
 			UnitID: oldD.UnitID,
 			Usage:  oldD.Usage,
@@ -327,10 +328,10 @@ func importProfessors(oldDB, newDB *gorm.DB) error {
 	validProfessors := make([]models.Professor, 0, len(oldProfessors))
 	skipped := 0
 	for _, oldProf := range oldProfessors {
-		if oldProf.Nome != "" {
+		if strings.TrimSpace(oldProf.Nome) != "" {
 			newProf := models.Professor{
 				ID:     oldProf.ID,
-				Name:   oldProf.Nome,
+				Name:   strings.TrimSpace(oldProf.Nome),
 				UnitID: oldProf.UnitID,
 				Usage:  oldProf.Usage,
 				Time:   oldProf.Time,
