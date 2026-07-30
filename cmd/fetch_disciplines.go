@@ -140,11 +140,12 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 
 		for _, disc := range disciplines {
 			// Get or create unit by name
+			unitName := strings.TrimSpace(disc.Unidade)
 			var unit models.Unit
-			result := db.Where("name = ?", disc.Unidade).First(&unit)
+			result := db.Where("name = ?", unitName).First(&unit)
 			if result.Error != nil {
 				// Unit doesn't exist, create it
-				unit = models.Unit{Name: disc.Unidade}
+				unit = models.Unit{Name: unitName}
 				if err := db.Create(&unit).Error; err != nil {
 					fmt.Printf("Warning: Failed to create unit %s: %v\n", disc.Unidade, err)
 					continue
@@ -153,13 +154,13 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 
 			// Create or update discipline
 			dbDiscipline := models.Discipline{
-				Code:   disc.Codigo,
-				Name:   disc.Nome,
+				Code:   strings.TrimSpace(disc.Codigo),
+				Name:   strings.TrimSpace(disc.Nome),
 				UnitID: unit.ID,
 			}
 
 			var existingDiscipline models.Discipline
-			result = db.Where("code = ?", disc.Codigo).First(&existingDiscipline)
+			result = db.Where("code = ?", dbDiscipline.Code).First(&existingDiscipline)
 			if result.Error != nil {
 				// Discipline doesn't exist, create it
 				if err := db.Create(&dbDiscipline).Error; err != nil {

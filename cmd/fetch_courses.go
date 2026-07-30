@@ -128,11 +128,12 @@ func runFetchCourses(cmd *cobra.Command, args []string) {
 		stored := 0
 		for _, course := range courses {
 			// Get or create unit by name
+			unitName := strings.TrimSpace(course.Unidade)
 			var unit models.Unit
-			result := db.Where("NOME = ?", course.Unidade).First(&unit)
+			result := db.Where("name = ?", unitName).First(&unit)
 			if result.Error != nil {
 				// Unit doesn't exist, create it
-				unit = models.Unit{Name: course.Unidade}
+				unit = models.Unit{Name: unitName}
 				if err := db.Create(&unit).Error; err != nil {
 					fmt.Printf("Warning: Failed to create unit %s: %v\n", course.Unidade, err)
 					continue

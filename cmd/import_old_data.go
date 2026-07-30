@@ -245,7 +245,7 @@ func importUnits(oldDB, newDB *gorm.DB) error {
 	for i, oldU := range oldUnits {
 		newUnits[i] = models.Unit{
 			ID:   oldU.ID,
-			Name: oldU.Nome,
+			Name: strings.TrimSpace(oldU.Nome),
 		}
 	}
 
@@ -285,7 +285,7 @@ func importDisciplines(oldDB, newDB *gorm.DB) error {
 	for i, oldD := range oldDisciplines {
 		newDisciplines[i] = models.Discipline{
 			ID:     oldD.ID,
-			Name:   oldD.Nome,
+			Name:   strings.TrimSpace(oldD.Nome),
 			Code:   oldD.Codigo,
 			UnitID: oldD.UnitID,
 			Usage:  oldD.Usage,
