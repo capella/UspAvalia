@@ -50,8 +50,12 @@ oauth:
     redirect_url: "http://localhost:8080/auth/google/callback"
 
 email:
-  # Sign up at https://sendgrid.com/
-  sendgrid_api_key: "your-sendgrid-api-key"
+  # AWS SES; verify the sending domain in the SES console first.
+  # Leave the key pair empty to use the default AWS credential chain
+  # (environment variables, IAM role).
+  aws_region: "us-east-1"
+  aws_access_key_id: ""
+  aws_secret_access_key: ""
   from_email: "noreply@uspavalia.com"
   from_name: "USP Avalia"
 
@@ -68,7 +72,7 @@ email:
 #
 # 5. Enable hCaptcha to prevent bot abuse on registration/login/contact forms
 #
-# 6. Configure SendGrid for magic link authentication emails
+# 6. Configure AWS SES for magic link authentication emails
 #
 # 7. Use MySQL for production (better performance than SQLite)
 #

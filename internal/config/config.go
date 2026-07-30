@@ -59,9 +59,13 @@ type GoogleOAuth struct {
 }
 
 type Email struct {
-	SendGridAPIKey string `mapstructure:"sendgrid_api_key"`
-	FromEmail      string `mapstructure:"from_email"`
-	FromName       string `mapstructure:"from_name"`
+	// AWS SES credentials; when the key pair is empty the default AWS
+	// credential chain (env vars, IAM role) is used.
+	AWSRegion          string `mapstructure:"aws_region"`
+	AWSAccessKeyID     string `mapstructure:"aws_access_key_id"`
+	AWSSecretAccessKey string `mapstructure:"aws_secret_access_key"`
+	FromEmail          string `mapstructure:"from_email"`
+	FromName           string `mapstructure:"from_name"`
 }
 
 func Load() *Config {
@@ -83,6 +87,7 @@ func Load() *Config {
 	viper.SetDefault("old_database.name", "uspavalia_old")
 	viper.SetDefault("security.session_name", "uspavalia_session")
 	viper.SetDefault("email.from_name", "USP Avalia")
+	viper.SetDefault("email.aws_region", "us-east-1")
 
 	viper.SetEnvPrefix("USPAVALIA")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))

@@ -2,19 +2,24 @@ package services
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	htmlTemplate "html/template"
 	"log"
 	textTemplate "text/template"
+	"time"
 	"uspavalia/internal/config"
 
-	sendgrid "github.com/sendgrid/sendgrid-go"
-	"github.com/sendgrid/sendgrid-go/helpers/mail"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/sesv2"
+	"github.com/aws/aws-sdk-go-v2/service/sesv2/types"
 )
 
 type EmailService struct {
 	config        *config.Config
-	apiKey        string
+	client        *sesv2.Client
 	htmlTemplates *htmlTemplate.Template
 	textTemplates *textTemplate.Template
 }
@@ -40,10 +45,33 @@ func NewEmailService(cfg *config.Config) *EmailService {
 
 	return &EmailService{
 		config:        cfg,
-		apiKey:        cfg.Email.SendGridAPIKey,
+		client:        newSESClient(cfg),
 		htmlTemplates: htmlTemplates,
 		textTemplates: textTemplates,
 	}
+}
+
+func newSESClient(cfg *config.Config) *sesv2.Client {
+	opts := []func(*awsconfig.LoadOptions) error{
+		awsconfig.WithRegion(cfg.Email.AWSRegion),
+	}
+	if cfg.Email.AWSAccessKeyID != "" {
+		opts = append(opts, awsconfig.WithCredentialsProvider(
+			credentials.NewStaticCredentialsProvider(
+				cfg.Email.AWSAccessKeyID,
+				cfg.Email.AWSSecretAccessKey,
+				"",
+			),
+		))
+	}
+
+	awsCfg, err := awsconfig.LoadDefaultConfig(context.Background(), opts...)
+	if err != nil {
+		log.Printf("Warning: Failed to load AWS config for SES: %v", err)
+		return nil
+	}
+
+	return sesv2.NewFromConfig(awsCfg)
 }
 
 // renderTemplate renders both HTML and text versions of an email template
@@ -67,29 +95,42 @@ func (es *EmailService) renderTemplate(templateName string, data interface{}) (h
 	return htmlContent, plainText, nil
 }
 
-// SendEmail sends an email using SendGrid
+// SendEmail sends an email using AWS SES
 func (es *EmailService) SendEmail(toEmail, toName string, template EmailTemplate) error {
-	from := mail.NewEmail(es.config.Email.FromName, es.config.Email.FromEmail)
-	to := mail.NewEmail(toName, toEmail)
-
-	message := mail.NewSingleEmail(
-		from,
-		template.Subject,
-		to,
-		template.PlainText,
-		template.HTMLContent,
-	)
-
-	client := sendgrid.NewSendClient(es.apiKey)
-	response, err := client.Send(message)
-	if err != nil {
-		log.Printf("Failed to send email: %v", err)
-		return err
+	if es.client == nil {
+		return fmt.Errorf("email service not configured")
 	}
 
-	if response.StatusCode >= 400 {
-		log.Printf("SendGrid error: Status %d, Body: %s", response.StatusCode, response.Body)
-		return fmt.Errorf("email service error: %d", response.StatusCode)
+	from := es.config.Email.FromEmail
+	if es.config.Email.FromName != "" {
+		from = fmt.Sprintf("%s <%s>", es.config.Email.FromName, es.config.Email.FromEmail)
+	}
+
+	utf8 := func(s string) *types.Content {
+		return &types.Content{Data: aws.String(s), Charset: aws.String("UTF-8")}
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	_, err := es.client.SendEmail(ctx, &sesv2.SendEmailInput{
+		FromEmailAddress: aws.String(from),
+		Destination: &types.Destination{
+			ToAddresses: []string{toEmail},
+		},
+		Content: &types.EmailContent{
+			Simple: &types.Message{
+				Subject: utf8(template.Subject),
+				Body: &types.Body{
+					Text: utf8(template.PlainText),
+					Html: utf8(template.HTMLContent),
+				},
+			},
+		},
+	})
+	if err != nil {
+		log.Printf("SES error: %v", err)
+		return fmt.Errorf("email service error: %w", err)
 	}
 
 	if es.config.DevMode {
