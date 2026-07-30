@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/spf13/cobra"
+	"gorm.io/gorm"
 )
 
 var fetchCoursesCMD = &cobra.Command{
@@ -128,16 +130,10 @@ func runFetchCourses(cmd *cobra.Command, args []string) {
 		stored := 0
 		for _, course := range courses {
 			// Get or create unit by name
-			unitName := strings.TrimSpace(course.Unidade)
-			var unit models.Unit
-			result := db.Where("name = ?", unitName).First(&unit)
-			if result.Error != nil {
-				// Unit doesn't exist, create it
-				unit = models.Unit{Name: unitName}
-				if err := db.Create(&unit).Error; err != nil {
-					fmt.Printf("Warning: Failed to create unit %s: %v\n", course.Unidade, err)
-					continue
-				}
+			unit, err := getOrCreateUnit(db, course.Unidade)
+			if err != nil {
+				fmt.Printf("Warning: Failed to get or create unit %s: %v\n", course.Unidade, err)
+				continue
 			}
 
 			// Marshal periods to JSON
@@ -156,15 +152,17 @@ func runFetchCourses(cmd *cobra.Command, args []string) {
 				Periods: string(periodsJSON),
 			}
 
-			// Use FirstOrCreate to avoid duplicates based on code
+			// Find by code and update, or create
 			var existingCourse models.Course
-			result = db.Where("code = ?", course.Codigo).First(&existingCourse)
-			if result.Error != nil {
-				// Course doesn't exist, create it
+			err = db.Where("code = ?", course.Codigo).First(&existingCourse).Error
+			if errors.Is(err, gorm.ErrRecordNotFound) {
 				if err := db.Create(&dbCourse).Error; err != nil {
 					fmt.Printf("Warning: Failed to store course %s: %v\n", course.Codigo, err)
 					continue
 				}
+			} else if err != nil {
+				fmt.Printf("Warning: Failed to look up course %s: %v\n", course.Codigo, err)
+				continue
 			} else {
 				// Course exists, update it
 				db.Model(&existingCourse).Updates(dbCourse)

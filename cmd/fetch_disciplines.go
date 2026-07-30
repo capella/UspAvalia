@@ -140,37 +140,21 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 
 		for _, disc := range disciplines {
 			// Get or create unit by name
-			unitName := strings.TrimSpace(disc.Unidade)
-			var unit models.Unit
-			result := db.Where("name = ?", unitName).First(&unit)
-			if result.Error != nil {
-				// Unit doesn't exist, create it
-				unit = models.Unit{Name: unitName}
-				if err := db.Create(&unit).Error; err != nil {
-					fmt.Printf("Warning: Failed to create unit %s: %v\n", disc.Unidade, err)
-					continue
-				}
+			unit, err := getOrCreateUnit(db, disc.Unidade)
+			if err != nil {
+				fmt.Printf("Warning: Failed to get or create unit %s: %v\n", disc.Unidade, err)
+				continue
 			}
 
-			// Create or update discipline
-			dbDiscipline := models.Discipline{
-				Code:   strings.TrimSpace(disc.Codigo),
-				Name:   strings.TrimSpace(disc.Nome),
+			// Create or update discipline by code
+			dbDiscipline, err := getOrCreateDiscipline(db, models.Discipline{
+				Code:   disc.Codigo,
+				Name:   disc.Nome,
 				UnitID: unit.ID,
-			}
-
-			var existingDiscipline models.Discipline
-			result = db.Where("code = ?", dbDiscipline.Code).First(&existingDiscipline)
-			if result.Error != nil {
-				// Discipline doesn't exist, create it
-				if err := db.Create(&dbDiscipline).Error; err != nil {
-					fmt.Printf("Warning: Failed to store discipline %s: %v\n", disc.Codigo, err)
-					continue
-				}
-			} else {
-				// Discipline exists, update it and use existing ID
-				db.Model(&existingDiscipline).Updates(dbDiscipline)
-				dbDiscipline.ID = existingDiscipline.ID
+			})
+			if err != nil {
+				fmt.Printf("Warning: Failed to store discipline %s: %v\n", disc.Codigo, err)
+				continue
 			}
 			storedDisciplines++
 
@@ -251,45 +235,30 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 
 			// Store professors and create associations
 			for professorName := range professorNames {
-				// Create or get professor
-				var professor models.Professor
-				result = db.Where("name = ?", professorName).First(&professor)
-				if result.Error != nil {
-					// Professor doesn't exist, create it
-					professor = models.Professor{
-						Name:   professorName,
-						UnitID: unit.ID,
-					}
-					if err := db.Create(&professor).Error; err != nil {
-						fmt.Printf(
-							"Warning: Failed to create professor %s: %v\n",
-							professorName,
-							err,
-						)
-						continue
-					}
+				professor, created, err := getOrCreateProfessor(db, professorName, unit.ID)
+				if err != nil {
+					fmt.Printf(
+						"Warning: Failed to get or create professor %s: %v\n",
+						professorName,
+						err,
+					)
+					continue
+				}
+				if created {
 					storedProfessors++
 				}
 
-				// Create ClassProfessor association
-				var classProfessor models.ClassProfessor
-				result = db.Where("class_id = ? AND professor_id = ?", dbDiscipline.ID, professor.ID).
-					First(&classProfessor)
-				if result.Error != nil {
-					// Association doesn't exist, create it
-					classProfessor = models.ClassProfessor{
-						ClassID:     dbDiscipline.ID,
-						ProfessorID: professor.ID,
-					}
-					if err := db.Create(&classProfessor).Error; err != nil {
-						fmt.Printf(
-							"Warning: Failed to create association for %s-%s: %v\n",
-							disc.Codigo,
-							professorName,
-							err,
-						)
-						continue
-					}
+				_, created, err = getOrCreateClassProfessor(db, dbDiscipline.ID, professor.ID)
+				if err != nil {
+					fmt.Printf(
+						"Warning: Failed to create association for %s-%s: %v\n",
+						disc.Codigo,
+						professorName,
+						err,
+					)
+					continue
+				}
+				if created {
 					storedAssociations++
 				}
 			}
