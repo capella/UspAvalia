@@ -157,24 +157,23 @@ func CreateViews(db *gorm.DB) error {
 		`
 	} else {
 		// MySQL version with backticks
-		melhoresSQL = `
-			CREATE OR REPLACE VIEW Melhores AS
-			SELECT
-				(ListaMedias.'AVG(nota)' * 2) AS media,
-				ListaMedias.'COUNT(*)' AS votos,
-				disciplines.name AS materia,
-				units.name AS unidade,
-				disciplines.code AS codigo,
-				professors.name AS professor,
-				class_professors.id AS id
-			FROM ListaMedias
-			JOIN class_professors ON ListaMedias.class_professor_id = class_professors.id
-			JOIN disciplines ON class_professors.class_id = disciplines.id
-			JOIN units ON disciplines.unit_id = units.id
-			JOIN professors ON class_professors.professor_id = professors.id
-			WHERE ListaMedias.'COUNT(*)' >= 15
-			ORDER BY ListaMedias.'AVG(nota)' DESC, ListaMedias.'COUNT(*)' DESC
-		`
+		melhoresSQL = "" +
+			"CREATE OR REPLACE VIEW Melhores AS\n" +
+			"SELECT\n" +
+			"	(ListaMedias.`AVG(nota)` * 2) AS media,\n" +
+			"	ListaMedias.`COUNT(*)` AS votos,\n" +
+			"	disciplines.name AS materia,\n" +
+			"	units.name AS unidade,\n" +
+			"	disciplines.code AS codigo,\n" +
+			"	professors.name AS professor,\n" +
+			"	class_professors.id AS id\n" +
+			"FROM ListaMedias\n" +
+			"JOIN class_professors ON ListaMedias.class_professor_id = class_professors.id\n" +
+			"JOIN disciplines ON class_professors.class_id = disciplines.id\n" +
+			"JOIN units ON disciplines.unit_id = units.id\n" +
+			"JOIN professors ON class_professors.professor_id = professors.id\n" +
+			"WHERE ListaMedias.`COUNT(*)` >= 15\n" +
+			"ORDER BY ListaMedias.`AVG(nota)` DESC, ListaMedias.`COUNT(*)` DESC"
 	}
 
 	if err := db.Exec(melhoresSQL).Error; err != nil {
