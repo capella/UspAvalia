@@ -24,7 +24,7 @@ type statsCache struct {
 }
 
 var (
-	cachedStats = &statsCache{}
+	cachedStats        = &statsCache{}
 	statsCacheDuration = 5 * time.Minute
 )
 
