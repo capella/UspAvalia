@@ -48,6 +48,9 @@ type TurmaInfo struct {
 	Observacoes   string               `json:"observacoes"`
 	Horario       []HorarioInfo        `json:"horario"`
 	Vagas         map[string]VagasInfo `json:"vagas"`
+	// Professores lists the people in the "Atividades Didáticas" table, which
+	// newer Jupiter pages use instead of the professor column of the schedule.
+	Professores []string `json:"professores,omitempty"`
 }
 
 type HorarioInfo struct {
@@ -251,23 +254,25 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 			// Extract professors from turmas
 			professorNames := make(map[string]bool)
 			for _, turma := range disc.Turmas {
-				if turma.Horario == nil {
-					continue
-				}
+				// Names from the schedule column plus the "Atividades Didáticas"
+				// table, so classes without a fixed schedule still get their
+				// professors.
+				rawNames := append([]string(nil), turma.Professores...)
 				for _, horario := range turma.Horario {
-					for _, professorRaw := range horario.Professores {
-						// Remove content in parentheses
-						professorName := regexp.MustCompile(`\(.*?\)`).
-							ReplaceAllString(professorRaw, "")
-						professorName = strings.TrimSpace(professorName)
-						if professorName != "" && len(professorName) > 3 &&
-							len(professorName) < 50 &&
-							regexp.MustCompile(`[a-zA-ZÀ-ÿ]`).MatchString(professorName) &&
-							strings.Contains(professorName, " ") &&
-							!strings.Contains(professorName, "Júpiter") &&
-							professorName != "Instituto Oceanográfico" {
-							professorNames[professorName] = true
-						}
+					rawNames = append(rawNames, horario.Professores...)
+				}
+				for _, professorRaw := range rawNames {
+					// Remove content in parentheses
+					professorName := regexp.MustCompile(`\(.*?\)`).
+						ReplaceAllString(professorRaw, "")
+					professorName = strings.TrimSpace(professorName)
+					if professorName != "" && len(professorName) > 3 &&
+						len(professorName) < 50 &&
+						regexp.MustCompile(`[a-zA-ZÀ-ÿ]`).MatchString(professorName) &&
+						strings.Contains(professorName, " ") &&
+						!strings.Contains(professorName, "Júpiter") &&
+						professorName != "Instituto Oceanográfico" {
+						professorNames[professorName] = true
 					}
 				}
 			}
@@ -576,42 +581,44 @@ func parseTurmas(doc *goquery.Document) ([]TurmaInfo, error) {
 	var currentTurma *TurmaInfo
 	var currentHorario []HorarioInfo
 	var currentVagas map[string]VagasInfo
+	var currentAtividades []string
 
 	doc.Find("table").Each(func(i int, table *goquery.Selection) {
 		tableText := strings.Join(strings.Fields(table.Text()), " ")
+		hasAtividades := strings.Contains(tableText, "Atividades Didáticas")
 
-		// Check for class code table - must be small tables (< 1000 chars) to avoid giant wrapper tables
-		if strings.Contains(tableText, "Código da Turma") && len(tableText) < 1000 {
+		// Check for class code table. It must be small (< 1000 chars) and hold
+		// no nested tables, otherwise the wrapper around a class block matches
+		// too and yields a duplicate class.
+		if strings.Contains(tableText, "Código da Turma") && len(tableText) < 1000 &&
+			table.Find("table").Length() == 0 {
 			// Save previous turma if exists
 			if currentTurma != nil {
 				// Save turma with whatever data we have (even if incomplete)
-				currentTurma.Horario = currentHorario
-				currentTurma.Vagas = currentVagas
-				turmas = append(turmas, *currentTurma)
-
-				if currentHorario == nil {
-					fmt.Printf(
-						"Warning: Class %s has no schedule registered\n",
-						currentTurma.Codigo,
-					)
-				}
-				if currentVagas == nil {
-					fmt.Printf(
-						"Warning: Class %s has no enrollment data registered\n",
-						currentTurma.Codigo,
-					)
-				}
+				turmas = append(turmas, finishTurma(
+					currentTurma, currentHorario, currentVagas, currentAtividades,
+				))
 			}
 
 			// Parse new turma info
 			currentTurma = parseTurmaInfo(table)
 			currentHorario = nil
 			currentVagas = nil
+			currentAtividades = nil
 		}
 
-		if strings.Contains(tableText, "Horário") {
+		// The "Atividades Didáticas" table mentions "Horário Variável", so it
+		// must not be mistaken for the schedule table: it has three columns
+		// and would wipe the schedule parsed just before it.
+		if strings.Contains(tableText, "Horário") && !hasAtividades {
 			// Parse schedule
 			currentHorario = parseHorario(table)
+		}
+
+		if hasAtividades {
+			if names := parseAtividades(table); len(names) > 0 {
+				currentAtividades = names
+			}
 		}
 
 		if strings.Contains(tableText, "Vagas") {
@@ -622,12 +629,82 @@ func parseTurmas(doc *goquery.Document) ([]TurmaInfo, error) {
 
 	// Don't forget the last turma
 	if currentTurma != nil {
-		currentTurma.Horario = currentHorario
-		currentTurma.Vagas = currentVagas
-		turmas = append(turmas, *currentTurma)
+		turmas = append(turmas, finishTurma(
+			currentTurma, currentHorario, currentVagas, currentAtividades,
+		))
 	}
 
 	return turmas, nil
+}
+
+// finishTurma assembles a class from the tables parsed for it. Professors
+// listed in the "Atividades Didáticas" table are attached to every schedule
+// slot that has no professor of its own, so MatrUSP and the professor
+// extraction see them in the same place as on older pages.
+func finishTurma(
+	turma *TurmaInfo,
+	horario []HorarioInfo,
+	vagas map[string]VagasInfo,
+	atividades []string,
+) TurmaInfo {
+	if len(atividades) > 0 {
+		for i := range horario {
+			if !hasProfessor(horario[i].Professores) {
+				horario[i].Professores = append([]string(nil), atividades...)
+			}
+		}
+	}
+	turma.Horario = horario
+	turma.Vagas = vagas
+	turma.Professores = atividades
+
+	if horario == nil {
+		fmt.Printf("Warning: Class %s has no schedule registered\n", turma.Codigo)
+	}
+	if vagas == nil {
+		fmt.Printf("Warning: Class %s has no enrollment data registered\n", turma.Codigo)
+	}
+	return *turma
+}
+
+func hasProfessor(names []string) bool {
+	for _, n := range names {
+		if strings.TrimSpace(n) != "" {
+			return true
+		}
+	}
+	return false
+}
+
+// parseAtividades reads professor names from an "Atividades Didáticas" table.
+// Each data row is "name | activity type | hours", and a professor appears once
+// per activity, so names are de-duplicated in page order. Rows are accepted
+// only when the last cell is a number, which keeps header rows and unrelated
+// three-cell rows of enclosing wrapper tables out.
+func parseAtividades(table *goquery.Selection) []string {
+	var names []string
+	seen := make(map[string]bool)
+
+	table.Find("tr").Each(func(i int, tr *goquery.Selection) {
+		tds := tr.Find("td")
+		if tds.Length() != 3 {
+			return
+		}
+		name := strings.Join(strings.Fields(tds.Eq(0).Text()), " ")
+		hours := strings.TrimSpace(tds.Eq(2).Text())
+		if name == "" || name == "Prof(a)." {
+			return
+		}
+		if _, err := strconv.Atoi(hours); err != nil {
+			return
+		}
+		if !seen[name] {
+			seen[name] = true
+			names = append(names, name)
+		}
+	})
+
+	return names
 }
 
 func parseTurmaInfo(table *goquery.Selection) *TurmaInfo {
