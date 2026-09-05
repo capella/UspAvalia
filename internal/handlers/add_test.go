@@ -374,8 +374,11 @@ func TestAddCreatesPairAndOfferingFromSemester(t *testing.T) {
 
 	// The pair page lists the semester.
 	_, body := doGet(t, ts, fmt.Sprintf("/ver/%d", cp.ID), cookie)
-	if !strings.Contains(body, "Semestres registrados") || !strings.Contains(body, "2025/1") {
+	if !strings.Contains(body, "Oferecimentos:") || !strings.Contains(body, "2025/1") {
 		t.Errorf("ver page does not list the semester")
+	}
+	if strings.Contains(body, "adicionar outro") {
+		t.Errorf("ver page should not link to the add form")
 	}
 
 	// MatrUSP sees the professor on the (already ended) turma only through

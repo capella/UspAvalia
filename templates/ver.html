@@ -11,9 +11,8 @@
         </h2>
         {{if .Data.Semesters}}
         <p class="text-muted">
-          Semestres registrados:
+          Oferecimentos:
           {{range $i, $s := .Data.Semesters}}{{if $i}}, {{end}}{{$s}}{{end}}
-          {{if $.User}}<a href="/adicionar?disciplina_id={{.Data.Discipline.ID}}&professor_id={{.Data.Professor.ID}}">(adicionar outro)</a>{{end}}
         </p>
         {{end}}
         {{if .Data.AlreadyExisted}}
