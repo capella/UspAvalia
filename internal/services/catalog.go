@@ -218,12 +218,8 @@ func EnsureUserOffering(
 			entries = nil
 		}
 	}
-	for _, entry := range entries {
-		for _, name := range entry.Professors {
-			if name == professor.Name {
-				return offering, false, nil
-			}
-		}
+	if scheduleLists(entries, professor.Name) {
+		return offering, false, nil
 	}
 	if len(entries) == 0 {
 		entries = []ScheduleEntry{{}}
@@ -254,14 +250,22 @@ func ProfessorSemesters(db *gorm.DB, disciplineID uint, professorName string) []
 		if json.Unmarshal([]byte(offering.Schedules), &entries) != nil {
 			continue
 		}
-		for _, entry := range entries {
-			for _, name := range entry.Professors {
-				if name == professorName {
-					seen[sem] = true
-					result = append(result, sem)
-				}
-			}
+		if scheduleLists(entries, professorName) {
+			seen[sem] = true
+			result = append(result, sem)
 		}
 	}
 	return result
+}
+
+// scheduleLists reports whether professorName appears in any schedule slot.
+func scheduleLists(entries []ScheduleEntry, professorName string) bool {
+	for _, entry := range entries {
+		for _, name := range entry.Professors {
+			if name == professorName {
+				return true
+			}
+		}
+	}
+	return false
 }
