@@ -17,9 +17,15 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sesv2/types"
 )
 
+// sesAPI is the subset of the SES client used by EmailService; it allows
+// tests to substitute a fake sender.
+type sesAPI interface {
+	SendEmail(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error)
+}
+
 type EmailService struct {
 	config        *config.Config
-	client        *sesv2.Client
+	client        sesAPI
 	htmlTemplates *htmlTemplate.Template
 	textTemplates *textTemplate.Template
 }
@@ -28,6 +34,8 @@ type EmailTemplate struct {
 	Subject     string
 	HTMLContent string
 	PlainText   string
+	// ReplyTo, when set, is used as the Reply-To address of the message.
+	ReplyTo string
 }
 
 func NewEmailService(cfg *config.Config) *EmailService {
@@ -43,12 +51,17 @@ func NewEmailService(cfg *config.Config) *EmailService {
 		log.Printf("Warning: Failed to load text email templates: %v", err)
 	}
 
-	return &EmailService{
+	es := &EmailService{
 		config:        cfg,
-		client:        newSESClient(cfg),
 		htmlTemplates: htmlTemplates,
 		textTemplates: textTemplates,
 	}
+	// Assign through a typed nil check so a nil *sesv2.Client does not become
+	// a non-nil interface value.
+	if client := newSESClient(cfg); client != nil {
+		es.client = client
+	}
+	return es
 }
 
 func newSESClient(cfg *config.Config) *sesv2.Client {
@@ -113,7 +126,7 @@ func (es *EmailService) SendEmail(toEmail, toName string, template EmailTemplate
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	_, err := es.client.SendEmail(ctx, &sesv2.SendEmailInput{
+	input := &sesv2.SendEmailInput{
 		FromEmailAddress: aws.String(from),
 		Destination: &types.Destination{
 			ToAddresses: []string{toEmail},
@@ -127,7 +140,12 @@ func (es *EmailService) SendEmail(toEmail, toName string, template EmailTemplate
 				},
 			},
 		},
-	})
+	}
+	if template.ReplyTo != "" {
+		input.ReplyToAddresses = []string{template.ReplyTo}
+	}
+
+	_, err := es.client.SendEmail(ctx, input)
 	if err != nil {
 		log.Printf("SES error: %v", err)
 		return fmt.Errorf("email service error: %w", err)
@@ -145,14 +163,24 @@ func (es *EmailService) SendEmail(toEmail, toName string, template EmailTemplate
 	return nil
 }
 
+// contactRecipient returns the address that receives contact form
+// submissions: email.contact_email, then email.from_email, then a default.
+func (es *EmailService) contactRecipient() string {
+	switch {
+	case es.config.Email.ContactEmail != "":
+		return es.config.Email.ContactEmail
+	case es.config.Email.FromEmail != "":
+		return es.config.Email.FromEmail
+	default:
+		return "contato@uspavalia.com"
+	}
+}
+
 // SendContactEmail sends a contact form submission to the admin
 func (es *EmailService) SendContactEmail(
 	firstName, lastName, email, comments string,
 ) error {
-	adminEmail := "contato@uspavalia.com"
-	if es.config.Email.FromEmail != "" {
-		adminEmail = es.config.Email.FromEmail
-	}
+	adminEmail := es.contactRecipient()
 
 	data := map[string]string{
 		"FirstName": firstName,
@@ -170,6 +198,7 @@ func (es *EmailService) SendContactEmail(
 		Subject:     "USP Avalia - Contato",
 		HTMLContent: htmlContent,
 		PlainText:   plainText,
+		ReplyTo:     email,
 	}
 
 	return es.SendEmail(adminEmail, "USP Avalia Admin", template)
