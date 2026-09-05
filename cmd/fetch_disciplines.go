@@ -15,6 +15,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/spf13/cobra"
+	"gorm.io/gorm"
 )
 
 var fetchDisciplinesCMD = &cobra.Command{
@@ -93,13 +94,40 @@ func init() {
 func runFetchDisciplines(cmd *cobra.Command, args []string) {
 	startTime := time.Now()
 
+	// When storing, open the database first so the run is recorded even if
+	// Jupiter Web is unreachable. Preview runs leave the database alone.
+	var db *gorm.DB
+	var recorder *scrapeRecorder
+	if fetchDisciplinesStore {
+		cfg := config.Load()
+		var err error
+		db, err = database.Initialize(cfg)
+		if err != nil {
+			fmt.Printf("Error: Failed to initialize database: %v\n", err)
+			os.Exit(1)
+		}
+		recorder, err = startScrapeRun(db, "fetch-disciplines")
+		if err != nil {
+			fmt.Printf("Warning: %v\n", err)
+		}
+	}
+
+	fail := func(format string, args ...interface{}) {
+		err := fmt.Errorf(format, args...)
+		fmt.Println("Error:", err)
+		recorder.finish(stats, err)
+		os.Exit(1)
+	}
+
 	fmt.Println("- Obtaining list of all teaching units -")
 
 	// Get teaching units (reuse from parse_courses.go)
 	units, err := getTeachingUnits()
 	if err != nil {
-		fmt.Printf("Error getting teaching units: %v\n", err)
-		os.Exit(1)
+		fail("getting teaching units: %v", err)
+	}
+	if len(units) == 0 {
+		fail("no teaching units found on Jupiter Web (page layout changed?)")
 	}
 
 	fmt.Printf("- %d teaching units found -\n", len(units))
@@ -119,20 +147,12 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 	// Process disciplines concurrently
 	disciplines, err := processDisciplinesConcurrently(targetUnits, units)
 	if err != nil {
-		fmt.Printf("Error processing disciplines: %v\n", err)
-		os.Exit(1)
+		fail("processing disciplines: %v", err)
 	}
 
 	if fetchDisciplinesStore {
 		// Store in database
 		fmt.Println("\nStoring disciplines in database...")
-
-		cfg := config.Load()
-		db, err := database.Initialize(cfg)
-		if err != nil {
-			fmt.Printf("Error: Failed to initialize database: %v\n", err)
-			os.Exit(1)
-		}
 
 		storedDisciplines := 0
 		storedProfessors := 0
@@ -143,6 +163,7 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 			unit, err := getOrCreateUnit(db, disc.Unidade)
 			if err != nil {
 				fmt.Printf("Warning: Failed to get or create unit %s: %v\n", disc.Unidade, err)
+				stats.storeErrors.Add(1)
 				continue
 			}
 
@@ -154,19 +175,24 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 			})
 			if err != nil {
 				fmt.Printf("Warning: Failed to store discipline %s: %v\n", disc.Codigo, err)
+				stats.storeErrors.Add(1)
 				continue
 			}
 			storedDisciplines++
+			stats.disciplinesStored.Add(1)
 
 			// Update discipline with MatrUSP fields
-			db.Model(&dbDiscipline).Updates(map[string]interface{}{
+			if err := db.Model(&dbDiscipline).Updates(map[string]interface{}{
 				"Department":   disc.Departamento,
 				"Campus":       disc.Campus,
 				"CreditsClass": disc.CreditosAula,
 				"CreditsWork":  disc.CreditosTrabalho,
 				"Objectives":   disc.Objetivos,
 				"Summary":      disc.ProgramaResumido,
-			})
+			}).Error; err != nil {
+				fmt.Printf("Warning: Failed to update discipline %s: %v\n", disc.Codigo, err)
+				stats.storeErrors.Add(1)
+			}
 
 			// Store class offerings (turmas)
 			for _, turma := range disc.Turmas {
@@ -202,10 +228,23 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 							turma.Codigo,
 							err,
 						)
+						stats.storeErrors.Add(1)
+					} else {
+						stats.offeringsStored.Add(1)
 					}
 				} else {
 					// Offering exists, update it
-					db.Model(&existingOffering).Updates(offering)
+					if err := db.Model(&existingOffering).Updates(offering).Error; err != nil {
+						fmt.Printf(
+							"Warning: Failed to update class offering %s-%s: %v\n",
+							disc.Codigo,
+							turma.Codigo,
+							err,
+						)
+						stats.storeErrors.Add(1)
+					} else {
+						stats.offeringsStored.Add(1)
+					}
 				}
 			}
 
@@ -242,10 +281,12 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 						professorName,
 						err,
 					)
+					stats.storeErrors.Add(1)
 					continue
 				}
 				if created {
 					storedProfessors++
+					stats.professorsCreated.Add(1)
 				}
 
 				_, created, err = getOrCreateClassProfessor(db, dbDiscipline.ID, professor.ID)
@@ -256,6 +297,7 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 						professorName,
 						err,
 					)
+					stats.storeErrors.Add(1)
 					continue
 				}
 				if created {
@@ -279,6 +321,8 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 			fmt.Printf("%-10s | %-50s | %s\n", disc.Codigo, disc.Nome, disc.Unidade)
 		}
 	}
+
+	recorder.finish(stats, nil)
 
 	fmt.Println("- DONE! -")
 	fmt.Printf("- Execution time: %v seconds -\n", time.Since(startTime).Seconds())
@@ -324,6 +368,14 @@ func processDisciplinesConcurrently(
 	for disciplines := range allDisciplineCodes {
 		allDisciplines = append(allDisciplines, disciplines...)
 	}
+
+	// A unit whose discipline list failed silently drops every discipline in
+	// it, so count those failures rather than discarding them.
+	for err := range errorsChan {
+		fmt.Printf("Warning: Failed to list disciplines for a unit: %v\n", err)
+		stats.unitListErrors.Add(1)
+	}
+	stats.disciplinesListed.Store(int64(len(allDisciplines)))
 
 	fmt.Printf("- %d disciplines found -\n", len(allDisciplines))
 	fmt.Println("- Starting detailed discipline processing -")
@@ -386,6 +438,7 @@ func processDisciplinesConcurrently(
 	}
 
 	fmt.Printf("- %d disciplines processed -\n", len(processedDisciplines))
+	stats.disciplinesProcessed.Store(int64(len(processedDisciplines)))
 
 	if len(errors) > 0 {
 		fmt.Printf("Warning: Encountered %d errors during processing\n", len(errors))
@@ -469,6 +522,7 @@ func processDisciplineDetailed(
 			"Warning: Discipline %s has no valid classes registered. Skipping...\n",
 			discipline.Code,
 		)
+		stats.disciplinesSkipped.Add(1)
 		return nil, nil
 	}
 
@@ -501,10 +555,13 @@ func processDisciplineDetailed(
 	}
 
 	if disciplineInfo == nil {
+		// The class page listed offerings, so the info page should have had a
+		// header: a missing one means the HTML changed or the page was empty.
 		fmt.Printf(
 			"Warning: Discipline %s has no information registered. Skipping...\n",
 			discipline.Code,
 		)
+		stats.parseErrors.Add(1)
 		return nil, nil
 	}
 
