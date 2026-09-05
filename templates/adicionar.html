@@ -1,0 +1,170 @@
+{{define "title"}}Adicionar Disciplina/Professor - USP Avalia{{end}}
+{{define "content"}}
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <h2>Adicionar Disciplina/Professor</h2>
+    <p class="text-muted">
+      Registre que um professor ministrou uma disciplina em determinado
+      semestre. Escolha sempre uma opção da lista de sugestões: disciplinas e
+      professores vêm do catálogo do Júpiter Web e não podem ser digitados
+      livremente.
+    </p>
+    <hr />
+
+    {{if .Data.Error}}
+    <div class="alert alert-danger" role="alert">{{.Data.Error}}</div>
+    {{end}}
+
+    <form method="POST" action="/adicionar" id="add-form" autocomplete="off">
+
+      <div class="form-group">
+        <label for="unit-input">Unidade de ensino <small class="text-muted">(opcional, filtra as sugestões)</small></label>
+        <input
+          type="text"
+          class="form-control lookup"
+          id="unit-input"
+          name="unit_label"
+          data-kind="units"
+          data-target="unit_id"
+          placeholder="Ex.: Instituto de Matemática e Estatística"
+          value="{{.Data.UnitLabel}}"
+        />
+        <input type="hidden" name="unit_id" id="unit_id" value="{{if .Data.UnitID}}{{.Data.UnitID}}{{end}}" />
+      </div>
+
+      <div class="form-group">
+        <label for="discipline-input">Disciplina *</label>
+        <input
+          type="text"
+          class="form-control lookup"
+          id="discipline-input"
+          name="discipline_label"
+          data-kind="disciplines"
+          data-target="discipline_id"
+          placeholder="Digite o código (ex.: MAC0110) ou o nome"
+          value="{{.Data.DisciplineLabel}}"
+          {{if .Data.DisciplineFixed}}readonly{{end}}
+          required
+        />
+        <input type="hidden" name="discipline_id" id="discipline_id" value="{{if .Data.DisciplineID}}{{.Data.DisciplineID}}{{end}}" />
+        <span class="help-block lookup-hint" id="discipline-hint"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="professor-input">Professor(a) *</label>
+        <input
+          type="text"
+          class="form-control lookup"
+          id="professor-input"
+          name="professor_label"
+          data-kind="professors"
+          data-target="professor_id"
+          placeholder="Digite parte do nome"
+          value="{{.Data.ProfessorLabel}}"
+          {{if .Data.ProfessorFixed}}readonly{{end}}
+          required
+        />
+        <input type="hidden" name="professor_id" id="professor_id" value="{{if .Data.ProfessorID}}{{.Data.ProfessorID}}{{end}}" />
+        <span class="help-block lookup-hint" id="professor-hint"></span>
+      </div>
+
+      <div class="form-group">
+        <label>Semestre em que a disciplina foi ministrada *</label>
+        <div class="row">
+          <div class="col-xs-6">
+            <select name="year" class="form-control" required>
+              {{range .Data.Years}}
+              <option value="{{.}}" {{if eq . $.Data.Year}}selected{{end}}>{{.}}</option>
+              {{end}}
+            </select>
+          </div>
+          <div class="col-xs-6">
+            <select name="half" class="form-control" required>
+              <option value="1" {{if eq .Data.Half 1}}selected{{end}}>1º semestre</option>
+              <option value="2" {{if eq .Data.Half 2}}selected{{end}}>2º semestre</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-success">
+        <i class="fa fa-check"></i> Salvar
+      </button>
+      <a href="/" class="btn btn-link">Cancelar</a>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Each .lookup input is a typeahead over /api/lookup/{kind}. Selecting a
+  // suggestion stores its id in the paired hidden field; typing anything
+  // afterwards clears the id, so the server only ever receives ids of rows
+  // that exist. The unit (when chosen) narrows discipline and professor
+  // suggestions.
+  $(function () {
+    $("input.lookup").each(function () {
+      var $input = $(this);
+      var kind = $input.data("kind");
+      var $hidden = $("#" + $input.data("target"));
+      var $hint = $("#" + $input.attr("id").replace("-input", "-hint"));
+
+      function setHint() {
+        if (!$hint.length) return;
+        if ($hidden.val()) {
+          $hint.text("Selecionado.").removeClass("text-danger").addClass("text-success");
+        } else if ($input.val()) {
+          $hint.text("Escolha uma opção da lista de sugestões.").removeClass("text-success").addClass("text-danger");
+        } else {
+          $hint.text("");
+        }
+      }
+
+      if ($input.prop("readonly")) {
+        setHint();
+        return;
+      }
+
+      $input.typeahead({
+        fitToElement: true,
+        minLength: 2,
+        delay: 150,
+        items: 15,
+        autoSelect: false,
+        displayText: function (item) { return item.label; },
+        matcher: function () { return true; },
+        source: function (query, process) {
+          var params = { q: query };
+          var unitId = $("#unit_id").val();
+          if (kind !== "units" && unitId) params.unit_id = unitId;
+          $.getJSON("/api/lookup/" + kind, params, function (data) {
+            process(data);
+          });
+        },
+        afterSelect: function (item) {
+          $hidden.val(item.id);
+          $input.val(item.label);
+          setHint();
+        },
+      });
+
+      $input.on("input", function () {
+        $hidden.val("");
+        setHint();
+      });
+
+      setHint();
+    });
+
+    $("#add-form").on("submit", function (e) {
+      var missing = [];
+      if (!$("#discipline_id").val()) missing.push("disciplina");
+      if (!$("#professor_id").val()) missing.push("professor");
+      if (missing.length) {
+        e.preventDefault();
+        $("input.lookup").trigger("input");
+        alert("Selecione " + missing.join(" e ") + " na lista de sugestões.");
+      }
+    });
+  });
+</script>
+{{end}}
