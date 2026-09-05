@@ -15,6 +15,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/spf13/cobra"
+	"gorm.io/gorm"
 )
 
 var fetchDisciplinesCMD = &cobra.Command{
@@ -47,6 +48,9 @@ type TurmaInfo struct {
 	Observacoes   string               `json:"observacoes"`
 	Horario       []HorarioInfo        `json:"horario"`
 	Vagas         map[string]VagasInfo `json:"vagas"`
+	// Professores lists the people in the "Atividades Didáticas" table, which
+	// newer Jupiter pages use instead of the professor column of the schedule.
+	Professores []string `json:"professores,omitempty"`
 }
 
 type HorarioInfo struct {
@@ -93,13 +97,40 @@ func init() {
 func runFetchDisciplines(cmd *cobra.Command, args []string) {
 	startTime := time.Now()
 
+	// When storing, open the database first so the run is recorded even if
+	// Jupiter Web is unreachable. Preview runs leave the database alone.
+	var db *gorm.DB
+	var recorder *scrapeRecorder
+	if fetchDisciplinesStore {
+		cfg := config.Load()
+		var err error
+		db, err = database.Initialize(cfg)
+		if err != nil {
+			fmt.Printf("Error: Failed to initialize database: %v\n", err)
+			os.Exit(1)
+		}
+		recorder, err = startScrapeRun(db, "fetch-disciplines")
+		if err != nil {
+			fmt.Printf("Warning: %v\n", err)
+		}
+	}
+
+	fail := func(format string, args ...interface{}) {
+		err := fmt.Errorf(format, args...)
+		fmt.Println("Error:", err)
+		recorder.finish(stats, err)
+		os.Exit(1)
+	}
+
 	fmt.Println("- Obtaining list of all teaching units -")
 
 	// Get teaching units (reuse from parse_courses.go)
 	units, err := getTeachingUnits()
 	if err != nil {
-		fmt.Printf("Error getting teaching units: %v\n", err)
-		os.Exit(1)
+		fail("getting teaching units: %v", err)
+	}
+	if len(units) == 0 {
+		fail("no teaching units found on Jupiter Web (page layout changed?)")
 	}
 
 	fmt.Printf("- %d teaching units found -\n", len(units))
@@ -119,20 +150,12 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 	// Process disciplines concurrently
 	disciplines, err := processDisciplinesConcurrently(targetUnits, units)
 	if err != nil {
-		fmt.Printf("Error processing disciplines: %v\n", err)
-		os.Exit(1)
+		fail("processing disciplines: %v", err)
 	}
 
 	if fetchDisciplinesStore {
 		// Store in database
 		fmt.Println("\nStoring disciplines in database...")
-
-		cfg := config.Load()
-		db, err := database.Initialize(cfg)
-		if err != nil {
-			fmt.Printf("Error: Failed to initialize database: %v\n", err)
-			os.Exit(1)
-		}
 
 		storedDisciplines := 0
 		storedProfessors := 0
@@ -143,6 +166,7 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 			unit, err := getOrCreateUnit(db, disc.Unidade)
 			if err != nil {
 				fmt.Printf("Warning: Failed to get or create unit %s: %v\n", disc.Unidade, err)
+				stats.storeErrors.Add(1)
 				continue
 			}
 
@@ -154,19 +178,24 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 			})
 			if err != nil {
 				fmt.Printf("Warning: Failed to store discipline %s: %v\n", disc.Codigo, err)
+				stats.storeErrors.Add(1)
 				continue
 			}
 			storedDisciplines++
+			stats.disciplinesStored.Add(1)
 
 			// Update discipline with MatrUSP fields
-			db.Model(&dbDiscipline).Updates(map[string]interface{}{
+			if err := db.Model(&dbDiscipline).Updates(map[string]interface{}{
 				"Department":   disc.Departamento,
 				"Campus":       disc.Campus,
 				"CreditsClass": disc.CreditosAula,
 				"CreditsWork":  disc.CreditosTrabalho,
 				"Objectives":   disc.Objetivos,
 				"Summary":      disc.ProgramaResumido,
-			})
+			}).Error; err != nil {
+				fmt.Printf("Warning: Failed to update discipline %s: %v\n", disc.Codigo, err)
+				stats.storeErrors.Add(1)
+			}
 
 			// Store class offerings (turmas)
 			for _, turma := range disc.Turmas {
@@ -202,33 +231,48 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 							turma.Codigo,
 							err,
 						)
+						stats.storeErrors.Add(1)
+					} else {
+						stats.offeringsStored.Add(1)
 					}
 				} else {
 					// Offering exists, update it
-					db.Model(&existingOffering).Updates(offering)
+					if err := db.Model(&existingOffering).Updates(offering).Error; err != nil {
+						fmt.Printf(
+							"Warning: Failed to update class offering %s-%s: %v\n",
+							disc.Codigo,
+							turma.Codigo,
+							err,
+						)
+						stats.storeErrors.Add(1)
+					} else {
+						stats.offeringsStored.Add(1)
+					}
 				}
 			}
 
 			// Extract professors from turmas
 			professorNames := make(map[string]bool)
 			for _, turma := range disc.Turmas {
-				if turma.Horario == nil {
-					continue
-				}
+				// Names from the schedule column plus the "Atividades Didáticas"
+				// table, so classes without a fixed schedule still get their
+				// professors.
+				rawNames := append([]string(nil), turma.Professores...)
 				for _, horario := range turma.Horario {
-					for _, professorRaw := range horario.Professores {
-						// Remove content in parentheses
-						professorName := regexp.MustCompile(`\(.*?\)`).
-							ReplaceAllString(professorRaw, "")
-						professorName = strings.TrimSpace(professorName)
-						if professorName != "" && len(professorName) > 3 &&
-							len(professorName) < 50 &&
-							regexp.MustCompile(`[a-zA-ZÀ-ÿ]`).MatchString(professorName) &&
-							strings.Contains(professorName, " ") &&
-							!strings.Contains(professorName, "Júpiter") &&
-							professorName != "Instituto Oceanográfico" {
-							professorNames[professorName] = true
-						}
+					rawNames = append(rawNames, horario.Professores...)
+				}
+				for _, professorRaw := range rawNames {
+					// Remove content in parentheses
+					professorName := regexp.MustCompile(`\(.*?\)`).
+						ReplaceAllString(professorRaw, "")
+					professorName = strings.TrimSpace(professorName)
+					if professorName != "" && len(professorName) > 3 &&
+						len(professorName) < 50 &&
+						regexp.MustCompile(`[a-zA-ZÀ-ÿ]`).MatchString(professorName) &&
+						strings.Contains(professorName, " ") &&
+						!strings.Contains(professorName, "Júpiter") &&
+						professorName != "Instituto Oceanográfico" {
+						professorNames[professorName] = true
 					}
 				}
 			}
@@ -242,10 +286,12 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 						professorName,
 						err,
 					)
+					stats.storeErrors.Add(1)
 					continue
 				}
 				if created {
 					storedProfessors++
+					stats.professorsCreated.Add(1)
 				}
 
 				_, created, err = getOrCreateClassProfessor(db, dbDiscipline.ID, professor.ID)
@@ -256,6 +302,7 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 						professorName,
 						err,
 					)
+					stats.storeErrors.Add(1)
 					continue
 				}
 				if created {
@@ -279,6 +326,8 @@ func runFetchDisciplines(cmd *cobra.Command, args []string) {
 			fmt.Printf("%-10s | %-50s | %s\n", disc.Codigo, disc.Nome, disc.Unidade)
 		}
 	}
+
+	recorder.finish(stats, nil)
 
 	fmt.Println("- DONE! -")
 	fmt.Printf("- Execution time: %v seconds -\n", time.Since(startTime).Seconds())
@@ -324,6 +373,14 @@ func processDisciplinesConcurrently(
 	for disciplines := range allDisciplineCodes {
 		allDisciplines = append(allDisciplines, disciplines...)
 	}
+
+	// A unit whose discipline list failed silently drops every discipline in
+	// it, so count those failures rather than discarding them.
+	for err := range errorsChan {
+		fmt.Printf("Warning: Failed to list disciplines for a unit: %v\n", err)
+		stats.unitListErrors.Add(1)
+	}
+	stats.disciplinesListed.Store(int64(len(allDisciplines)))
 
 	fmt.Printf("- %d disciplines found -\n", len(allDisciplines))
 	fmt.Println("- Starting detailed discipline processing -")
@@ -386,6 +443,7 @@ func processDisciplinesConcurrently(
 	}
 
 	fmt.Printf("- %d disciplines processed -\n", len(processedDisciplines))
+	stats.disciplinesProcessed.Store(int64(len(processedDisciplines)))
 
 	if len(errors) > 0 {
 		fmt.Printf("Warning: Encountered %d errors during processing\n", len(errors))
@@ -469,6 +527,7 @@ func processDisciplineDetailed(
 			"Warning: Discipline %s has no valid classes registered. Skipping...\n",
 			discipline.Code,
 		)
+		stats.disciplinesSkipped.Add(1)
 		return nil, nil
 	}
 
@@ -501,10 +560,13 @@ func processDisciplineDetailed(
 	}
 
 	if disciplineInfo == nil {
+		// The class page listed offerings, so the info page should have had a
+		// header: a missing one means the HTML changed or the page was empty.
 		fmt.Printf(
 			"Warning: Discipline %s has no information registered. Skipping...\n",
 			discipline.Code,
 		)
+		stats.parseErrors.Add(1)
 		return nil, nil
 	}
 
@@ -519,42 +581,44 @@ func parseTurmas(doc *goquery.Document) ([]TurmaInfo, error) {
 	var currentTurma *TurmaInfo
 	var currentHorario []HorarioInfo
 	var currentVagas map[string]VagasInfo
+	var currentAtividades []string
 
 	doc.Find("table").Each(func(i int, table *goquery.Selection) {
 		tableText := strings.Join(strings.Fields(table.Text()), " ")
+		hasAtividades := strings.Contains(tableText, "Atividades Didáticas")
 
-		// Check for class code table - must be small tables (< 1000 chars) to avoid giant wrapper tables
-		if strings.Contains(tableText, "Código da Turma") && len(tableText) < 1000 {
+		// Check for class code table. It must be small (< 1000 chars) and hold
+		// no nested tables, otherwise the wrapper around a class block matches
+		// too and yields a duplicate class.
+		if strings.Contains(tableText, "Código da Turma") && len(tableText) < 1000 &&
+			table.Find("table").Length() == 0 {
 			// Save previous turma if exists
 			if currentTurma != nil {
 				// Save turma with whatever data we have (even if incomplete)
-				currentTurma.Horario = currentHorario
-				currentTurma.Vagas = currentVagas
-				turmas = append(turmas, *currentTurma)
-
-				if currentHorario == nil {
-					fmt.Printf(
-						"Warning: Class %s has no schedule registered\n",
-						currentTurma.Codigo,
-					)
-				}
-				if currentVagas == nil {
-					fmt.Printf(
-						"Warning: Class %s has no enrollment data registered\n",
-						currentTurma.Codigo,
-					)
-				}
+				turmas = append(turmas, finishTurma(
+					currentTurma, currentHorario, currentVagas, currentAtividades,
+				))
 			}
 
 			// Parse new turma info
 			currentTurma = parseTurmaInfo(table)
 			currentHorario = nil
 			currentVagas = nil
+			currentAtividades = nil
 		}
 
-		if strings.Contains(tableText, "Horário") {
+		// The "Atividades Didáticas" table mentions "Horário Variável", so it
+		// must not be mistaken for the schedule table: it has three columns
+		// and would wipe the schedule parsed just before it.
+		if strings.Contains(tableText, "Horário") && !hasAtividades {
 			// Parse schedule
 			currentHorario = parseHorario(table)
+		}
+
+		if hasAtividades {
+			if names := parseAtividades(table); len(names) > 0 {
+				currentAtividades = names
+			}
 		}
 
 		if strings.Contains(tableText, "Vagas") {
@@ -565,12 +629,82 @@ func parseTurmas(doc *goquery.Document) ([]TurmaInfo, error) {
 
 	// Don't forget the last turma
 	if currentTurma != nil {
-		currentTurma.Horario = currentHorario
-		currentTurma.Vagas = currentVagas
-		turmas = append(turmas, *currentTurma)
+		turmas = append(turmas, finishTurma(
+			currentTurma, currentHorario, currentVagas, currentAtividades,
+		))
 	}
 
 	return turmas, nil
+}
+
+// finishTurma assembles a class from the tables parsed for it. Professors
+// listed in the "Atividades Didáticas" table are attached to every schedule
+// slot that has no professor of its own, so MatrUSP and the professor
+// extraction see them in the same place as on older pages.
+func finishTurma(
+	turma *TurmaInfo,
+	horario []HorarioInfo,
+	vagas map[string]VagasInfo,
+	atividades []string,
+) TurmaInfo {
+	if len(atividades) > 0 {
+		for i := range horario {
+			if !hasProfessor(horario[i].Professores) {
+				horario[i].Professores = append([]string(nil), atividades...)
+			}
+		}
+	}
+	turma.Horario = horario
+	turma.Vagas = vagas
+	turma.Professores = atividades
+
+	if horario == nil {
+		fmt.Printf("Warning: Class %s has no schedule registered\n", turma.Codigo)
+	}
+	if vagas == nil {
+		fmt.Printf("Warning: Class %s has no enrollment data registered\n", turma.Codigo)
+	}
+	return *turma
+}
+
+func hasProfessor(names []string) bool {
+	for _, n := range names {
+		if strings.TrimSpace(n) != "" {
+			return true
+		}
+	}
+	return false
+}
+
+// parseAtividades reads professor names from an "Atividades Didáticas" table.
+// Each data row is "name | activity type | hours", and a professor appears once
+// per activity, so names are de-duplicated in page order. Rows are accepted
+// only when the last cell is a number, which keeps header rows and unrelated
+// three-cell rows of enclosing wrapper tables out.
+func parseAtividades(table *goquery.Selection) []string {
+	var names []string
+	seen := make(map[string]bool)
+
+	table.Find("tr").Each(func(i int, tr *goquery.Selection) {
+		tds := tr.Find("td")
+		if tds.Length() != 3 {
+			return
+		}
+		name := strings.Join(strings.Fields(tds.Eq(0).Text()), " ")
+		hours := strings.TrimSpace(tds.Eq(2).Text())
+		if name == "" || name == "Prof(a)." {
+			return
+		}
+		if _, err := strconv.Atoi(hours); err != nil {
+			return
+		}
+		if !seen[name] {
+			seen[name] = true
+			names = append(names, name)
+		}
+	})
+
+	return names
 }
 
 func parseTurmaInfo(table *goquery.Selection) *TurmaInfo {

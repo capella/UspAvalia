@@ -18,33 +18,19 @@ type UnitInfo struct {
 // httpGetWithCharset performs an HTTP GET request and returns a goquery Document
 // with proper charset handling for USP Jupiter Web (iso-8859-1)
 func httpGetWithCharset(url string, timeout time.Duration) (*goquery.Document, error) {
-	client := &http.Client{Timeout: timeout}
-
-	resp, err := client.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	reader, err := charset.NewReader(resp.Body, "text/html; charset=iso-8859-1")
-	if err != nil {
-		return nil, err
-	}
-
-	doc, err := goquery.NewDocumentFromReader(reader)
-	if err != nil {
-		return nil, err
-	}
-
-	return doc, nil
+	doc, _, err := httpGetWithCharsetAndStatus(url, timeout)
+	return doc, err
 }
 
 // httpGetWithCharsetAndStatus performs an HTTP GET request and returns a goquery Document
-// with proper charset handling and HTTP status code
+// with proper charset handling and HTTP status code. Every call is counted in
+// the process-wide scrape stats.
 func httpGetWithCharsetAndStatus(
 	url string,
 	timeout time.Duration,
-) (*goquery.Document, int, error) {
+) (doc *goquery.Document, statusCode int, err error) {
+	defer func() { stats.recordHTTPResult(statusCode, err) }()
+
 	client := &http.Client{Timeout: timeout}
 
 	resp, err := client.Get(url)
@@ -58,7 +44,7 @@ func httpGetWithCharsetAndStatus(
 		return nil, resp.StatusCode, err
 	}
 
-	doc, err := goquery.NewDocumentFromReader(reader)
+	doc, err = goquery.NewDocumentFromReader(reader)
 	if err != nil {
 		return nil, resp.StatusCode, err
 	}
@@ -90,6 +76,12 @@ func getTeachingUnits() ([]UnitInfo, error) {
 			})
 		}
 	})
+
+	if len(units) == 0 {
+		// The page loaded but nothing matched: Jupiter changed its HTML.
+		stats.parseErrors.Add(1)
+	}
+	stats.unitsFound.Store(int64(len(units)))
 
 	return units, nil
 }
