@@ -66,6 +66,8 @@ type Email struct {
 	AWSSecretAccessKey string `mapstructure:"aws_secret_access_key"`
 	FromEmail          string `mapstructure:"from_email"`
 	FromName           string `mapstructure:"from_name"`
+	// ContactEmail receives contact form submissions; falls back to FromEmail.
+	ContactEmail string `mapstructure:"contact_email"`
 }
 
 func Load() *Config {

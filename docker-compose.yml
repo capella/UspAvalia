@@ -37,6 +37,7 @@ services:
       - USPAVALIA_EMAIL_AWS_SECRET_ACCESS_KEY=${AWS_SES_SECRET_ACCESS_KEY:-}
       - USPAVALIA_EMAIL_FROM_EMAIL=${FROM_EMAIL:-noreply@uspavalia.com}
       - USPAVALIA_EMAIL_FROM_NAME=USP Avalia
+      - USPAVALIA_EMAIL_CONTACT_EMAIL=${CONTACT_EMAIL:-}
 
     volumes:
       # Persist database and static files

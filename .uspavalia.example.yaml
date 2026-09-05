@@ -58,6 +58,8 @@ email:
   aws_secret_access_key: ""
   from_email: "noreply@uspavalia.com"
   from_name: "USP Avalia"
+  # Address that receives contact form submissions (defaults to from_email)
+  contact_email: ""
 
 # Production Notes:
 #
