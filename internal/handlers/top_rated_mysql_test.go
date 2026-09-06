@@ -46,16 +46,16 @@ func TestTopRatedOnMySQL(t *testing.T) {
 	}
 	s := &Server{db: db}
 
-	// All 5s, 12 years old: the weights are 1/4096 and the average must
-	// still be exactly 10 (it was 10.04 with DECIMAL weights).
+	// All 5s, 12 years old, seven evaluators: the weights are 1/4096 and
+	// the average must still be exactly 10 (it was 10.04 with DECIMAL
+	// weights).
 	seedVotes(t, db, "Antiga", 5, 28, 12.5)
-	// All 5s this year: ranks first because the votes are recent.
+	// All 5s this year from four evaluators: ranks first because it is
+	// active.
 	seedVotes(t, db, "Recente", 5, 16, 0.1)
 
-	profs, err := s.bestRatedProfessors(10)
-	if err != nil {
-		t.Fatalf("bestRatedProfessors: %v", err)
-	}
+	data := s.loadTopRated()
+	profs := data.Professors
 	if len(profs) != 2 {
 		t.Fatalf("professors = %d, want 2", len(profs))
 	}
@@ -64,24 +64,23 @@ func TestTopRatedOnMySQL(t *testing.T) {
 			t.Errorf("%s average = %v, want exactly 10", p.ProfessorName, p.Average)
 		}
 	}
-	if profs[0].ProfessorName != "Professor Recente" || profs[0].RecentVotes != 16 || profs[1].RecentVotes != 0 {
-		t.Errorf("order/recent votes = %+v, want Recente (16 recent) first", profs)
+	if profs[0].ProfessorName != "Professor Recente" || profs[0].RecentEvaluators != 4 || profs[1].RecentEvaluators != 0 {
+		t.Errorf("order/recent evaluators = %+v, want Recente (4 recent) first", profs)
+	}
+	// Antiga was already ranked last semester, so a baseline exists.
+	for _, p := range profs {
+		if !p.Movement.Known {
+			t.Errorf("%s movement unknown, want a baseline from the previous semester", p.ProfessorName)
+		}
 	}
 
-	units, err := s.bestRatedUnits(10)
-	if err != nil {
-		t.Fatalf("bestRatedUnits: %v", err)
-	}
-	for _, u := range units {
+	for _, u := range data.Units {
 		if u.Average != 10 {
 			t.Errorf("unit %s average = %v, want exactly 10", u.UnitName, u.Average)
 		}
 	}
 
-	var best []models.BestRated
-	if err := db.Find(&best).Error; err != nil {
-		t.Fatalf("query Melhores: %v", err)
-	}
+	best := data.Disciplines
 	if len(best) != 2 {
 		t.Fatalf("Melhores rows = %d, want 2", len(best))
 	}

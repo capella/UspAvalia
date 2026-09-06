@@ -7,8 +7,9 @@
     <thead>
       <tr>
         <th>Média</th>
-        <th>Votos</th>
-        <th>Último ano</th>
+        <th title="Comparado ao fim do semestre anterior">Evolução</th>
+        <th>Avaliadores</th>
+        <th>No último ano</th>
         <th>Disciplina</th>
         <th>Unidade</th>
         <th>Professor</th>
@@ -21,8 +22,9 @@
         <td>
           <span class="badge bg-success">{{printf "%.2f" .Average}}</span>
         </td>
-        <td>{{.VoteCount}}</td>
-        <td>{{.RecentVotes}}</td>
+        <td><small class="{{.Movement.Class}}">{{.Movement.Label}}</small></td>
+        <td>{{.Evaluators}}</td>
+        <td>{{.RecentEvaluators}}</td>
         <td>
           <strong>{{.DisciplineName}}</strong><br />
           <small class="text-muted">{{.Code}}</small>
@@ -49,8 +51,9 @@
     <thead>
       <tr>
         <th>Média</th>
-        <th>Votos</th>
-        <th>Último ano</th>
+        <th title="Comparado ao fim do semestre anterior">Evolução</th>
+        <th>Avaliadores</th>
+        <th>No último ano</th>
         <th>Professor</th>
         <th>Unidade</th>
         <th>Ações</th>
@@ -62,8 +65,9 @@
         <td>
           <span class="badge bg-success">{{printf "%.2f" .Average}}</span>
         </td>
-        <td>{{.VoteCount}}</td>
-        <td>{{.RecentVotes}}</td>
+        <td><small class="{{.Movement.Class}}">{{.Movement.Label}}</small></td>
+        <td>{{.Evaluators}}</td>
+        <td>{{.RecentEvaluators}}</td>
         <td>{{.ProfessorName}}</td>
         <td>{{.UnitName}}</td>
         <td>
@@ -83,8 +87,9 @@
     <thead>
       <tr>
         <th>Média</th>
-        <th>Votos</th>
-        <th>Último ano</th>
+        <th title="Comparado ao fim do semestre anterior">Evolução</th>
+        <th>Avaliadores</th>
+        <th>No último ano</th>
         <th>Unidade</th>
       </tr>
     </thead>
@@ -94,8 +99,9 @@
         <td>
           <span class="badge bg-success">{{printf "%.2f" .Average}}</span>
         </td>
-        <td>{{.VoteCount}}</td>
-        <td>{{.RecentVotes}}</td>
+        <td><small class="{{.Movement.Class}}">{{.Movement.Label}}</small></td>
+        <td>{{.Evaluators}}</td>
+        <td>{{.RecentEvaluators}}</td>
         <td>{{.UnitName}}</td>
       </tr>
       {{end}} {{end}}
@@ -105,9 +111,11 @@
 
 <small class="text-muted">
   Só entram nas listas disciplinas, professores e unidades com
-  {{.Data.MinVotes}} ou mais votos. A média dá prioridade às avaliações mais
-  recentes: o peso de cada voto cai pela metade a cada ano. Quem recebeu
-  pelo menos {{.Data.MinRecentVotes}} votos no último ano aparece primeiro;
-  os demais vêm em seguida, também ordenados pela média.
+  {{.Data.MinEvaluators}} ou mais avaliadores. A média dá prioridade às
+  avaliações mais recentes: o peso de cada voto cai pela metade a cada ano.
+  Quem tem {{.Data.MinRecentEvaluators}} ou mais avaliadores no último ano
+  aparece primeiro; os demais vêm em seguida. Médias que diferem em menos de
+  0,1 empatam, e o desempate vai para quem tem mais avaliadores recentes. A
+  coluna Evolução compara a posição com o fim do semestre anterior.
 </small>
 {{end}}
