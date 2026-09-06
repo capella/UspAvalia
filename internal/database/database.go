@@ -6,7 +6,6 @@ import (
 	"uspavalia/internal/config"
 	"uspavalia/internal/models"
 
-	"github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
@@ -91,91 +90,101 @@ func autoMigrate(db *gorm.DB) error {
 	)
 }
 
+// Dialect returns "sqlite" or "mysql" for the connected database.
+func Dialect(db *gorm.DB) string {
+	if db.Dialector.Name() == "sqlite" {
+		return "sqlite"
+	}
+	return "mysql"
+}
+
+// secondsPerYear is the length of a year (365.25 days) used to age votes.
+const secondsPerYear = 31557600
+
+// VoteWeightSQL returns an SQL expression that weights a vote by its age:
+// votes cast in the last year weigh 1, and the weight halves for every
+// full year since the vote was cast (1/2, 1/4, 1/8, ...). timeCol is the
+// column holding the vote's unix timestamp, e.g. "votes.time" or "v.time".
+//
+// It uses a bit shift instead of POWER() because the bundled SQLite build
+// has no math functions. The shift is clamped to [0, 62] so votes with a
+// timestamp in the future weigh 1 and very old ones cannot overflow.
+func VoteWeightSQL(dialect, timeCol string) string {
+	if dialect == "sqlite" {
+		return fmt.Sprintf(
+			"(1.0 / (1 << MAX(0, MIN(62, (CAST(strftime('%%s', 'now') AS INTEGER) - %s) / %d))))",
+			timeCol, secondsPerYear,
+		)
+	}
+	return fmt.Sprintf(
+		"(1.0 / (1 << GREATEST(0, LEAST(62, FLOOR((UNIX_TIMESTAMP() - %s) / %d)))))",
+		timeCol, secondsPerYear,
+	)
+}
+
+// CreateViews (re)creates the ListaMedias and Melhores views.
+//
+// ListaMedias keeps the legacy plain average and count per class-professor
+// and adds a recency-weighted average (weighted_avg) and the total weight
+// (weight_sum), see VoteWeightSQL. Melhores ranks class-professors with at
+// least MinVotesForTopRated votes by the weighted average, so recent votes
+// take priority.
 func CreateViews(db *gorm.DB) error {
-	// Detect database type
-	var dbType string
-	if sqlDB, err := db.DB(); err == nil {
-		if driver := sqlDB.Driver(); driver != nil {
-			switch driver.(type) {
-			case *sqlite3.SQLiteDriver:
-				dbType = "sqlite"
-			default:
-				dbType = "mysql"
-			}
+	dbType := Dialect(db)
+	weight := VoteWeightSQL(dbType, "votes.time")
+
+	// The legacy column names "AVG(nota)" and "COUNT(*)" must be quoted;
+	// SQLite uses double quotes and MySQL uses backticks.
+	quote := func(name string) string {
+		if dbType == "sqlite" {
+			return `"` + name + `"`
 		}
+		return "`" + name + "`"
 	}
 
-	// Create ListaMedias view
-	var listMediasSQL string
+	// Older SQLite versions lack CREATE OR REPLACE VIEW.
+	createView := "CREATE OR REPLACE VIEW"
 	if dbType == "sqlite" {
-		// SQLite version without CREATE OR REPLACE (not supported in older SQLite)
-		// Drop view if exists, then create
+		createView = "CREATE VIEW"
+		db.Exec("DROP VIEW IF EXISTS Melhores")
 		db.Exec("DROP VIEW IF EXISTS ListaMedias")
-		listMediasSQL = `
-			CREATE VIEW ListaMedias AS
-			SELECT class_professor_id, AVG(score) AS "AVG(nota)", COUNT(*) AS "COUNT(*)"
-			FROM votes
-			WHERE type <> 5
-			GROUP BY class_professor_id
-		`
-	} else {
-		// MySQL version with backticks
-		listMediasSQL = `
-			CREATE OR REPLACE VIEW ListaMedias AS
-			SELECT class_professor_id, AVG(score) AS 'AVG(nota)', COUNT(*) AS 'COUNT(*)'
-			FROM votes
-			WHERE type <> 5
-			GROUP BY class_professor_id
-		`
 	}
+
+	listMediasSQL := fmt.Sprintf(`
+		%s ListaMedias AS
+		SELECT
+			class_professor_id,
+			AVG(score) AS %s,
+			COUNT(*) AS %s,
+			SUM(score * %s) / SUM(%s) AS weighted_avg,
+			SUM(%s) AS weight_sum
+		FROM votes
+		WHERE type <> 5
+		GROUP BY class_professor_id
+	`, createView, quote("AVG(nota)"), quote("COUNT(*)"), weight, weight, weight)
 
 	if err := db.Exec(listMediasSQL).Error; err != nil {
 		return fmt.Errorf("failed to create ListaMedias view: %w", err)
 	}
 
-	// Create Melhores view
-	var melhoresSQL string
-	if dbType == "sqlite" {
-		// SQLite version
-		db.Exec("DROP VIEW IF EXISTS Melhores")
-		melhoresSQL = `
-			CREATE VIEW Melhores AS
-			SELECT
-				(l."AVG(nota)" * 2) AS media,
-				l."COUNT(*)" AS votos,
-				d.name AS materia,
-				u.name AS unidade,
-				d.code AS codigo,
-				p.name AS professor,
-				ap.id AS id
-			FROM ListaMedias l
-			JOIN class_professors ap ON l.class_professor_id = ap.id
-			JOIN disciplines d ON ap.class_id = d.id
-			JOIN units u ON d.unit_id = u.id
-			JOIN professors p ON ap.professor_id = p.id
-			WHERE l."COUNT(*)" >= 15
-			ORDER BY l."AVG(nota)" DESC, l."COUNT(*)" DESC
-		`
-	} else {
-		// MySQL version with backticks
-		melhoresSQL = "" +
-			"CREATE OR REPLACE VIEW Melhores AS\n" +
-			"SELECT\n" +
-			"	(ListaMedias.`AVG(nota)` * 2) AS media,\n" +
-			"	ListaMedias.`COUNT(*)` AS votos,\n" +
-			"	disciplines.name AS materia,\n" +
-			"	units.name AS unidade,\n" +
-			"	disciplines.code AS codigo,\n" +
-			"	professors.name AS professor,\n" +
-			"	class_professors.id AS id\n" +
-			"FROM ListaMedias\n" +
-			"JOIN class_professors ON ListaMedias.class_professor_id = class_professors.id\n" +
-			"JOIN disciplines ON class_professors.class_id = disciplines.id\n" +
-			"JOIN units ON disciplines.unit_id = units.id\n" +
-			"JOIN professors ON class_professors.professor_id = professors.id\n" +
-			"WHERE ListaMedias.`COUNT(*)` >= 15\n" +
-			"ORDER BY ListaMedias.`AVG(nota)` DESC, ListaMedias.`COUNT(*)` DESC"
-	}
+	melhoresSQL := fmt.Sprintf(`
+		%s Melhores AS
+		SELECT
+			(l.weighted_avg * 2) AS media,
+			l.%s AS votos,
+			d.name AS materia,
+			u.name AS unidade,
+			d.code AS codigo,
+			p.name AS professor,
+			ap.id AS id
+		FROM ListaMedias l
+		JOIN class_professors ap ON l.class_professor_id = ap.id
+		JOIN disciplines d ON ap.class_id = d.id
+		JOIN units u ON d.unit_id = u.id
+		JOIN professors p ON ap.professor_id = p.id
+		WHERE l.%s >= %d
+		ORDER BY l.weighted_avg DESC, l.weight_sum DESC
+	`, createView, quote("COUNT(*)"), quote("COUNT(*)"), models.MinVotesForTopRated)
 
 	if err := db.Exec(melhoresSQL).Error; err != nil {
 		return fmt.Errorf("failed to create Melhores view: %w", err)

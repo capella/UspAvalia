@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 	"uspavalia/internal/middleware"
 	"uspavalia/internal/models"
@@ -16,17 +15,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// statsCache holds cached stats with expiration
-type statsCache struct {
-	stats      *models.Stats
-	expiration time.Time
-	mu         sync.RWMutex
-}
-
-var (
-	cachedStats        = &statsCache{}
-	statsCacheDuration = 5 * time.Minute
-)
+// statsCacheDuration is how long the home page stats are served from memory.
+const statsCacheDuration = 5 * time.Minute
 
 type RatingStat struct {
 	Name    string  `json:"name"`
@@ -42,26 +32,6 @@ type CommentWithVotes struct {
 	NegativeVotes int    `json:"negative_votes"`
 }
 
-// get returns cached stats if valid, otherwise nil
-func (c *statsCache) get() *models.Stats {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-
-	if time.Now().Before(c.expiration) {
-		return c.stats
-	}
-	return nil
-}
-
-// set stores stats with expiration time
-func (c *statsCache) set(stats *models.Stats, duration time.Duration) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	c.stats = stats
-	c.expiration = time.Now().Add(duration)
-}
-
 func (s *Server) getCurrentUser(r *http.Request) *models.User {
 	if userID, ok := middleware.GetUserID(r); ok {
 		var user models.User
@@ -72,13 +42,12 @@ func (s *Server) getCurrentUser(r *http.Request) *models.User {
 	return nil
 }
 
+// calculateStats returns the home page stats, cached for statsCacheDuration.
 func (s *Server) calculateStats() *models.Stats {
-	// Check cache first
-	if cached := cachedStats.get(); cached != nil {
-		return cached
-	}
+	return s.statsCache.GetOrLoad(statsCacheDuration, s.computeStats)
+}
 
-	// Cache miss - calculate stats
+func (s *Server) computeStats() *models.Stats {
 	var avgRating float64
 	var totalEvaluations int64
 	var totalUsers int64
@@ -110,9 +79,6 @@ func (s *Server) calculateStats() *models.Stats {
 		TotalUsers:       formatNumber(float64(totalUsers), 0),
 	}
 
-	// Store in cache for 5 minutes
-	cachedStats.set(stats, statsCacheDuration)
-
 	return stats
 }
 
@@ -130,14 +96,8 @@ func formatNumber(num float64, decimals int) string {
 }
 
 func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
-	var bestRated []models.BestRated
-
-	// Try to query the view, fallback to empty if view doesn't exist
-	result := s.db.Limit(10).Find(&bestRated)
-	if result.Error != nil {
-		logrus.Printf("Warning: Could not load best rated data: %v", result.Error)
-		bestRated = []models.BestRated{} // Empty slice as fallback
-	}
+	// Same cached ranking as /destaques
+	bestRated := s.loadTopRated().Disciplines
 
 	// Calculate statistics
 	stats := s.calculateStats()
@@ -508,48 +468,4 @@ func (s *Server) renderContactError(w http.ResponseWriter, r *http.Request, erro
 		},
 	}
 	s.renderTemplate(w, r, "contact", data)
-}
-
-func (s *Server) handleTopRated(w http.ResponseWriter, r *http.Request) {
-	// Get best rated disciplines (from the Melhores view)
-	var bestRatedDisciplines []models.BestRated
-	s.db.Limit(10).Find(&bestRatedDisciplines)
-
-	// Get best rated professors separately
-	type BestRatedProfessor struct {
-		ProfessorID   uint    `json:"professor_id"`
-		ProfessorName string  `json:"professor_name"`
-		UnitName      string  `json:"unit_name"`
-		Average       float64 `json:"average"`
-		VoteCount     int     `json:"vote_count"`
-	}
-
-	var bestRatedProfessors []BestRatedProfessor
-	s.db.Raw(`
-		SELECT
-			p.id as professor_id,
-			p.name as professor_name,
-			u.name as unit_name,
-			(AVG(v.score) * 2) as average,
-			COUNT(*) as vote_count
-		FROM votes v
-		INNER JOIN class_professors ap ON v.class_professor_id = ap.id
-		INNER JOIN professors p ON ap.professor_id = p.id
-		INNER JOIN units u ON p.unit_id = u.id
-		WHERE v.type <> 5
-		GROUP BY p.id, p.name, u.name
-		HAVING COUNT(*) >= 15
-		ORDER BY AVG(v.score) DESC, COUNT(*) DESC
-		LIMIT 10
-	`).Scan(&bestRatedProfessors)
-
-	data := PageData{
-		User: s.getCurrentUser(r),
-		Data: map[string]interface{}{
-			"BestRatedDisciplines": bestRatedDisciplines,
-			"BestRatedProfessors":  bestRatedProfessors,
-		},
-	}
-
-	s.renderTemplate(w, r, "10melhores", data)
 }
