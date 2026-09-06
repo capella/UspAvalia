@@ -3,7 +3,6 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"sync"
 	"time"
 	"uspavalia/internal/database"
 	"uspavalia/internal/models"
@@ -93,56 +92,31 @@ type topRatedData struct {
 	Units       []BestRatedUnit
 }
 
-// topRatedCache memoizes topRatedData. The three ranking queries aggregate
-// the whole votes table, and the result only drifts as votes come in (or as
-// they age past a yearly boundary), so serving it for a while is fine.
-type topRatedCache struct {
-	mu         sync.RWMutex
-	data       *topRatedData
-	expiration time.Time
-}
-
+// topRatedCacheDuration is how long the ranking lists are served from
+// memory. The three ranking queries aggregate the whole votes table, and
+// the result only drifts as votes come in (or as they age past a yearly
+// boundary), so serving it for a while is fine.
 const topRatedCacheDuration = time.Hour
-
-func (c *topRatedCache) get() *topRatedData {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	if c.data != nil && time.Now().Before(c.expiration) {
-		return c.data
-	}
-	return nil
-}
-
-func (c *topRatedCache) set(data *topRatedData, duration time.Duration) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.data = data
-	c.expiration = time.Now().Add(duration)
-}
 
 // loadTopRated returns the top-rated lists, from cache when fresh. Lists
 // that fail to load are logged and left empty; the result is still cached
 // so a failing query does not get hammered.
 func (s *Server) loadTopRated() *topRatedData {
-	if cached := s.topRated.get(); cached != nil {
-		return cached
-	}
+	return s.topRatedCache.GetOrLoad(topRatedCacheDuration, func() *topRatedData {
+		data := &topRatedData{}
+		if err := s.db.Limit(topRatedLimit).Find(&data.Disciplines).Error; err != nil {
+			logrus.Printf("Warning: Could not load best rated disciplines: %v", err)
+		}
 
-	data := &topRatedData{}
-	if err := s.db.Limit(topRatedLimit).Find(&data.Disciplines).Error; err != nil {
-		logrus.Printf("Warning: Could not load best rated disciplines: %v", err)
-	}
-
-	var err error
-	if data.Professors, err = s.bestRatedProfessors(topRatedLimit); err != nil {
-		logrus.Printf("Warning: Could not load best rated professors: %v", err)
-	}
-	if data.Units, err = s.bestRatedUnits(topRatedLimit); err != nil {
-		logrus.Printf("Warning: Could not load best rated units: %v", err)
-	}
-
-	s.topRated.set(data, topRatedCacheDuration)
-	return data
+		var err error
+		if data.Professors, err = s.bestRatedProfessors(topRatedLimit); err != nil {
+			logrus.Printf("Warning: Could not load best rated professors: %v", err)
+		}
+		if data.Units, err = s.bestRatedUnits(topRatedLimit); err != nil {
+			logrus.Printf("Warning: Could not load best rated units: %v", err)
+		}
+		return data
+	})
 }
 
 // handleTopRated renders /destaques: the best rated class-professors (from

@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"net/http"
 	"time"
+	"uspavalia/internal/cache"
 	"uspavalia/internal/config"
 	"uspavalia/internal/middleware"
 	"uspavalia/internal/models"
@@ -26,7 +27,9 @@ type Server struct {
 	templates    *template.Template
 	store        sessions.Store
 	emailService *services.EmailService
-	topRated     topRatedCache
+
+	statsCache    cache.TTL[*models.Stats]
+	topRatedCache cache.TTL[*topRatedData]
 }
 
 func NewServer(cfg *config.Config, db *gorm.DB) *Server {

@@ -137,7 +137,7 @@ func TestLoadTopRatedIsCached(t *testing.T) {
 		t.Errorf("second load was not served from cache")
 	}
 
-	s.topRated.set(nil, 0) // expire
+	s.topRatedCache.Invalidate()
 	if fresh := s.loadTopRated(); len(fresh.Units) != 2 {
 		t.Errorf("units after cache expiry = %d, want 2", len(fresh.Units))
 	}
