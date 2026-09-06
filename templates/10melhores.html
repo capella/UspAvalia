@@ -8,6 +8,7 @@
       <tr>
         <th>Média</th>
         <th>Votos</th>
+        <th>Último ano</th>
         <th>Disciplina</th>
         <th>Unidade</th>
         <th>Professor</th>
@@ -21,6 +22,7 @@
           <span class="badge bg-success">{{printf "%.2f" .Average}}</span>
         </td>
         <td>{{.VoteCount}}</td>
+        <td>{{.RecentVotes}}</td>
         <td>
           <strong>{{.DisciplineName}}</strong><br />
           <small class="text-muted">{{.Code}}</small>
@@ -48,6 +50,7 @@
       <tr>
         <th>Média</th>
         <th>Votos</th>
+        <th>Último ano</th>
         <th>Professor</th>
         <th>Unidade</th>
         <th>Ações</th>
@@ -60,6 +63,7 @@
           <span class="badge bg-success">{{printf "%.2f" .Average}}</span>
         </td>
         <td>{{.VoteCount}}</td>
+        <td>{{.RecentVotes}}</td>
         <td>{{.ProfessorName}}</td>
         <td>{{.UnitName}}</td>
         <td>
@@ -80,6 +84,7 @@
       <tr>
         <th>Média</th>
         <th>Votos</th>
+        <th>Último ano</th>
         <th>Unidade</th>
       </tr>
     </thead>
@@ -90,6 +95,7 @@
           <span class="badge bg-success">{{printf "%.2f" .Average}}</span>
         </td>
         <td>{{.VoteCount}}</td>
+        <td>{{.RecentVotes}}</td>
         <td>{{.UnitName}}</td>
       </tr>
       {{end}} {{end}}
@@ -99,7 +105,9 @@
 
 <small class="text-muted">
   Só entram nas listas disciplinas, professores e unidades com
-  {{.Data.MinVotes}} ou mais votos. As médias dão prioridade às avaliações
-  mais recentes: o peso de cada voto cai pela metade a cada ano.
+  {{.Data.MinVotes}} ou mais votos. A média dá prioridade às avaliações mais
+  recentes: o peso de cada voto cai pela metade a cada ano. A ordem das
+  listas também considera quantos votos recentes sustentam a média, por isso
+  quem não recebe avaliações há tempos perde posição mesmo com média alta.
 </small>
 {{end}}

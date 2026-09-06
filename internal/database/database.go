@@ -109,26 +109,59 @@ const secondsPerYear = 31557600
 // It uses a bit shift instead of POWER() because the bundled SQLite build
 // has no math functions. The shift is clamped to [0, 62] so votes with a
 // timestamp in the future weigh 1 and very old ones cannot overflow.
+//
+// The dividend is the floating-point literal 1E0 on purpose. With a DECIMAL
+// literal (1.0) MySQL rounds every weight to five decimals, and score*weight
+// rounds differently from weight, so a group of very old votes could average
+// above the maximum score. Powers of two are exact in floating point.
 func VoteWeightSQL(dialect, timeCol string) string {
 	if dialect == "sqlite" {
 		return fmt.Sprintf(
-			"(1.0 / (1 << MAX(0, MIN(62, (CAST(strftime('%%s', 'now') AS INTEGER) - %s) / %d))))",
+			"(1E0 / (1 << MAX(0, MIN(62, (CAST(strftime('%%s', 'now') AS INTEGER) - %s) / %d))))",
 			timeCol, secondsPerYear,
 		)
 	}
 	return fmt.Sprintf(
-		"(1.0 / (1 << GREATEST(0, LEAST(62, FLOOR((UNIX_TIMESTAMP() - %s) / %d)))))",
+		"(1E0 / (1 << GREATEST(0, LEAST(62, FLOOR((UNIX_TIMESTAMP() - %s) / %d)))))",
 		timeCol, secondsPerYear,
 	)
+}
+
+// RecentVoteSQL returns an SQL expression that is 1 when the vote was cast
+// within the last year and 0 otherwise, so SUM() of it counts recent votes.
+func RecentVoteSQL(dialect, timeCol string) string {
+	now := "UNIX_TIMESTAMP()"
+	if dialect == "sqlite" {
+		now = "CAST(strftime('%s', 'now') AS INTEGER)"
+	}
+	return fmt.Sprintf("(CASE WHEN %s > %s - %d THEN 1 ELSE 0 END)", timeCol, now, secondsPerYear)
+}
+
+// RankingSQL returns the SQL expression used to order the top-rated lists:
+// the recency-weighted average pulled toward the global weighted average by
+// a prior worth models.TopRatedPriorWeight recent votes (Bayesian average).
+//
+//	(SUM(score*w) + prior*global) / (SUM(w) + prior)
+//
+// An entry whose votes are all old carries little weight, so its ranking
+// collapses toward the global average no matter how high its own average
+// is, while an entry with recent votes keeps its average. weightedSum and
+// weightSum are the aggregate expressions for SUM(score*w) and SUM(w).
+func RankingSQL(dialect, weightedSum, weightSum string) string {
+	w := VoteWeightSQL(dialect, "votes.time")
+	global := fmt.Sprintf("(SELECT SUM(score * %s) / SUM(%s) FROM votes WHERE type <> 5)", w, w)
+	return fmt.Sprintf("((%s + %d * %s) / (%s + %d))",
+		weightedSum, models.TopRatedPriorWeight, global, weightSum, models.TopRatedPriorWeight)
 }
 
 // CreateViews (re)creates the ListaMedias and Melhores views.
 //
 // ListaMedias keeps the legacy plain average and count per class-professor
 // and adds a recency-weighted average (weighted_avg) and the total weight
-// (weight_sum), see VoteWeightSQL. Melhores ranks class-professors with at
-// least MinVotesForTopRated votes by the weighted average, so recent votes
-// take priority.
+// (weight_sum), see VoteWeightSQL, plus the number of votes in the last
+// year and the ranking score, see RankingSQL. Melhores lists class-professors
+// with at least MinVotesForTopRated votes ordered by that ranking, so entries
+// with recent votes take priority.
 func CreateViews(db *gorm.DB) error {
 	dbType := Dialect(db)
 	weight := VoteWeightSQL(dbType, "votes.time")
@@ -150,18 +183,25 @@ func CreateViews(db *gorm.DB) error {
 		db.Exec("DROP VIEW IF EXISTS ListaMedias")
 	}
 
+	weightedSum := fmt.Sprintf("SUM(score * %s)", weight)
+	weightSum := fmt.Sprintf("SUM(%s)", weight)
 	listMediasSQL := fmt.Sprintf(`
 		%s ListaMedias AS
 		SELECT
 			class_professor_id,
 			AVG(score) AS %s,
 			COUNT(*) AS %s,
-			SUM(score * %s) / SUM(%s) AS weighted_avg,
-			SUM(%s) AS weight_sum
+			%s / %s AS weighted_avg,
+			%s AS weight_sum,
+			SUM(%s) AS recent_votes,
+			%s AS ranking
 		FROM votes
 		WHERE type <> 5
 		GROUP BY class_professor_id
-	`, createView, quote("AVG(nota)"), quote("COUNT(*)"), weight, weight, weight)
+	`, createView, quote("AVG(nota)"), quote("COUNT(*)"),
+		weightedSum, weightSum, weightSum,
+		RecentVoteSQL(dbType, "votes.time"),
+		RankingSQL(dbType, weightedSum, weightSum))
 
 	if err := db.Exec(listMediasSQL).Error; err != nil {
 		return fmt.Errorf("failed to create ListaMedias view: %w", err)
@@ -172,6 +212,8 @@ func CreateViews(db *gorm.DB) error {
 		SELECT
 			(l.weighted_avg * 2) AS media,
 			l.%s AS votos,
+			l.recent_votes AS votos_recentes,
+			l.ranking AS ranking,
 			d.name AS materia,
 			u.name AS unidade,
 			d.code AS codigo,
@@ -183,7 +225,7 @@ func CreateViews(db *gorm.DB) error {
 		JOIN units u ON d.unit_id = u.id
 		JOIN professors p ON ap.professor_id = p.id
 		WHERE l.%s >= %d
-		ORDER BY l.weighted_avg DESC, l.weight_sum DESC
+		ORDER BY l.ranking DESC, l.weight_sum DESC
 	`, createView, quote("COUNT(*)"), quote("COUNT(*)"), models.MinVotesForTopRated)
 
 	if err := db.Exec(melhoresSQL).Error; err != nil {

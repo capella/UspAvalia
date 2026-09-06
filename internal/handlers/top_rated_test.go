@@ -105,6 +105,9 @@ func TestBestRatedProfessorsAndUnitsWeightByRecency(t *testing.T) {
 	if profs[1].VoteCount != 40 {
 		t.Errorf("Professor Old vote count = %d, want raw count 40", profs[1].VoteCount)
 	}
+	if profs[0].RecentVotes != 15 || profs[1].RecentVotes != 20 {
+		t.Errorf("recent votes = [%d %d], want [15 20]", profs[0].RecentVotes, profs[1].RecentVotes)
+	}
 
 	units, err := s.bestRatedUnits(10)
 	if err != nil {
@@ -118,6 +121,38 @@ func TestBestRatedProfessorsAndUnitsWeightByRecency(t *testing.T) {
 	}
 	if math.Abs(units[0].Average-8) > 1e-9 || math.Abs(units[1].Average-6.8) > 1e-9 {
 		t.Errorf("unit averages = [%v %v], want [8 6.8]", units[0].Average, units[1].Average)
+	}
+}
+
+// A professor rated 10 only years ago must rank below one rated 9 by many
+// students this year, in both the professors and the units lists.
+func TestBestRatedDemotesStaleTens(t *testing.T) {
+	s := newTopRatedServer(t)
+	seedVotes(t, s.db, "Stale", 5, 16, 3.5)
+	seedVotes(t, s.db, "Fresh", 5, 20, 0.1)
+	seedVotes(t, s.db, "Fresh", 4, 20, 0.1)
+	seedVotes(t, s.db, "Low", 2, 30, 0.1)
+
+	profs, err := s.bestRatedProfessors(10)
+	if err != nil {
+		t.Fatalf("bestRatedProfessors: %v", err)
+	}
+	if len(profs) != 3 || profs[0].ProfessorName != "Professor Fresh" || profs[1].ProfessorName != "Professor Stale" {
+		t.Fatalf("professor order = %+v, want Fresh, Stale, Low", profs)
+	}
+	if math.Abs(profs[0].Average-9) > 1e-9 || math.Abs(profs[1].Average-10) > 1e-9 {
+		t.Errorf("averages = [%v %v], want [9 10]", profs[0].Average, profs[1].Average)
+	}
+	if profs[0].RecentVotes != 40 || profs[1].RecentVotes != 0 {
+		t.Errorf("recent votes = [%d %d], want [40 0]", profs[0].RecentVotes, profs[1].RecentVotes)
+	}
+
+	units, err := s.bestRatedUnits(10)
+	if err != nil {
+		t.Fatalf("bestRatedUnits: %v", err)
+	}
+	if len(units) != 3 || units[0].UnitName != "Fresh" || units[1].UnitName != "Stale" {
+		t.Fatalf("unit order = %+v, want Fresh, Stale, Low", units)
 	}
 }
 
@@ -166,6 +201,7 @@ func TestHandleTopRatedRendersThreeLists(t *testing.T) {
 		"Cursos Avaliados",
 		"Professores Avaliados",
 		"Unidades Avaliadas",
+		"Último ano",
 		"Escola Politécnica",
 		"Professor Escola Politécnica",
 		"cai pela metade a cada ano",

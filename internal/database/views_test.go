@@ -102,7 +102,9 @@ func TestVoteWeightSQLHalvesEveryYear(t *testing.T) {
 
 func TestVoteWeightSQLMySQL(t *testing.T) {
 	expr := VoteWeightSQL("mysql", "v.time")
-	for _, want := range []string{"UNIX_TIMESTAMP()", "v.time", "GREATEST(0, LEAST(62"} {
+	// 1E0 (a DOUBLE) matters: with the DECIMAL literal 1.0 MySQL rounds the
+	// weights to five decimals and old all-5 votes averaged above 10.
+	for _, want := range []string{"UNIX_TIMESTAMP()", "v.time", "GREATEST(0, LEAST(62", "1E0 / (1 <<"} {
 		if !strings.Contains(expr, want) {
 			t.Errorf("mysql expression %q does not contain %q", expr, want)
 		}
@@ -171,5 +173,54 @@ func TestMelhoresPrioritizesRecentVotes(t *testing.T) {
 	}
 	if rows[1].VoteCount != 30 {
 		t.Errorf("A votos = %d, want the raw count 30", rows[1].VoteCount)
+	}
+	if rows[0].RecentVotes != 15 || rows[1].RecentVotes != 15 {
+		t.Errorf("votos_recentes = [%d %d], want [15 15]", rows[0].RecentVotes, rows[1].RecentVotes)
+	}
+}
+
+// A perfect average backed only by old votes must not stay on top forever:
+// the ranking shrinks it toward the global average, below an entry with a
+// slightly lower average but plenty of recent votes.
+func TestMelhoresDemotesStaleTens(t *testing.T) {
+	db := newTestDB(t)
+
+	// A: 10.00 from 16 votes three years ago (weight 2).
+	cpA := seedClassProfessor(t, db, "A")
+	addVotes(t, db, cpA, 5, 16, 3.5)
+
+	// B: 9.00 from 40 votes this year (weight 40).
+	cpB := seedClassProfessor(t, db, "B")
+	addVotes(t, db, cpB, 5, 20, 0.1)
+	addVotes(t, db, cpB, 4, 20, 0.1)
+
+	// C: 4.00 from 30 recent votes, pulls the global average down.
+	cpC := seedClassProfessor(t, db, "C")
+	addVotes(t, db, cpC, 2, 30, 0.1)
+
+	var rows []models.BestRated
+	if err := db.Find(&rows).Error; err != nil {
+		t.Fatalf("query Melhores: %v", err)
+	}
+	if len(rows) != 3 {
+		t.Fatalf("Melhores rows = %d, want 3", len(rows))
+	}
+	if rows[0].ID != cpB || rows[1].ID != cpA || rows[2].ID != cpC {
+		t.Fatalf("Melhores order = [%d %d %d], want [%d %d %d]",
+			rows[0].ID, rows[1].ID, rows[2].ID, cpB, cpA, cpC)
+	}
+	// The displayed average is still the weighted average, not the ranking.
+	if math.Abs(rows[1].Average-10) > 1e-9 || math.Abs(rows[0].Average-9) > 1e-9 {
+		t.Errorf("averages = [%v %v], want [9 10]", rows[0].Average, rows[1].Average)
+	}
+	if rows[0].RecentVotes != 40 || rows[1].RecentVotes != 0 {
+		t.Errorf("votos_recentes = [%d %d], want [40 0]", rows[0].RecentVotes, rows[1].RecentVotes)
+	}
+	// ranking = (sum(score*w) + 8*global) / (sum(w) + 8), global = 250/72
+	global := 250.0 / 72
+	wantA := (10 + 8*global) / (2 + 8)
+	wantB := (180 + 8*global) / (40 + 8)
+	if math.Abs(rows[1].Ranking-wantA) > 1e-9 || math.Abs(rows[0].Ranking-wantB) > 1e-9 {
+		t.Errorf("rankings = [%v %v], want [%v %v]", rows[0].Ranking, rows[1].Ranking, wantB, wantA)
 	}
 }
