@@ -121,6 +121,28 @@ func TestBestRatedProfessorsAndUnitsWeightByRecency(t *testing.T) {
 	}
 }
 
+func TestLoadTopRatedIsCached(t *testing.T) {
+	s := newTopRatedServer(t)
+	seedVotes(t, s.db, "First", 4, 15, 0.1)
+
+	first := s.loadTopRated()
+	if len(first.Units) != 1 || len(first.Professors) != 1 || len(first.Disciplines) != 1 {
+		t.Fatalf("first load = %d units, %d professors, %d disciplines; want 1 each",
+			len(first.Units), len(first.Professors), len(first.Disciplines))
+	}
+
+	// New votes must not show up until the cache expires.
+	seedVotes(t, s.db, "Second", 5, 15, 0.1)
+	if again := s.loadTopRated(); again != first {
+		t.Errorf("second load was not served from cache")
+	}
+
+	s.topRated.set(nil, 0) // expire
+	if fresh := s.loadTopRated(); len(fresh.Units) != 2 {
+		t.Errorf("units after cache expiry = %d, want 2", len(fresh.Units))
+	}
+}
+
 func TestHandleTopRatedRendersThreeLists(t *testing.T) {
 	// Templates are resolved relative to the repository root.
 	wd, _ := os.Getwd()

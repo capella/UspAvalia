@@ -130,14 +130,8 @@ func formatNumber(num float64, decimals int) string {
 }
 
 func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
-	var bestRated []models.BestRated
-
-	// Try to query the view, fallback to empty if view doesn't exist
-	result := s.db.Limit(10).Find(&bestRated)
-	if result.Error != nil {
-		logrus.Printf("Warning: Could not load best rated data: %v", result.Error)
-		bestRated = []models.BestRated{} // Empty slice as fallback
-	}
+	// Same cached ranking as /destaques
+	bestRated := s.loadTopRated().Disciplines
 
 	// Calculate statistics
 	stats := s.calculateStats()

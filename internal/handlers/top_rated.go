@@ -3,6 +3,8 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"sync"
+	"time"
 	"uspavalia/internal/database"
 	"uspavalia/internal/models"
 
@@ -84,31 +86,77 @@ func (s *Server) bestRatedUnits(limit int) ([]BestRatedUnit, error) {
 	return rows, err
 }
 
+// topRatedData is everything the top-rated lists need, computed at once.
+type topRatedData struct {
+	Disciplines []models.BestRated
+	Professors  []BestRatedProfessor
+	Units       []BestRatedUnit
+}
+
+// topRatedCache memoizes topRatedData. The three ranking queries aggregate
+// the whole votes table, and the result only drifts as votes come in (or as
+// they age past a yearly boundary), so serving it for a while is fine.
+type topRatedCache struct {
+	mu         sync.RWMutex
+	data       *topRatedData
+	expiration time.Time
+}
+
+const topRatedCacheDuration = time.Hour
+
+func (c *topRatedCache) get() *topRatedData {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	if c.data != nil && time.Now().Before(c.expiration) {
+		return c.data
+	}
+	return nil
+}
+
+func (c *topRatedCache) set(data *topRatedData, duration time.Duration) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.data = data
+	c.expiration = time.Now().Add(duration)
+}
+
+// loadTopRated returns the top-rated lists, from cache when fresh. Lists
+// that fail to load are logged and left empty; the result is still cached
+// so a failing query does not get hammered.
+func (s *Server) loadTopRated() *topRatedData {
+	if cached := s.topRated.get(); cached != nil {
+		return cached
+	}
+
+	data := &topRatedData{}
+	if err := s.db.Limit(topRatedLimit).Find(&data.Disciplines).Error; err != nil {
+		logrus.Printf("Warning: Could not load best rated disciplines: %v", err)
+	}
+
+	var err error
+	if data.Professors, err = s.bestRatedProfessors(topRatedLimit); err != nil {
+		logrus.Printf("Warning: Could not load best rated professors: %v", err)
+	}
+	if data.Units, err = s.bestRatedUnits(topRatedLimit); err != nil {
+		logrus.Printf("Warning: Could not load best rated units: %v", err)
+	}
+
+	s.topRated.set(data, topRatedCacheDuration)
+	return data
+}
+
 // handleTopRated renders /destaques: the best rated class-professors (from
 // the Melhores view), professors and units. Every list uses the recency
 // weight from database.VoteWeightSQL, so recent votes take priority.
 func (s *Server) handleTopRated(w http.ResponseWriter, r *http.Request) {
-	var bestRatedDisciplines []models.BestRated
-	if err := s.db.Limit(topRatedLimit).Find(&bestRatedDisciplines).Error; err != nil {
-		logrus.Printf("Warning: Could not load best rated disciplines: %v", err)
-	}
-
-	bestRatedProfessors, err := s.bestRatedProfessors(topRatedLimit)
-	if err != nil {
-		logrus.Printf("Warning: Could not load best rated professors: %v", err)
-	}
-
-	bestRatedUnits, err := s.bestRatedUnits(topRatedLimit)
-	if err != nil {
-		logrus.Printf("Warning: Could not load best rated units: %v", err)
-	}
+	topRated := s.loadTopRated()
 
 	data := PageData{
 		User: s.getCurrentUser(r),
 		Data: map[string]interface{}{
-			"BestRatedDisciplines": bestRatedDisciplines,
-			"BestRatedProfessors":  bestRatedProfessors,
-			"BestRatedUnits":       bestRatedUnits,
+			"BestRatedDisciplines": topRated.Disciplines,
+			"BestRatedProfessors":  topRated.Professors,
+			"BestRatedUnits":       topRated.Units,
 			"MinVotes":             models.MinVotesForTopRated,
 		},
 	}

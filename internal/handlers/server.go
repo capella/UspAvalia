@@ -26,6 +26,7 @@ type Server struct {
 	templates    *template.Template
 	store        sessions.Store
 	emailService *services.EmailService
+	topRated     topRatedCache
 }
 
 func NewServer(cfg *config.Config, db *gorm.DB) *Server {
