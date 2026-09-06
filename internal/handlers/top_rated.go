@@ -21,7 +21,6 @@ type BestRatedProfessor struct {
 	Average       float64 `json:"average"`
 	VoteCount     int     `json:"vote_count"`
 	RecentVotes   int     `json:"recent_votes"`
-	Ranking       float64 `json:"ranking"`
 }
 
 // BestRatedUnit is a row of the top-rated units list.
@@ -31,30 +30,25 @@ type BestRatedUnit struct {
 	Average     float64 `json:"average"`
 	VoteCount   int     `json:"vote_count"`
 	RecentVotes int     `json:"recent_votes"`
-	Ranking     float64 `json:"ranking"`
 }
 
 // weightedAverageSelect returns the SELECT fragment shared by the top-rated
 // queries: the recency-weighted average on the 0-10 scale, the raw vote
-// count, the number of votes in the last year, the total weight and the
-// ranking score the lists are ordered by (see database.RankingSQL). The
-// votes table must be aliased as "v".
+// count, the number of votes in the last year and the total weight. The
+// votes table must be aliased as "v". topRatedOrder sorts these columns.
 func (s *Server) weightedAverageSelect() string {
 	dialect := database.Dialect(s.db)
 	weight := database.VoteWeightSQL(dialect, "v.time")
-	weightedSum := fmt.Sprintf("SUM(v.score * %s)", weight)
-	weightSum := fmt.Sprintf("SUM(%s)", weight)
 	return fmt.Sprintf(`
-			(%s / %s) * 2 AS average,
+			(SUM(v.score * %s) / SUM(%s)) * 2 AS average,
 			COUNT(*) AS vote_count,
 			SUM(%s) AS recent_votes,
-			%s AS weight_sum,
-			%s AS ranking`,
-		weightedSum, weightSum,
-		database.RecentVoteSQL(dialect, "v.time"),
-		weightSum,
-		database.RankingSQL(dialect, weightedSum, weightSum))
+			SUM(%s) AS weight_sum`,
+		weight, weight, database.RecentVoteSQL(dialect, "v.time"), weight)
 }
+
+// topRatedOrder is the ORDER BY clause matching weightedAverageSelect.
+var topRatedOrder = database.TopRatedOrderSQL("recent_votes", "average", "weight_sum")
 
 // bestRatedProfessors ranks professors by the recency-weighted average of
 // all their votes (any class), requiring at least MinVotesForTopRated votes.
@@ -72,7 +66,7 @@ func (s *Server) bestRatedProfessors(limit int) ([]BestRatedProfessor, error) {
 		WHERE v.type <> ?
 		GROUP BY p.id, p.name, u.name
 		HAVING COUNT(*) >= ?
-		ORDER BY ranking DESC, weight_sum DESC
+		`+topRatedOrder+`
 		LIMIT ?
 	`, models.VoteTypeDifficulty, models.MinVotesForTopRated, limit).Scan(&rows).Error
 	return rows, err
@@ -93,7 +87,7 @@ func (s *Server) bestRatedUnits(limit int) ([]BestRatedUnit, error) {
 		WHERE v.type <> ?
 		GROUP BY u.id, u.name
 		HAVING COUNT(*) >= ?
-		ORDER BY ranking DESC, weight_sum DESC
+		`+topRatedOrder+`
 		LIMIT ?
 	`, models.VoteTypeDifficulty, models.MinVotesForTopRated, limit).Scan(&rows).Error
 	return rows, err
@@ -146,6 +140,7 @@ func (s *Server) handleTopRated(w http.ResponseWriter, r *http.Request) {
 			"BestRatedProfessors":  topRated.Professors,
 			"BestRatedUnits":       topRated.Units,
 			"MinVotes":             models.MinVotesForTopRated,
+			"MinRecentVotes":       models.MinRecentVotesForTopRated,
 		},
 	}
 

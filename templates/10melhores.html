@@ -106,8 +106,8 @@
 <small class="text-muted">
   Só entram nas listas disciplinas, professores e unidades com
   {{.Data.MinVotes}} ou mais votos. A média dá prioridade às avaliações mais
-  recentes: o peso de cada voto cai pela metade a cada ano. A ordem das
-  listas também considera quantos votos recentes sustentam a média, por isso
-  quem não recebe avaliações há tempos perde posição mesmo com média alta.
+  recentes: o peso de cada voto cai pela metade a cada ano. Quem recebeu
+  pelo menos {{.Data.MinRecentVotes}} votos no último ano aparece primeiro;
+  os demais vêm em seguida, também ordenados pela média.
 </small>
 {{end}}

@@ -137,21 +137,16 @@ func RecentVoteSQL(dialect, timeCol string) string {
 	return fmt.Sprintf("(CASE WHEN %s > %s - %d THEN 1 ELSE 0 END)", timeCol, now, secondsPerYear)
 }
 
-// RankingSQL returns the SQL expression used to order the top-rated lists:
-// the recency-weighted average pulled toward the global weighted average by
-// a prior worth models.TopRatedPriorWeight recent votes (Bayesian average).
-//
-//	(SUM(score*w) + prior*global) / (SUM(w) + prior)
-//
-// An entry whose votes are all old carries little weight, so its ranking
-// collapses toward the global average no matter how high its own average
-// is, while an entry with recent votes keeps its average. weightedSum and
-// weightSum are the aggregate expressions for SUM(score*w) and SUM(w).
-func RankingSQL(dialect, weightedSum, weightSum string) string {
-	w := VoteWeightSQL(dialect, "votes.time")
-	global := fmt.Sprintf("(SELECT SUM(score * %s) / SUM(%s) FROM votes WHERE type <> 5)", w, w)
-	return fmt.Sprintf("((%s + %d * %s) / (%s + %d))",
-		weightedSum, models.TopRatedPriorWeight, global, weightSum, models.TopRatedPriorWeight)
+// TopRatedOrderSQL returns the ORDER BY clause of the top-rated lists.
+// Entries with at least models.MinRecentVotesForTopRated votes in the last
+// year come first, so a perfect average earned years ago cannot sit on top
+// forever; within each group the higher weighted average wins, and ties go
+// to the entry with more recent weight. The arguments name the columns or
+// aliases holding the recent vote count, the weighted average and the total
+// weight.
+func TopRatedOrderSQL(recentVotes, weightedAvg, weightSum string) string {
+	return fmt.Sprintf("ORDER BY CASE WHEN %s >= %d THEN 1 ELSE 0 END DESC, %s DESC, %s DESC",
+		recentVotes, models.MinRecentVotesForTopRated, weightedAvg, weightSum)
 }
 
 // CreateViews (re)creates the ListaMedias and Melhores views.
@@ -159,9 +154,9 @@ func RankingSQL(dialect, weightedSum, weightSum string) string {
 // ListaMedias keeps the legacy plain average and count per class-professor
 // and adds a recency-weighted average (weighted_avg) and the total weight
 // (weight_sum), see VoteWeightSQL, plus the number of votes in the last
-// year and the ranking score, see RankingSQL. Melhores lists class-professors
-// with at least MinVotesForTopRated votes ordered by that ranking, so entries
-// with recent votes take priority.
+// year. Melhores lists class-professors with at least MinVotesForTopRated
+// votes in the order given by TopRatedOrderSQL, so entries with recent votes
+// take priority.
 func CreateViews(db *gorm.DB) error {
 	dbType := Dialect(db)
 	weight := VoteWeightSQL(dbType, "votes.time")
@@ -193,15 +188,13 @@ func CreateViews(db *gorm.DB) error {
 			COUNT(*) AS %s,
 			%s / %s AS weighted_avg,
 			%s AS weight_sum,
-			SUM(%s) AS recent_votes,
-			%s AS ranking
+			SUM(%s) AS recent_votes
 		FROM votes
 		WHERE type <> 5
 		GROUP BY class_professor_id
 	`, createView, quote("AVG(nota)"), quote("COUNT(*)"),
 		weightedSum, weightSum, weightSum,
-		RecentVoteSQL(dbType, "votes.time"),
-		RankingSQL(dbType, weightedSum, weightSum))
+		RecentVoteSQL(dbType, "votes.time"))
 
 	if err := db.Exec(listMediasSQL).Error; err != nil {
 		return fmt.Errorf("failed to create ListaMedias view: %w", err)
@@ -213,7 +206,6 @@ func CreateViews(db *gorm.DB) error {
 			(l.weighted_avg * 2) AS media,
 			l.%s AS votos,
 			l.recent_votes AS votos_recentes,
-			l.ranking AS ranking,
 			d.name AS materia,
 			u.name AS unidade,
 			d.code AS codigo,
@@ -225,8 +217,9 @@ func CreateViews(db *gorm.DB) error {
 		JOIN units u ON d.unit_id = u.id
 		JOIN professors p ON ap.professor_id = p.id
 		WHERE l.%s >= %d
-		ORDER BY l.ranking DESC, l.weight_sum DESC
-	`, createView, quote("COUNT(*)"), quote("COUNT(*)"), models.MinVotesForTopRated)
+		%s
+	`, createView, quote("COUNT(*)"), quote("COUNT(*)"), models.MinVotesForTopRated,
+		TopRatedOrderSQL("l.recent_votes", "l.weighted_avg", "l.weight_sum"))
 
 	if err := db.Exec(melhoresSQL).Error; err != nil {
 		return fmt.Errorf("failed to create Melhores view: %w", err)

@@ -180,47 +180,72 @@ func TestMelhoresPrioritizesRecentVotes(t *testing.T) {
 }
 
 // A perfect average backed only by old votes must not stay on top forever:
-// the ranking shrinks it toward the global average, below an entry with a
-// slightly lower average but plenty of recent votes.
+// entries with enough votes in the last year come first, whatever their
+// average, and the stale 10 is listed after them.
 func TestMelhoresDemotesStaleTens(t *testing.T) {
 	db := newTestDB(t)
 
-	// A: 10.00 from 16 votes three years ago (weight 2).
+	// A: 10.00 from 16 votes three years ago, nothing this year.
 	cpA := seedClassProfessor(t, db, "A")
 	addVotes(t, db, cpA, 5, 16, 3.5)
 
-	// B: 9.00 from 40 votes this year (weight 40).
+	// B: 9.00 from 40 votes this year.
 	cpB := seedClassProfessor(t, db, "B")
 	addVotes(t, db, cpB, 5, 20, 0.1)
 	addVotes(t, db, cpB, 4, 20, 0.1)
 
-	// C: 4.00 from 30 recent votes, pulls the global average down.
+	// C: 4.00 from 30 votes this year.
 	cpC := seedClassProfessor(t, db, "C")
 	addVotes(t, db, cpC, 2, 30, 0.1)
+
+	// D: 10.00 but only one evaluation (4 votes) this year: not enough.
+	cpD := seedClassProfessor(t, db, "D")
+	addVotes(t, db, cpD, 5, 12, 2.5)
+	addVotes(t, db, cpD, 5, 4, 0.1)
 
 	var rows []models.BestRated
 	if err := db.Find(&rows).Error; err != nil {
 		t.Fatalf("query Melhores: %v", err)
 	}
-	if len(rows) != 3 {
-		t.Fatalf("Melhores rows = %d, want 3", len(rows))
+	if len(rows) != 4 {
+		t.Fatalf("Melhores rows = %d, want 4", len(rows))
 	}
-	if rows[0].ID != cpB || rows[1].ID != cpA || rows[2].ID != cpC {
-		t.Fatalf("Melhores order = [%d %d %d], want [%d %d %d]",
-			rows[0].ID, rows[1].ID, rows[2].ID, cpB, cpA, cpC)
+	got := []uint{rows[0].ID, rows[1].ID, rows[2].ID, rows[3].ID}
+	want := []uint{cpB, cpC, cpD, cpA}
+	if got[0] != want[0] || got[1] != want[1] || got[2] != want[2] || got[3] != want[3] {
+		t.Fatalf("Melhores order = %v, want %v (B, C active; then D, A by average and weight)", got, want)
 	}
-	// The displayed average is still the weighted average, not the ranking.
-	if math.Abs(rows[1].Average-10) > 1e-9 || math.Abs(rows[0].Average-9) > 1e-9 {
-		t.Errorf("averages = [%v %v], want [9 10]", rows[0].Average, rows[1].Average)
+	// The displayed average is still the weighted average.
+	if math.Abs(rows[0].Average-9) > 1e-9 || math.Abs(rows[3].Average-10) > 1e-9 {
+		t.Errorf("averages = [%v ... %v], want [9 ... 10]", rows[0].Average, rows[3].Average)
 	}
-	if rows[0].RecentVotes != 40 || rows[1].RecentVotes != 0 {
-		t.Errorf("votos_recentes = [%d %d], want [40 0]", rows[0].RecentVotes, rows[1].RecentVotes)
+	if rows[0].RecentVotes != 40 || rows[2].RecentVotes != 4 || rows[3].RecentVotes != 0 {
+		t.Errorf("votos_recentes = [%d %d %d %d], want [40 30 4 0]",
+			rows[0].RecentVotes, rows[1].RecentVotes, rows[2].RecentVotes, rows[3].RecentVotes)
 	}
-	// ranking = (sum(score*w) + 8*global) / (sum(w) + 8), global = 250/72
-	global := 250.0 / 72
-	wantA := (10 + 8*global) / (2 + 8)
-	wantB := (180 + 8*global) / (40 + 8)
-	if math.Abs(rows[1].Ranking-wantA) > 1e-9 || math.Abs(rows[0].Ranking-wantB) > 1e-9 {
-		t.Errorf("rankings = [%v %v], want [%v %v]", rows[0].Ranking, rows[1].Ranking, wantB, wantA)
+}
+
+// Among entries with enough recent votes the average decides: a 10 backed by
+// two recent evaluations beats a 9.9 backed by many more recent votes.
+func TestMelhoresOrdersActiveEntriesByAverage(t *testing.T) {
+	db := newTestDB(t)
+
+	cpTen := seedClassProfessor(t, db, "Ten")
+	addVotes(t, db, cpTen, 5, 24, 4.5) // old but perfect
+	addVotes(t, db, cpTen, 5, 8, 0.1)  // exactly MinRecentVotesForTopRated
+
+	cpNine := seedClassProfessor(t, db, "Nine")
+	addVotes(t, db, cpNine, 5, 50, 0.1)
+	addVotes(t, db, cpNine, 4, 2, 0.1)
+
+	var rows []models.BestRated
+	if err := db.Find(&rows).Error; err != nil {
+		t.Fatalf("query Melhores: %v", err)
+	}
+	if len(rows) != 2 || rows[0].ID != cpTen || rows[1].ID != cpNine {
+		t.Fatalf("Melhores order = %+v, want Ten then Nine", rows)
+	}
+	if math.Abs(rows[0].Average-10) > 1e-9 || rows[0].RecentVotes != 8 {
+		t.Errorf("Ten = %.2f with %d recent votes, want 10.00 with 8", rows[0].Average, rows[0].RecentVotes)
 	}
 }

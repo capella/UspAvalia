@@ -124,35 +124,44 @@ func TestBestRatedProfessorsAndUnitsWeightByRecency(t *testing.T) {
 	}
 }
 
-// A professor rated 10 only years ago must rank below one rated 9 by many
-// students this year, in both the professors and the units lists.
-func TestBestRatedDemotesStaleTens(t *testing.T) {
+// Professors with enough votes this year come first, ordered by average, so
+// a 10 backed by recent votes beats a 9.9 with more of them, and a 10 rated
+// only years ago is listed after everyone active. Same for units.
+func TestBestRatedPrioritizesRecentlyRated(t *testing.T) {
 	s := newTopRatedServer(t)
 	seedVotes(t, s.db, "Stale", 5, 16, 3.5)
-	seedVotes(t, s.db, "Fresh", 5, 20, 0.1)
-	seedVotes(t, s.db, "Fresh", 4, 20, 0.1)
+	seedVotes(t, s.db, "Ten", 5, 24, 4.5)
+	seedVotes(t, s.db, "Ten", 5, 8, 0.1)
+	seedVotes(t, s.db, "Nine", 5, 50, 0.1)
+	seedVotes(t, s.db, "Nine", 4, 2, 0.1)
 	seedVotes(t, s.db, "Low", 2, 30, 0.1)
 
 	profs, err := s.bestRatedProfessors(10)
 	if err != nil {
 		t.Fatalf("bestRatedProfessors: %v", err)
 	}
-	if len(profs) != 3 || profs[0].ProfessorName != "Professor Fresh" || profs[1].ProfessorName != "Professor Stale" {
-		t.Fatalf("professor order = %+v, want Fresh, Stale, Low", profs)
+	var names []string
+	for _, p := range profs {
+		names = append(names, strings.TrimPrefix(p.ProfessorName, "Professor "))
 	}
-	if math.Abs(profs[0].Average-9) > 1e-9 || math.Abs(profs[1].Average-10) > 1e-9 {
-		t.Errorf("averages = [%v %v], want [9 10]", profs[0].Average, profs[1].Average)
+	if strings.Join(names, ",") != "Ten,Nine,Low,Stale" {
+		t.Fatalf("professor order = %v, want Ten,Nine,Low,Stale", names)
 	}
-	if profs[0].RecentVotes != 40 || profs[1].RecentVotes != 0 {
-		t.Errorf("recent votes = [%d %d], want [40 0]", profs[0].RecentVotes, profs[1].RecentVotes)
+	if math.Abs(profs[0].Average-10) > 1e-9 || profs[0].RecentVotes != 8 || profs[3].RecentVotes != 0 {
+		t.Errorf("Ten = %.2f (%d recent), Stale recent = %d; want 10.00 (8), 0",
+			profs[0].Average, profs[0].RecentVotes, profs[3].RecentVotes)
 	}
 
 	units, err := s.bestRatedUnits(10)
 	if err != nil {
 		t.Fatalf("bestRatedUnits: %v", err)
 	}
-	if len(units) != 3 || units[0].UnitName != "Fresh" || units[1].UnitName != "Stale" {
-		t.Fatalf("unit order = %+v, want Fresh, Stale, Low", units)
+	names = names[:0]
+	for _, u := range units {
+		names = append(names, u.UnitName)
+	}
+	if strings.Join(names, ",") != "Ten,Nine,Low,Stale" {
+		t.Fatalf("unit order = %v, want Ten,Nine,Low,Stale", names)
 	}
 }
 
