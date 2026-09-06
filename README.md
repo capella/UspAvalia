@@ -133,6 +133,55 @@ Métricas disponíveis:
 - Total de requisições
 - Status do pool de conexões do banco
 - Total de usuários ativos
+- Última execução do scraper do Júpiter Web (veja abaixo)
+
+### Métricas do scraper
+
+Cada execução de `fetch-disciplines --store` grava uma linha na tabela
+`scrape_runs` (início, fim, status e contadores). O servidor lê a última linha e
+expõe em `/metrics`, todas com o label `command` (hoje só `fetch-disciplines`):
+
+| Métrica | Descrição |
+|---|---|
+| `uspavalia_scrape_last_run_status{status}` | 1 no status atual (`running`, `success`, `partial`, `failed`), 0 nos demais |
+| `uspavalia_scrape_last_run_started_timestamp_seconds` | Início da última execução (Unix) |
+| `uspavalia_scrape_last_run_finished_timestamp_seconds` | Fim da última execução (ausente enquanto roda) |
+| `uspavalia_scrape_last_run_duration_seconds` | Duração da última execução |
+| `uspavalia_scrape_last_success_timestamp_seconds` | Fim da última execução que gravou dados (`success` ou `partial`) |
+| `uspavalia_scrape_last_run_pages_requested` | Páginas do Júpiter requisitadas |
+| `uspavalia_scrape_last_run_pages{result}` | Páginas por resultado: `loaded`, `http_error`, `bad_status`, `parse_error` |
+| `uspavalia_scrape_last_run_disciplines{stage}` | Disciplinas por etapa: `listed`, `processed`, `skipped`, `stored` |
+| `uspavalia_scrape_last_run_units_found` | Unidades de ensino encontradas |
+| `uspavalia_scrape_last_run_unit_list_errors` | Unidades cuja lista de disciplinas falhou |
+| `uspavalia_scrape_last_run_offerings_stored` | Turmas criadas ou atualizadas |
+| `uspavalia_scrape_last_run_professors_created` | Professores novos |
+| `uspavalia_scrape_last_run_store_errors` | Erros de escrita no banco |
+| `uspavalia_scrape_runs_total{status}` | Total acumulado de execuções por status |
+
+Status: `failed` quando houve erro fatal ou nenhuma disciplina foi gravada;
+`partial` quando houve qualquer erro de HTTP, parse ou banco; `success` caso
+contrário. Uma execução que morreu no meio fica como `running` para sempre, o
+que aparece como início antigo sem fim.
+
+Exemplos de consultas para Grafana/alertas:
+
+```promql
+# Horas desde a última execução que gravou dados (alerta se > 8 dias = 192h)
+(time() - uspavalia_scrape_last_success_timestamp_seconds) / 3600
+
+# Última execução falhou
+uspavalia_scrape_last_run_status{status="failed"} == 1
+
+# Execução travada: começou há mais de 6h e ainda está "running"
+uspavalia_scrape_last_run_status{status="running"} == 1
+  and (time() - uspavalia_scrape_last_run_started_timestamp_seconds) > 6 * 3600
+
+# Taxa de páginas com problema na última execução
+sum(uspavalia_scrape_last_run_pages{result!="loaded"}) / uspavalia_scrape_last_run_pages_requested
+
+# Execuções por status na última semana
+increase(uspavalia_scrape_runs_total[7d])
+```
 
 ### Compatibilidade
 

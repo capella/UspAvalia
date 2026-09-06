@@ -46,6 +46,7 @@ func NewServer(cfg *config.Config, db *gorm.DB) *Server {
 	// Register database metrics collector
 	dbCollector := middleware.NewDatabaseMetricsCollector(db)
 	prometheus.MustRegister(dbCollector)
+	prometheus.MustRegister(middleware.NewScrapeMetricsCollector(db))
 
 	s := &Server{
 		config:       cfg,

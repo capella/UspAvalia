@@ -1,0 +1,578 @@
+
+
+<html>
+<head>
+<title>Turmas</title>
+</head>
+<body>
+<!-- cabecalho
+ -->
+
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+
+
+
+
+<link type="text/css" rel="stylesheet" href="https://uspdigital.usp.br/comumwebdev/libs/usp/util/1.0/util.css"/>
+<link type="text/css" rel="stylesheet" href="https://uspdigital.usp.br/comumwebdev/libs/jqueryui/1.8.24/temas/ui-lightness/jquery-ui.css"/>
+<link type="text/css" rel="stylesheet" href="https://uspdigital.usp.br/comumwebdev/libs/jquery/plugins/validationEngine/2.6.2/jquery.validationEngine.css"/>
+<link type="text/css" rel="stylesheet" href="https://uspdigital.usp.br/comumwebdev/libs/jquery/plugins/jqGrid/4.4.3/ui.jqgrid.css"/>
+<link type="text/css" rel="stylesheet" href="https://uspdigital.usp.br/comumwebdev/libs/jquery/plugins/fancybox/1.3.4/jquery.fancybox.css"/>
+<link type="text/css" rel="stylesheet" href="https://uspdigital.usp.br/comumwebdev/libs/jquery/plugins/maxlength/2.0.1/jquery.maxlength.css"/>
+<link type="text/css" rel="stylesheet" href="/jupiterweb/css/jupiterweb.css" >
+<link type="text/css" rel="stylesheet" href="/jupiterweb/css/comum.css" >
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- HTML 5 Tags para IE8 -->
+<!--[if lt IE 9]>
+	   <script>
+	      document.createElement('header');
+	      document.createElement('nav');
+	      document.createElement('section');
+	      document.createElement('article');
+	      document.createElement('aside');
+	      document.createElement('footer');
+	   </script>
+	<![endif]-->
+	
+<script type='text/javascript'
+	src='https://uspdigital.usp.br/comumwebdev/libs/jquery/1.7.2/jquery.min.js'></script>
+<script type='text/javascript'
+	src='https://uspdigital.usp.br/comumwebdev/libs/jqueryui/1.8.24/jquery-ui.min.js'></script>
+<script type="text/javascript"
+	src="https://uspdigital.usp.br/comumwebdev/libs/jqueryui/1.8.24/jquery.ui.datepicker-pt-BR.min.js"></script>
+<script type='text/javascript'
+	src='https://uspdigital.usp.br/comumwebdev/libs/jquery/plugins/blockUI/2.36/jquery.blockUI.js'></script>
+<script type='text/javascript'
+	src='https://uspdigital.usp.br/comumwebdev/libs/jquery/plugins/fancybox/1.3.4/jquery.fancybox.js'></script>
+<script type="text/javascript"
+	src="https://uspdigital.usp.br/comumwebdev/libs/jquery/plugins/fancybox/1.3.4/jquery.mousewheel.min.js"></script>
+<script type='text/javascript'
+	src='https://uspdigital.usp.br/comumwebdev/libs/jquery/plugins/validationEngine/2.6.2/jquery.validationEngine.js'></script>
+<script type='text/javascript'
+	src='https://uspdigital.usp.br/comumwebdev/libs/jquery/plugins/validationEngine/2.6.2/jquery.validationEngine-pt.js'></script>
+<script type='text/javascript'
+	src='https://uspdigital.usp.br/comumwebdev/libs/jquery/plugins/jqGrid/4.4.3/jquery.jqGrid.min.js'></script>
+<script type='text/javascript'
+	src='https://uspdigital.usp.br/comumwebdev/libs/jquery/plugins/jqGrid/4.4.3/grid.locale-pt-br.js'></script>
+<script type='text/javascript'
+	src='https://uspdigital.usp.br/comumwebdev/libs/jquery/plugins/simplemodal/1.4.4/jquery.simplemodal.js'></script>
+<script type='text/javascript'
+	src='https://uspdigital.usp.br/comumwebdev/libs/jquery/plugins/exists/0.1/jquery.exists.js'></script>
+<script type='text/javascript'
+	src='https://uspdigital.usp.br/comumwebdev/libs/jquery/plugins/maskedInput/1.2.2/jquery.maskedinput.js'></script>
+<script type='text/javascript'
+	src='https://uspdigital.usp.br/comumwebdev/libs/jquery/plugins/maxlength/2.0.1/jquery.plugin.min.js'></script>
+<script type='text/javascript'
+	src='https://uspdigital.usp.br/comumwebdev/libs/jquery/plugins/maxlength/2.0.1/jquery.maxlength.min.js'></script>
+<script type="text/javascript"
+	src="https://uspdigital.usp.br/comumwebdev/libs/javascript/ckeditor/4.4.7/ckeditor.js"></script>
+<script type="text/javascript"
+	src="https://uspdigital.usp.br/comumwebdev/libs/javascript/ckeditor/4.4.7/adapters/jquery.js"></script>
+<script type="text/javascript"
+	src="https://uspdigital.usp.br/comumwebdev/libs/usp/util/1.0/util.js"></script>
+<script type="text/javascript"
+	src="https://uspdigital.usp.br/comumwebdev/libs/messages/1.3.0-0/messages.min.js"></script>
+<script type='text/javascript' src="/jupiterweb/dwr/engine.js"></script>
+<script type='text/javascript' src="/jupiterweb/dwr/util.js"></script>
+<script type='text/javascript' src="/jupiterweb/javascript/usp-exception-dwr.js"></script>
+<script type='text/javascript' src="/jupiterweb/javascript/comum.js"></script>
+<script type='text/javascript' src="/jupiterweb/javascript/jupiterweb.js"></script>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-K1Y204Q919"></script>
+<script src="usp-ga4.js"></script>
+
+<STYLE>
+#simplemodal-container a.modalCloseImg {
+	background:
+		url(images/jquery/jquery.simple.modal/x.png)
+		no-repeat; /* adjust url as required */
+}
+</STYLE>
+
+
+
+<style>
+a.link_cabecalho:active {
+	font-family: verdana;
+	font-size: 10px;
+	color: olive;
+	text-decoration: none
+}
+
+a.link_cabecalho:link {
+	font-family: verdana;
+	font-size: 10px;
+	color: olive;
+	text-decoration: none
+}
+
+a.link_cabecalho:visited {
+	font-family: verdana;
+	font-size: 10px;
+	color: olive;
+	text-decoration: none
+}
+
+a.link_cabecalho:hover {
+	font-family: verdana;
+	font-size: 10px;
+	color: gray;
+	text-decoration: underline
+}
+
+#my_web_cabecalho {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 10px;
+	text-align: left;
+	width: 90%;
+	border-bottom: solid;
+	border-bottom-width: thin;
+	border-bottom-color: #666666;
+	padding-bottom: 4px;
+	margin-bottom: 4px;
+}
+
+#my_web_cabecalho_descricao {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 10px;
+	padding-bottom: 10px;
+}
+</style>
+</head>
+
+
+	
+
+
+<div id="my_web_cabecalho">
+	Disciplinas oferecidas
+</div>
+
+	<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+
+
+
+
+
+
+	<br>
+ 
+<table width="100%" cellpadding="0" cellspacing="0">
+	<tr>
+		<td>
+			<!-- operacoes -->
+			
+		</td>
+	</tr>
+	<!-- titulos da pagina -->
+	<tr>
+		<td>
+			
+		</td>
+	</tr>
+	<!-- navegacao -->
+	<tr>
+		<td>
+			
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<form name="form1" method="GET" action="">
+			<table width="100%" border="0">
+				<tr>
+					<td> 
+						<!-- tabela
+					 	--> 
+
+
+
+
+<script language="Javascript">
+function OpenWindowToPrint() {
+	var mylink;
+	
+	if('default' == 'default'){
+		mylink = document.location.href;
+	} else {
+		mylink = 'default';
+	}
+	
+	if(mylink.indexOf("?") > 0){
+		mylink += "&";
+	} else {
+		mylink += "?";
+	}
+	
+	mylink += "print=true";
+	
+	window.open(mylink , "_blank", "toolbar=no,location=no,directories=no,status=no,menubar=yes,titlebar=yes,scrollbars=yes,resizable=yes");
+}
+</script>
+
+ 
+
+<table>
+  <tr> 
+    <td> 
+      <div align="left"><img src="https://uspdigital.usp.br/comumwebdev/imagens/logos/BrasaoUSP.gif" style="height: 80px;"></div>
+    </td>
+    <td style="vertical-align: middle;">
+		<h2 style="margin-left: 1em; display: inline-block; white-space: nowrap; font-size: medium" class="txt_verdana_10pt_black">
+			J&uacute;piter - Sistema de Gest&atilde;o Acad&ecirc;mica da Pr&oacute;-Reitoria de Gradua&ccedil;&atilde;o</b></span></font></div>
+		</h2>
+    </td>
+  </tr>
+</table>
+<BR>						
+ 
+              <table cellspacing=0 cellpadding=0 border=0 align="center" width="100%" bgcolor="#FFFFFF">
+                <tr VALIGN="TOP" ALIGN="LEFT"> 
+      <td ALIGN="CENTER"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#000000"><span class="txt_arial_10pt_black"> 
+	    Escola de Enfermagem</span></font></b></td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr VALIGN="TOP" ALIGN="LEFT"> 
+      <td ALIGN="CENTER"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#000000"><span class="txt_arial_10pt_black"> 
+	    Orientação Profissional</span></font></b></td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+
+    <tr VALIGN="TOP" ALIGN="LEFT"> 
+      <td ALIGN="CENTER"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#000000"><span class="txt_arial_10pt_black"> 
+        <b>Disciplina: ENO0302 - Bioética</b></span></font>
+		</td>
+    </tr>
+</table>
+<BR>
+ 
+
+<table>
+  <tr>
+                  <td><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><A HREF="listarCursosRequisitos?coddis=ENO0302" class="link_gray"><font color="#FF0000">Clique 
+                    para consultar os <b>Requisitos desta Disciplina</b> ENO0302</font></A></font></td>
+  </tr>
+</table>
+<br>
+<table>
+  <tr>
+    <td><B><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black">Lista de Turmas oferecidas</span></font></B></td>
+  </tr>
+</table>
+<table>
+  <tr><td width="568">  
+
+<BR>
+<div style="border: 2px solid #658CCF; padding: 5px; border-radius: 5px;">
+<table BORDER="0" cellpadding="2" cellspacing="2">
+ <tr>
+                  <td align="right" nowrap><b><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black">Código 
+                    da Turma:</span></font></b></td>
+    <td><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray">
+        2026201  </span></font></td>
+</tr>
+<tr>
+   <td align="right" nowrap><b><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black">In&iacute;cio:</span></font></b></td>
+    <td><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray">
+        10/08/2026</span></font></td>
+  </tr>
+  <tr>
+                  <td align="right" nowrap><b><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black">Fim:</span></font></b></td>
+    <td><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray">
+        07/12/2026</span></font></td>
+  </tr>
+  <tr>
+                  <td align="right" nowrap><b><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black">Tipo 
+                    da Turma:</span></font></b></td>
+    <td><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray">
+        Teórica             </span></font></td>
+  </tr>
+  
+  
+  <tr>
+                        <td align="right" nowrap><b><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black">Observaç&otilde;es:</span></font></b></td>
+    <td><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray"> </span></font></td>
+  </tr>
+  
+</table>
+
+
+
+
+
+
+
+
+
+<br>
+<table cellspacing=1 cellpadding=2  border=0>
+    <tr valign="top"  class="txt_verdana_8pt_gray"> 
+		                <td align="left"  ><b><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black">Hor&aacute;rio</span></font></b></td>
+		                <td align="left"  >&nbsp;</td>
+		                <td align="left" >&nbsp;</td>
+		                <td align="left"  ><b><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black">Prof(a)</span></font></b>.</td>
+    </tr>
+		 
+		 
+		 
+		 						
+		
+         
+        <tr valign="top"  class="txt_verdana_8pt_gray" > 
+		  
+		  
+                        <td ><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray"> seg</span></font></td>
+			 
+   			 
+			 
+			 													
+		  
+		  
+		  
+		  
+		  
+	                    <td > <font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray"> 14:00</span></font></td>
+			   									  
+		  
+		  
+		  		  
+		  
+		  
+	                    <td w> <font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray"> 17:00 </span> </font></td>
+			   									  
+		  
+		  
+		  		  
+		  
+		  
+	                    <td > <font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray"> </span> </font></td>
+		  
+		  
+		  		  
+        </tr>
+		 
+		 
+		 
+		 						
+		
+        		 
+      </table>
+	 
+
+
+
+
+
+
+
+
+
+
+<br>
+<table cellspacing=1 cellpadding=2  border=0>
+    <tr valign="top"  class="txt_verdana_8pt_gray"> 
+		                <td width="283" align="left"  >
+                          <p><b><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black">Atividades 
+                            Didáticas</span></font></b></p>
+		                </td>						
+<td width="117" align="center"  ><b><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black"> </span></font></b></td>		                
+<td width="150" align="center"  ><b><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black"> </span></font></b></td>						
+						</tr>
+
+    <tr valign="top"  class="txt_verdana_7pt_gray"> 
+		                <td align="left"  ><p><b><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black">Prof(a).</span></font></b></p></td>
+						<td  align="center"  ><b><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black">Tipo de Atividade</span></font></b></td>		                
+						<td  align="center"  ><b><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black">Carga horária (total) </span></font></b></td>		                
+		                	               
+    </tr>
+			
+		 						
+		
+         
+        <tr valign="top"  class="txt_verdana_8pt_gray" >
+                        			  
+ 
+		  
+	      <td > <font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray"> Marcelo José dos Santos (R)                                   	</span> </font></td>
+						
+		  <td align="left" nowrap> <font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray">
+		    Aulas Teóricas com Horário Variável
+</span> </font></td>
+		  
+		  <td align="center" > <font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray">
+		    45
+</span> </font></td>
+		  						
+	   		  
+        </tr>				 
+				
+         
+        <tr valign="top"  class="txt_verdana_8pt_gray" >
+                        			  
+ 
+		  
+	      <td > <font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray"> Marcelo José dos Santos (R)                                   	</span> </font></td>
+						
+		  <td align="left" nowrap> <font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray">
+		    Coordenação de Turmas da Disciplina
+</span> </font></td>
+		  
+		  <td align="center" > <font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray">
+		    9
+</span> </font></td>
+		  						
+	   		  
+        </tr>				 
+				
+         
+        <tr valign="top"  class="txt_verdana_8pt_gray" >
+                        			  
+ 
+		  
+	      <td > <font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray"> Simone Graziele Silva Cunha (R)                               	</span> </font></td>
+						
+		  <td align="left" nowrap> <font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray">
+		    Aulas Teóricas com Horário Variável
+</span> </font></td>
+		  
+		  <td align="center" > <font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray">
+		    45
+</span> </font></td>
+		  						
+	   		  
+        </tr>				 
+				
+         
+        <tr valign="top"  class="txt_verdana_8pt_gray" >
+                        			  
+ 
+		  
+	      <td > <font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray"> Simone Graziele Silva Cunha (R)                               	</span> </font></td>
+						
+		  <td align="left" nowrap> <font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray">
+		    Coordenação de Turmas da Disciplina
+</span> </font></td>
+		  
+		  <td align="center" > <font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><span class="txt_arial_8pt_gray">
+		    9
+</span> </font></td>
+		  						
+	   		  
+        </tr>				 
+				
+        		
+		 
+      </table>
+	  
+	  
+	   
+	  
+	  
+	  
+	  
+
+
+
+ 	 <table width="564" border=0 align="center">
+	 <BR>
+	   <tr bgcolor="#658CCF">
+          <td colspan="2">&nbsp;</td>
+          <td width="49" ALIGN=CENTER><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#FFFFFF"><span class="txt_verdana_8pt_white">Vagas</span></FONT></td>
+          <td width="58" ALIGN=CENTER><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#FFFFFF"><span class="txt_verdana_8pt_white">Inscritos</span></font></td>
+          <td width="68" ALIGN=CENTER><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#FFFFFF"><span class="txt_verdana_8pt_white">Pendentes</span></font></td>
+          <td width="82" ALIGN=CENTER><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#FFFFFF"><span class="txt_verdana_8pt_white">Matriculados</span></font></td>
+       </tr>
+		 	   
+	    <tr>
+		  <td colspan="2" ALIGN=LEFT><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black">Obrigat&oacute;ria</span></font></td>
+          <td ALIGN=RIGHT><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black">80</span></font></td>
+          <td ALIGN=RIGHT><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black">71</span></font></td>
+          <td ALIGN=RIGHT><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black">0</span></font></td>
+          <td ALIGN=RIGHT><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#000000"><span class="txt_arial_8pt_black">71</span></font></td>
+        </tr>
+		
+
+		 
+		 
+		 
+		 
+		 		
+	  </table>
+</div>
+
+</td>
+</tr>
+</table>
+<table>
+  <tr>
+    <td><font face="Verdana, Arial, Helvetica, sans-serif" size="1" color="#666666"><A HREF="obterDisciplina?sgldis=ENO0302" class="link_gray">Clique para consultar
+        as Informações da Disciplina ENO0302</A></font></td>
+  </tr>
+</table>
+
+
+						
+				  </td>
+					</tr>
+					<tr> 
+						<td>
+							<!-- hidden
+							
+							 -->
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<!-- acoes
+							<table width="100%" border="0">
+								<tr>
+									
+								</tr>
+							</table>
+							 -->
+						</td>
+					</tr>
+					<tr> 
+						<td>
+							<!-- submit
+							
+							 -->
+						</td>
+					</tr>
+	    </table>
+			</form>
+		</td>
+	</tr>
+</table>
+
+
+
+
+
+
+	
+
+
+<link type="text/css" rel="stylesheet" href="https://uspdigital.usp.br/comumwebdev/libs/usp/main/1.0/home.css"/>
+<table width="100%" border="0" cellspacing=" 0" cellpadding=" 0" align="center">
+  
+  <tr>
+    <td align="center"><font face="Arial, Helvetica, sans-serif" size="1"><hr size="1">
+      <a href='creditos.jsp?print=s' class="link_olive" target="_self">Cr&eacute;ditos</a>
+      | <a href="jupColegiadoEmailLista" class="link_olive">Fale conosco</a><br>
+      &copy; 1999 - 2026 - Superintend&ecirc;ncia de Tecnologia da Informa&ccedil;&atilde;o/USP</font>
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>

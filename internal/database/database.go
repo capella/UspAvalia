@@ -86,6 +86,7 @@ func autoMigrate(db *gorm.DB) error {
 		&models.Comment{},
 		&models.CommentVote{},
 		&models.ClassOffering{},
+		&models.ScrapeRun{},
 	)
 }
 
