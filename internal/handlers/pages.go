@@ -9,6 +9,7 @@ import (
 	"time"
 	"uspavalia/internal/middleware"
 	"uspavalia/internal/models"
+	"uspavalia/internal/services"
 	"uspavalia/pkg/auth"
 
 	"github.com/gorilla/mux"
@@ -333,6 +334,8 @@ func (s *Server) handleVer(w http.ResponseWriter, r *http.Request) {
 			"RatingStats":    ratingStats,
 			"Comments":       comments,
 			"TotalVotes":     totalVotes,
+			"Semesters":      services.ProfessorSemesters(s.db, classProfessor.ClassID, classProfessor.Professor.Name),
+			"AlreadyExisted": r.URL.Query().Get("existente") == "1",
 			"Modal": map[string]interface{}{
 				"ClassProfessor": classProfessor,
 			},
