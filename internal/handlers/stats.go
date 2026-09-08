@@ -19,14 +19,16 @@ func (s *Server) handleVoteActivity(w http.ResponseWriter, r *http.Request) {
 	// Get vote activity for the last year
 	oneYearAgo := time.Now().AddDate(-1, 0, 0)
 
-	// Detect database type and use appropriate date function
+	// Format the day as a "YYYY-MM-DD" string in SQL. With parseTime=True
+	// MySQL's DATE() comes back as time.Time, which cannot be scanned into
+	// a string and used to leave the response empty.
 	var dateExpression string
 	dialectName := s.db.Dialector.Name()
 	if dialectName == "sqlite" {
-		dateExpression = "DATE(datetime(time, 'unixepoch'))"
+		dateExpression = "strftime('%Y-%m-%d', time, 'unixepoch')"
 	} else {
 		// MySQL and other databases
-		dateExpression = "DATE(FROM_UNIXTIME(time))"
+		dateExpression = "DATE_FORMAT(FROM_UNIXTIME(time), '%Y-%m-%d')"
 	}
 
 	// Check if filtering by class_professor ID
@@ -86,8 +88,9 @@ func (s *Server) handleVoteActivity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Convert to array format expected by cal-heatmap
-	// Cal-heatmap expects timestamp in seconds and value
-	var activity []map[string]interface{}
+	// Cal-heatmap expects timestamp in seconds and value.
+	// Start with an empty (non-nil) slice so the JSON is "[]", not "null".
+	activity := []map[string]interface{}{}
 	for date, count := range activityMap {
 		// Parse date string to time
 		t, err := time.Parse("2006-01-02", date)

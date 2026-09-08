@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"math"
 	"strings"
 	"testing"
@@ -60,9 +61,10 @@ func voteTime(ageYears float64) int64 {
 func addVotes(t *testing.T, db *gorm.DB, cpID uint, score, n int, ageYears float64) {
 	t.Helper()
 	for i := 0; i < n; i++ {
+		// One user per vote: only a user's latest vote per criterion counts.
 		v := models.Vote{
 			ClassProfessorID: cpID,
-			UserID:           "user",
+			UserID:           fmt.Sprintf("user-%d-%v-%d", score, ageYears, i),
 			Time:             voteTime(ageYears),
 			Score:            score,
 			Type:             int(models.VoteTypeGeneral),

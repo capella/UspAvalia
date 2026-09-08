@@ -107,7 +107,9 @@ func (s *Server) handleBatchVote(w http.ResponseWriter, r *http.Request) {
 		votes = append(votes, vote)
 	}
 
-	// Create all votes in a single transaction
+	// Append the votes: earlier votes by this user are kept as history, and
+	// scores read the LatestVotes view, so these replace them in every
+	// average and count.
 	if err := s.db.Create(&votes).Error; err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

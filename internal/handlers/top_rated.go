@@ -51,7 +51,7 @@ func (s *Server) bestRatedProfessors(limit int) ([]BestRatedProfessor, error) {
 			p.id AS professor_id,
 			p.name AS professor_name,
 			u.name AS unit_name,`+s.weightedAverageSelect()+`
-		FROM votes v
+		FROM `+models.LatestVotesTable+` v
 		INNER JOIN class_professors ap ON v.class_professor_id = ap.id
 		INNER JOIN professors p ON ap.professor_id = p.id
 		INNER JOIN units u ON p.unit_id = u.id
@@ -72,7 +72,7 @@ func (s *Server) bestRatedUnits(limit int) ([]BestRatedUnit, error) {
 		SELECT
 			u.id AS unit_id,
 			u.name AS unit_name,`+s.weightedAverageSelect()+`
-		FROM votes v
+		FROM `+models.LatestVotesTable+` v
 		INNER JOIN class_professors ap ON v.class_professor_id = ap.id
 		INNER JOIN disciplines d ON ap.class_id = d.id
 		INNER JOIN units u ON d.unit_id = u.id

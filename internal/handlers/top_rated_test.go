@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"math"
 	"net/http"
 	"net/http/httptest"
@@ -65,9 +66,10 @@ func seedVotes(t *testing.T, db *gorm.DB, unitName string, score, n int, ageYear
 		t.Fatalf("create class professor: %v", err)
 	}
 	for i := 0; i < n; i++ {
+		// One user per vote: only a user's latest vote per criterion counts.
 		v := models.Vote{
 			ClassProfessorID: cp.ID,
-			UserID:           "user",
+			UserID:           fmt.Sprintf("user-%d-%v-%d", score, ageYears, i),
 			Time:             voteTime(ageYears),
 			Score:            score,
 			Type:             int(models.VoteTypeGeneral),

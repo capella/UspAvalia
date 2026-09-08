@@ -43,6 +43,12 @@
             dificuldade, notas maiores significam maior dificuldade. O voto é
             secreto.
           </p>
+          {{if .MyVotes}}
+          <div class="alert alert-info">
+            Você já avaliou. Suas notas atuais estão marcadas; ao enviar, elas
+            serão substituídas pelas novas.
+          </div>
+          {{end}}
           <div class="alert alert-danger rating-error" style="display: none"></div>
 
           <!-- Rating Categories -->
@@ -58,6 +64,7 @@
                 name="type1"
                 class="rating"
                 data-type="1"
+                data-score="{{index .MyVotes 1}}"
               >
                 <option value=""></option>
                 <option value="0">0</option>
@@ -82,6 +89,7 @@
                 name="type2"
                 class="rating"
                 data-type="2"
+                data-score="{{index .MyVotes 2}}"
               >
                 <option value=""></option>
                 <option value="0">0</option>
@@ -106,6 +114,7 @@
                 name="type3"
                 class="rating"
                 data-type="3"
+                data-score="{{index .MyVotes 3}}"
               >
                 <option value=""></option>
                 <option value="0">0</option>
@@ -130,6 +139,7 @@
                 name="type4"
                 class="rating"
                 data-type="4"
+                data-score="{{index .MyVotes 4}}"
               >
                 <option value=""></option>
                 <option value="0">0</option>
@@ -154,6 +164,7 @@
                 name="type5"
                 class="rating"
                 data-type="5"
+                data-score="{{index .MyVotes 5}}"
               >
                 <option value=""></option>
                 <option value="0">0</option>
@@ -179,6 +190,13 @@
 {{end}} {{define "modal-js"}}
 <script>
   $(document).ready(function () {
+    // Preselect the user's current vote so they can change it
+    $(".rating").each(function () {
+      var score = $(this).attr("data-score");
+      if (score !== undefined && score !== "") {
+        $(this).val(score);
+      }
+    });
     $(".rating").barrating({
       theme: "bootstrap-stars",
       showValues: true,

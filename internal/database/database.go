@@ -122,7 +122,12 @@ func VoteWeightSQL(dialect, timeCol string) string {
 	)
 }
 
-// CreateViews (re)creates the ListaMedias and Melhores views.
+// CreateViews (re)creates the LatestVotes, ListaMedias and Melhores views.
+//
+// LatestVotes keeps, for every user, class-professor and criterion, only
+// the newest vote (by time, then id). The votes table is never pruned, so
+// a user can change their mind and the history stays, but each user counts
+// once. Everything that scores or counts votes must read this view.
 //
 // ListaMedias keeps the legacy plain average and count per class-professor
 // and adds a recency-weighted average (weighted_avg) and the total weight
@@ -148,6 +153,24 @@ func CreateViews(db *gorm.DB) error {
 		createView = "CREATE VIEW"
 		db.Exec("DROP VIEW IF EXISTS Melhores")
 		db.Exec("DROP VIEW IF EXISTS ListaMedias")
+		db.Exec("DROP VIEW IF EXISTS " + models.LatestVotesTable)
+	}
+
+	latestVotesSQL := fmt.Sprintf(`
+		%s %s AS
+		SELECT v.*
+		FROM votes v
+		WHERE NOT EXISTS (
+			SELECT 1 FROM votes n
+			WHERE n.user_id = v.user_id
+			  AND n.class_professor_id = v.class_professor_id
+			  AND n.type = v.type
+			  AND (n.time > v.time OR (n.time = v.time AND n.id > v.id))
+		)
+	`, createView, models.LatestVotesTable)
+
+	if err := db.Exec(latestVotesSQL).Error; err != nil {
+		return fmt.Errorf("failed to create %s view: %w", models.LatestVotesTable, err)
 	}
 
 	listMediasSQL := fmt.Sprintf(`
@@ -158,10 +181,10 @@ func CreateViews(db *gorm.DB) error {
 			COUNT(*) AS %s,
 			SUM(score * %s) / SUM(%s) AS weighted_avg,
 			SUM(%s) AS weight_sum
-		FROM votes
+		FROM %s votes
 		WHERE type <> 5
 		GROUP BY class_professor_id
-	`, createView, quote("AVG(nota)"), quote("COUNT(*)"), weight, weight, weight)
+	`, createView, quote("AVG(nota)"), quote("COUNT(*)"), weight, weight, weight, models.LatestVotesTable)
 
 	if err := db.Exec(listMediasSQL).Error; err != nil {
 		return fmt.Errorf("failed to create ListaMedias view: %w", err)

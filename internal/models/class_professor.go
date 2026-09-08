@@ -30,7 +30,7 @@ func (cp *ClassProfessor) CalculateStatsByType(db *gorm.DB) ([]VoteTypeStats, er
 		AvgSquare float64 `gorm:"column:avg_square"`
 	}
 
-	err := db.Model(&Vote{}).
+	err := db.Table(LatestVotesTable).
 		Select("type, COUNT(*) as count, AVG(score)*2 as avg, AVG(score * score) as avg_square").
 		Where("class_professor_id = ?", cp.ID).
 		Group("class_professor_id, type").

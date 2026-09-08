@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 	"uspavalia/internal/config"
+	"uspavalia/internal/database"
 	"uspavalia/internal/middleware"
 	"uspavalia/internal/models"
 
@@ -61,6 +62,9 @@ func newAuthServer(t *testing.T) *Server {
 		&models.ClassProfessor{}, &models.Vote{}, &models.User{}, &models.LoginToken{},
 	); err != nil {
 		t.Fatalf("migrate: %v", err)
+	}
+	if err := database.CreateViews(db); err != nil {
+		t.Fatalf("create views: %v", err)
 	}
 	cfg := &config.Config{}
 	cfg.Security.SessionName = "uspavalia_session"
