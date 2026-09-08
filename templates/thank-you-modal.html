@@ -19,7 +19,8 @@
         </p>
       </div>
       <div class="modal-footer text-center" style="border-top: none; padding-top: 0;">
-        <button type="button" class="btn btn-success" data-dismiss="modal" onclick="window.location.reload()">
+        <!-- data-href is set by the vote script to the professor's page; without it the page just reloads -->
+        <button type="button" class="btn btn-success" id="thankYouContinue" onclick="if (this.dataset.href) { window.location.href = this.dataset.href; } else { window.location.reload(); }">
           <i class="glyphicon glyphicon-ok"></i> Continuar
         </button>
       </div>
