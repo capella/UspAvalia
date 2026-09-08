@@ -147,6 +147,11 @@ func TestDisciplinePageModalWiring(t *testing.T) {
 	if strings.Contains(body, `id="modal1"`) {
 		t.Errorf("logged-out page should not render the rating modal")
 	}
+	// Logged-out visitors see the same green "Avaliar" button, not a
+	// special login label.
+	if strings.Contains(body, "Login para avaliar") || !strings.Contains(body, `class="btn btn-success"`) {
+		t.Errorf("logged-out page should show the green Avaliar button")
+	}
 
 	// Logged in: the button targets the modal for this class-professor,
 	// and the modal names the discipline.

@@ -192,6 +192,15 @@
       if (pending.length) {
         pending.modal("show");
       }
+      // Drop the hash so a reload (e.g. "Continuar" after voting) shows
+      // the plain page instead of reopening this modal.
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(
+          null,
+          "",
+          window.location.pathname + window.location.search,
+        );
+      }
     }
 
     function showRatingError(form, message) {
@@ -238,6 +247,11 @@
         dataType: "json",
         success: function (response) {
           form.closest(".modal").modal("hide");
+          // "Continuar" takes the voter to the professor's evaluation page
+          $("#thankYouContinue").attr(
+            "data-href",
+            "/ver/" + requestData.class_professor_id,
+          );
           setTimeout(function () {
             $("#thankYouModal").modal("show");
           }, 300);
