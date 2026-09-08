@@ -195,6 +195,9 @@ document.addEventListener('DOMContentLoaded', function() {
       .then(data => {
          // Transform data for cal-heatmap
          const heatmapData = {};
+         if (!Array.isArray(data)) {
+            data = [];
+         }
          data.forEach(item => {
             heatmapData[item.date] = item.value;
          });

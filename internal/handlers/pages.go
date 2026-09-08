@@ -42,6 +42,40 @@ func (s *Server) getCurrentUser(r *http.Request) *models.User {
 	return nil
 }
 
+// myLatestVotes returns, for the logged-in user, the score of their latest
+// vote per criterion for each of the given class-professors, as strings so
+// templates can tell "0" (voted zero) from "" (never voted). Every id gets
+// a map, so templates never index a nil value.
+func (s *Server) myLatestVotes(r *http.Request, ids []uint) map[uint]map[int]string {
+	out := make(map[uint]map[int]string, len(ids))
+	for _, id := range ids {
+		out[id] = map[int]string{}
+	}
+	userID, ok := middleware.GetUserID(r)
+	if !ok || len(ids) == 0 {
+		return out
+	}
+	var rows []struct {
+		ClassProfessorID uint
+		Type             int
+		Score            int
+	}
+	err := s.db.Table(models.LatestVotesTable).
+		Select("class_professor_id, type, score").
+		Where("user_id = ? AND class_professor_id IN ?", userID, ids).
+		Find(&rows).Error
+	if err != nil {
+		logrus.Errorf("Failed to load user's votes: %v", err)
+		return out
+	}
+	for _, row := range rows {
+		if m, found := out[row.ClassProfessorID]; found {
+			m[row.Type] = strconv.Itoa(row.Score)
+		}
+	}
+	return out
+}
+
 // calculateStats returns the home page stats, cached for statsCacheDuration.
 func (s *Server) calculateStats() *models.Stats {
 	return s.statsCache.GetOrLoad(statsCacheDuration, s.computeStats)
@@ -56,13 +90,13 @@ func (s *Server) computeStats() *models.Stats {
 	var result struct {
 		Avg float64
 	}
-	if err := s.db.Raw("SELECT AVG(score) as avg FROM votes WHERE type <> 5").Scan(&result).Error; err != nil {
+	if err := s.db.Raw("SELECT AVG(score) as avg FROM " + models.LatestVotesTable + " WHERE type <> 5").Scan(&result).Error; err != nil {
 		logrus.Errorf("Failed to calculate average rating: %v", err)
 	}
 	avgRating = result.Avg * 2 // Multiply by 2 like original PHP code
 
-	// Count total evaluations
-	s.db.Model(&models.Vote{}).Count(&totalEvaluations)
+	// Count total evaluations (each user's latest vote per criterion)
+	s.db.Table(models.LatestVotesTable).Count(&totalEvaluations)
 
 	// Count unique users who voted
 	var usersResult struct {
@@ -136,7 +170,7 @@ func (s *Server) handleDiscipline(w http.ResponseWriter, r *http.Request) {
 
 	err = s.db.Model(&models.ClassProfessor{}).
 		Select("class_professors.*, COALESCE(AVG(votes.score) * 2, 0) as media").
-		Joins("LEFT JOIN votes ON votes.class_professor_id = class_professors.id AND votes.type <> 5").
+		Joins("LEFT JOIN "+models.LatestVotesTable+" votes ON votes.class_professor_id = class_professors.id AND votes.type <> 5").
 		Preload("Professor").
 		Preload("Discipline").
 		Where("class_professors.class_id = ?", id).
@@ -148,6 +182,12 @@ func (s *Server) handleDiscipline(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ids := make([]uint, 0, len(results))
+	for _, result := range results {
+		ids = append(ids, result.ID)
+	}
+	myVotes := s.myLatestVotes(r, ids)
+
 	modals := []map[string]interface{}{}
 	for _, result := range results {
 		mediaValue := 0.0
@@ -157,6 +197,7 @@ func (s *Server) handleDiscipline(w http.ResponseWriter, r *http.Request) {
 		modals = append(modals, map[string]interface{}{
 			"ClassProfessor": result.ClassProfessor,
 			"Media":          mediaValue,
+			"MyVotes":        myVotes[result.ID],
 		})
 	}
 
@@ -200,7 +241,7 @@ func (s *Server) handleProfessor(w http.ResponseWriter, r *http.Request) {
 
 	err = s.db.Model(&models.ClassProfessor{}).
 		Select("class_professors.*, COALESCE(AVG(votes.score) * 2, 0) as media").
-		Joins("LEFT JOIN votes ON votes.class_professor_id = class_professors.id AND votes.type <> 5").
+		Joins("LEFT JOIN "+models.LatestVotesTable+" votes ON votes.class_professor_id = class_professors.id AND votes.type <> 5").
 		Preload("Discipline").
 		Preload("Professor").
 		Where("class_professors.professor_id = ?", id).
@@ -212,6 +253,12 @@ func (s *Server) handleProfessor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ids := make([]uint, 0, len(results))
+	for _, result := range results {
+		ids = append(ids, result.ID)
+	}
+	myVotes := s.myLatestVotes(r, ids)
+
 	modals := []map[string]interface{}{}
 	for _, result := range results {
 		mediaValue := 0.0
@@ -221,6 +268,7 @@ func (s *Server) handleProfessor(w http.ResponseWriter, r *http.Request) {
 		modals = append(modals, map[string]interface{}{
 			"ClassProfessor": result.ClassProfessor,
 			"Media":          mediaValue,
+			"MyVotes":        myVotes[result.ID],
 		})
 	}
 
@@ -337,6 +385,7 @@ func (s *Server) handleVer(w http.ResponseWriter, r *http.Request) {
 			"TotalVotes":     totalVotes,
 			"Modal": map[string]interface{}{
 				"ClassProfessor": classProfessor,
+				"MyVotes":        s.myLatestVotes(r, []uint{classProfessor.ID})[classProfessor.ID],
 			},
 		},
 	}
