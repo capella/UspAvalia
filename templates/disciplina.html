@@ -57,12 +57,16 @@
               <button
                 class="btn btn-success"
                 data-toggle="modal"
-                data-target="#modal{{.ID}}"
+                data-target="#modal{{.ClassProfessor.ID}}"
               >
                 Avaliar
               </button>
               {{else}}
-              <a href="/login" class="btn btn-primary">Login para avaliar</a>
+              <a
+                href="/login?next={{printf "/disciplina/%d#modal%d" $.Data.Discipline.ID .ClassProfessor.ID}}"
+                class="btn btn-primary"
+                >Login para avaliar</a
+              >
               {{end}}
             </td>
             <td>
@@ -71,12 +75,13 @@
               >
             </td>
           </tr>
-
-          <!-- Modal for Rating -->
-          {{template "modal" . }} {{end}}
+          {{end}}
         </tbody>
       </table>
     </div>
+    <!-- Rating modals live outside the table: a <form> placed inside a
+         <tbody> is emptied by the HTML parser and its ratings are lost. -->
+    {{if .User}} {{range .Data.List}} {{template "modal" .}} {{end}} {{end}}
     <p>
       <small>Foram encontrados {{len .Data.List}} registros.</small>
     </p>

@@ -138,6 +138,7 @@ func (s *Server) handleDiscipline(w http.ResponseWriter, r *http.Request) {
 		Select("class_professors.*, COALESCE(AVG(votes.score) * 2, 0) as media").
 		Joins("LEFT JOIN votes ON votes.class_professor_id = class_professors.id AND votes.type <> 5").
 		Preload("Professor").
+		Preload("Discipline").
 		Where("class_professors.class_id = ?", id).
 		Group("class_professors.id").
 		Find(&results).Error
@@ -201,6 +202,7 @@ func (s *Server) handleProfessor(w http.ResponseWriter, r *http.Request) {
 		Select("class_professors.*, COALESCE(AVG(votes.score) * 2, 0) as media").
 		Joins("LEFT JOIN votes ON votes.class_professor_id = class_professors.id AND votes.type <> 5").
 		Preload("Discipline").
+		Preload("Professor").
 		Where("class_professors.professor_id = ?", id).
 		Group("class_professors.id").
 		Find(&results).Error

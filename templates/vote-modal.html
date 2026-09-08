@@ -40,10 +40,10 @@
             {{.ClassProfessor.Professor.Name}}, na disciplina
             {{.ClassProfessor.Discipline.Name}} -
             {{.ClassProfessor.Discipline.Code}} nos seguintes quesitos. Em
-            dificuldade, notas maiores significam maior dificuldade.{{if not
-            .User}} Após avaliar, você será direcionado para fazer
-            login.{{else}} O voto é secreto.{{end}}
+            dificuldade, notas maiores significam maior dificuldade. O voto é
+            secreto.
           </p>
+          <div class="alert alert-danger rating-error" style="display: none"></div>
 
           <!-- Rating Categories -->
           <hr style="margin-bottom: 6px; margin-top: 0" />
@@ -185,11 +185,24 @@
       showSelectedRating: false,
     });
 
+    // After logging in the user is sent back to "<page>#modal<id>":
+    // open that modal so they can finish the rating they started.
+    if (/^#modal\d+$/.test(window.location.hash)) {
+      var pending = $(window.location.hash);
+      if (pending.length) {
+        pending.modal("show");
+      }
+    }
+
+    function showRatingError(form, message) {
+      form.find(".rating-error").text(message).show();
+    }
+
     // Unified form handler for all rating forms
     $('form[id^="ratingForm"]').on("submit", function (e) {
       e.preventDefault();
       var form = $(this);
-      var isUserLogged = form.data("user-logged");
+      form.find(".rating-error").hide();
 
       // Collect all ratings
       var ratings = [];
@@ -205,7 +218,7 @@
       });
 
       if (ratings.length === 0) {
-        alert("Por favor, avalie pelo menos um quesito.");
+        showRatingError(form, "Por favor, avalie pelo menos um quesito.");
         return;
       }
 
@@ -222,14 +235,22 @@
         method: "POST",
         contentType: "application/json",
         data: JSON.stringify(requestData),
+        dataType: "json",
         success: function (response) {
           form.closest(".modal").modal("hide");
           setTimeout(function () {
             $("#thankYouModal").modal("show");
           }, 300);
         },
-        error: function () {
-          alert("Erro ao enviar avaliação. Tente novamente.");
+        error: function (xhr) {
+          if (xhr.status === 401) {
+            // Session expired: log in and come back to this modal.
+            var next =
+              window.location.pathname + "#" + form.closest(".modal").attr("id");
+            window.location.href = "/login?next=" + encodeURIComponent(next);
+            return;
+          }
+          showRatingError(form, "Erro ao enviar avaliação. Tente novamente.");
         },
       });
     });

@@ -61,7 +61,9 @@
                 Avaliar
               </button>
               {{else}}
-              <a href="/login" class="btn btn-primary btn-sm"
+              <a
+                href="/login?next={{printf "/professor/%d#modal%d" $.Data.Professor.ID .ClassProfessor.ID}}"
+                class="btn btn-primary btn-sm"
                 >Login para avaliar</a
               >
               {{end}}
@@ -72,12 +74,13 @@
               >
             </td>
           </tr>
-
-          <!-- Modal for Rating -->
-          {{template "modal" . }} {{end}}
+          {{end}}
         </tbody>
       </table>
     </div>
+    <!-- Rating modals live outside the table: a <form> placed inside a
+         <tbody> is emptied by the HTML parser and its ratings are lost. -->
+    {{if .User}} {{range .Data.List}} {{template "modal" .}} {{end}} {{end}}
     <p>
       <small>Foram encontrados {{len .Data.List}} registros.</small>
     </p>
