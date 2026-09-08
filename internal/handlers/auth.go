@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"uspavalia/internal/models"
 	"uspavalia/pkg/auth"
 
+	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -28,6 +30,46 @@ var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]
 // validateEmail validates email format
 func validateEmail(email string) bool {
 	return emailRegex.MatchString(email)
+}
+
+// loginNextSessionKey stores where to send the user once they finish logging in.
+const loginNextSessionKey = "login_next"
+
+// safeNextPath returns raw if it is a path on this site (e.g.
+// "/disciplina/1#modal2"), or "" for anything else, so a crafted link can
+// never turn the login flow into an open redirect.
+func safeNextPath(raw string) string {
+	if raw == "" || raw[0] != '/' || strings.ContainsAny(raw, "\\\r\n") {
+		return ""
+	}
+	u, err := url.Parse(raw)
+	if err != nil || u.Scheme != "" || u.Host != "" || u.User != nil ||
+		!strings.HasPrefix(u.Path, "/") || strings.HasPrefix(u.Path, "//") {
+		return ""
+	}
+	return u.String()
+}
+
+// rememberLoginNext records the page (and modal) to return to after login.
+// Without a valid "next" any stale value is cleared.
+func (s *Server) rememberLoginNext(w http.ResponseWriter, r *http.Request) {
+	session, _ := s.store.Get(r, s.config.Security.SessionName)
+	if next := safeNextPath(r.URL.Query().Get("next")); next != "" {
+		session.Values[loginNextSessionKey] = next
+	} else {
+		delete(session.Values, loginNextSessionKey)
+	}
+	session.Save(r, w)
+}
+
+// popLoginNext consumes the remembered return path, defaulting to home.
+func popLoginNext(session *sessions.Session) string {
+	next, _ := session.Values[loginNextSessionKey].(string)
+	delete(session.Values, loginNextSessionKey)
+	if next = safeNextPath(next); next != "" {
+		return next
+	}
+	return "/"
 }
 
 func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
@@ -60,6 +102,11 @@ func (s *Server) handleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 
 	session, _ := s.store.Get(r, s.config.Security.SessionName)
 	session.Values["oauth_state"] = state
+	// A "next" given directly to this route wins over the one remembered by
+	// the login page; otherwise keep whatever the login page stored.
+	if next := safeNextPath(r.URL.Query().Get("next")); next != "" {
+		session.Values[loginNextSessionKey] = next
+	}
 	session.Save(r, w)
 
 	url := config.AuthCodeURL(state, oauth2.AccessTypeOffline)
@@ -118,14 +165,16 @@ func (s *Server) handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 
 	session.Values["user_id"] = fmt.Sprintf("%d", user.ID)
 	delete(session.Values, "oauth_state")
+	next := popLoginNext(session)
 	session.Save(r, w)
 
-	http.Redirect(w, r, "/", http.StatusFound)
+	http.Redirect(w, r, next, http.StatusFound)
 }
 
 // handleRequestLogin shows the magic link request form and processes login requests
 func (s *Server) handleRequestLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
+		s.rememberLoginNext(w, r)
 		data := PageData{
 			Data: map[string]interface{}{
 				"HCaptchaSiteKey": s.config.Security.HCaptchaSiteKey,
@@ -267,14 +316,15 @@ func (s *Server) handleMagicLink(w http.ResponseWriter, r *http.Request) {
 	// Create session
 	session, _ := s.store.Get(r, s.config.Security.SessionName)
 	session.Values["user_id"] = fmt.Sprintf("%d", user.ID)
+	next := popLoginNext(session)
 	if err := session.Save(r, w); err != nil {
 		logrus.Printf("Error saving session: %v", err)
 		s.renderErrorPage(w, r, http.StatusInternalServerError, "Erro ao criar sessão")
 		return
 	}
 
-	// Redirect to home
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	// Back to the page (and modal) the user came from, or home
+	http.Redirect(w, r, next, http.StatusSeeOther)
 }
 
 // renderLoginRequestError renders the login request page with an error message

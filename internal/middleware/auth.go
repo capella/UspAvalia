@@ -3,6 +3,8 @@ package middleware
 import (
 	"context"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/gorilla/sessions"
 )
@@ -18,7 +20,13 @@ func RequireAuth(store sessions.Store) func(http.Handler) http.Handler {
 
 			userID, ok := session.Values["user_id"]
 			if !ok || userID == nil {
-				http.Redirect(w, r, "/login", http.StatusFound)
+				if isAPIRequest(r) {
+					// A redirect would hand an HTML login page to fetch/ajax
+					// callers, which then looks like success. Tell them plainly.
+					http.Error(w, "Unauthorized", http.StatusUnauthorized)
+					return
+				}
+				http.Redirect(w, r, "/login?next="+url.QueryEscape(r.URL.RequestURI()), http.StatusFound)
 				return
 			}
 
@@ -41,6 +49,13 @@ func OptionalAuth(store sessions.Store) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+// isAPIRequest reports whether the request comes from page script rather
+// than a browser navigation.
+func isAPIRequest(r *http.Request) bool {
+	return r.Header.Get("X-Requested-With") == "XMLHttpRequest" ||
+		strings.HasPrefix(r.Header.Get("Content-Type"), "application/json")
 }
 
 func GetUserID(r *http.Request) (string, bool) {
