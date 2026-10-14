@@ -9,6 +9,15 @@
                 <span itemprop="affiliation">{{.Data.Discipline.Name}} - {{.Data.Discipline.Code}}</span>
             </small>
         </h2>
+        {{if .Data.Semesters}}
+        <p class="text-muted">
+          Oferecimentos:
+          {{range $i, $s := .Data.Semesters}}{{if $i}}, {{end}}{{$s}}{{end}}
+        </p>
+        {{end}}
+        {{if .Data.AlreadyExisted}}
+        <div class="alert alert-info">Esse professor já estava registrado nessa disciplina para o semestre escolhido.</div>
+        {{end}}
 
         <!-- Avaliações -->
         <hr>

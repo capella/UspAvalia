@@ -63,6 +63,11 @@ func (s *Server) handleLegacyURLs(w http.ResponseWriter, r *http.Request) {
 	case "fb-callback":
 		// Old Facebook OAuth callback, redirect to Google OAuth
 		redirectURL = "/auth/google"
+	case "add", "add2":
+		redirectURL = "/adicionar"
+		if id != "" {
+			redirectURL += "?professor_id=" + id
+		}
 	case "index":
 		redirectURL = "/"
 	default:

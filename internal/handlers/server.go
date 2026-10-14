@@ -124,6 +124,9 @@ func (s *Server) setupRoutes() {
 	// Typeahead endpoint (no CSRF protection needed for search suggestions)
 	s.router.HandleFunc("/typeahead", s.handleTypeahead).Methods("POST")
 
+	// Catalog lookup for the "add discipline/professor" page typeaheads
+	s.router.HandleFunc("/api/lookup/{kind}", s.handleLookup).Methods("GET")
+
 	// Vote activity API endpoint (for heatmap)
 	s.router.HandleFunc("/api/vote-activity", s.handleVoteActivity).Methods("GET")
 
@@ -174,6 +177,8 @@ func (s *Server) setupRoutes() {
 
 	// Protected routes
 	protected.HandleFunc("/logout", s.handleLogout).Methods("GET")
+	protected.HandleFunc("/adicionar", s.handleAddPage).Methods("GET")
+	protected.HandleFunc("/add", s.handleAddPage).Methods("GET")
 
 	// API routes with specific rate limiting and CSRF protection
 	api := s.router.PathPrefix("/").Subrouter()
@@ -185,6 +190,8 @@ func (s *Server) setupRoutes() {
 	api.HandleFunc("/vote-batch", s.handleBatchVote).Methods("POST")
 	api.HandleFunc("/comment", s.handleComment).Methods("POST")
 	api.HandleFunc("/vote-comment", s.handleCommentVote).Methods("POST")
+	api.HandleFunc("/adicionar", s.handleAddSubmit).Methods("POST")
+	api.HandleFunc("/add", s.handleAddSubmit).Methods("POST")
 
 	// Catch-all 404 handler - must be last
 	s.router.NotFoundHandler = http.HandlerFunc(s.handle404)
